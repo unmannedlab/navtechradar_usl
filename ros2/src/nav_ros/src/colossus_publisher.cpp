@@ -9,67 +9,51 @@
 using namespace std::chrono_literals;
 using namespace Navtech;
 
-rclcpp::Publisher<std_msgs::msg::String>::SharedPtr Configuration_data_publisher;
-rclcpp::Publisher<std_msgs::msg::String>::SharedPtr Fft_data_publisher;
+RadarClientPtr_t radarClient;
 
 class Colossus_publisher : public rclcpp::Node
 {
 public:
-    Colossus_publisher() : Node{"colossus_publisher"}
+    Colossus_publisher()
+        : Node{"colossus_publisher"}, count(0)
   {
-    Configuration_data_publisher = Node::create_publisher<std_msgs::msg::String>("configuration_data", 5);
-    Fft_data_publisher = Node::create_publisher<std_msgs::msg::String>("fft_data", 400);
+    publisher = Node::create_publisher<std_msgs::msg::String>("topic", 10);
+    timer = Node::create_wall_timer(
+      500ms, std::bind(&Colossus_publisher::timer_callback, this));
   }
-};
 
-RadarClientPtr_t radarClient;
-std::shared_ptr<Colossus_publisher> node;
+private:
+  void timer_callback()
+  {
+    auto message = std_msgs::msg::String();
+    message.data = "Colossus Publisher: " + std::to_string(count++);
+    RCLCPP_INFO(Node::get_logger(), "Publishing: '%s'", message.data.c_str());
+    publisher->publish(message);
+  }
+  rclcpp::TimerBase::SharedPtr timer;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher;
+  size_t count{ 0 };
+};
 
 void FFTDataHandler(const FFTDataPtr_t& data)
 {
-    auto message = std_msgs::msg::String();
-    message.data = "FFT Data";
-    RCLCPP_INFO(node->get_logger(), "Publishing: '%s'", message.data.c_str());
-    Fft_data_publisher->publish(message);
 }
 
 void ConfigurationDataHandler(const ConfigurationDataPtr_t& data)
 {
-    RCLCPP_INFO(node->get_logger(), "Configuration Data recieved");
-    RCLCPP_INFO(node->get_logger(), "Expected Rotation Rate: %i", data->ExpectedRotationRate);
-    RCLCPP_INFO(node->get_logger(), "Range In Bins: : %i", data->RangeInBins);
-    RCLCPP_INFO(node->get_logger(), "Bin Size: %f", data->BinSize / 10000.0);
-    RCLCPP_INFO(node->get_logger(), "Range In Metres: %f", data->BinSize / 10000.0 * data->RangeInBins);
-    RCLCPP_INFO(node->get_logger(), "Azimuth Samples: %i", data->AzimuthSamples);
-
-    auto message = std_msgs::msg::String();
-    message.data = "Configuration Data";
-    RCLCPP_INFO(node->get_logger(), "Publishing: '%s'", message.data.c_str());
-    Configuration_data_publisher->publish(message);
-
-    radarClient->StartFFTData();
 }
 
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  node = std::make_shared<Colossus_publisher>();
+  auto node = std::make_shared<Colossus_publisher>();
 
   RCLCPP_INFO(node->get_logger(), "Starting radar client");
-  radarClient = std::make_shared<RadarClient>("10.77.2.210");
-  radarClient->SetFFTDataCallback(std::bind(&FFTDataHandler, std::placeholders::_1));
-  radarClient->SetConfigurationDataCallback(std::bind(&ConfigurationDataHandler, std::placeholders::_1));
-  radarClient->Start();
+  //radarClient = std::make_shared<Navtech::RadarClient>("192.168.0.1");
+  //radarClient->SetFFTDataCallback(std::bind(&FFTDataHandler, std::placeholders::_1));
+  //radarClient->SetConfigurationDataCallback(std::bind(&ConfigurationDataHandler, std::placeholders::_1));
+  //radarClient->Start();
 
-  while (rclcpp::ok())
-  {
-      rclcpp::spin(node);
-  }
-
-  radarClient->StopFFTData();
-  radarClient->SetConfigurationDataCallback();
-  radarClient->SetFFTDataCallback();
-  radarClient->Stop();
+  rclcpp::spin(node);
   rclcpp::shutdown();
-  RCLCPP_INFO(node->get_logger(), "Stopped radar client");
 }
