@@ -14,34 +14,35 @@
 
 #include <functional>
 #include <memory>
-
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
-using std::placeholders::_1;
+/* This example creates a subclass of Node and uses std::bind() to register a
+ * member function as a callback from the timer. */
 
-class MinimalSubscriber : public rclcpp::Node
+class Minimal_subscriber : public rclcpp::Node
 {
 public:
-  MinimalSubscriber()
-  : Node("minimal_subscriber")
+  Minimal_subscriber()
+      : Node{ "minimal_subscriber" }
   {
-    subscription_ = this->create_subscription<std_msgs::msg::String>(
-      "topic", 10, std::bind(&MinimalSubscriber::topic_callback, this, _1));
+    using std::placeholders::_1;
+
+    subscription = Node::create_subscription<std_msgs::msg::String>(
+      "topic", 10, std::bind(&Minimal_subscriber::topic_callback, this, _1));
   }
 
 private:
   void topic_callback(const std_msgs::msg::String::SharedPtr msg) const
   {
-    RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg->data.c_str());
+    RCLCPP_INFO(Node::get_logger(), "I heard: '%s'", msg->data.c_str());
   }
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription;
 };
 
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<MinimalSubscriber>());
+  rclcpp::spin(std::make_shared<Minimal_subscriber>());
   rclcpp::shutdown();
-  return 0;
 }
