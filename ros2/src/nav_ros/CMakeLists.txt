@@ -30,12 +30,10 @@ add_library(iasdk_static STATIC ../../../cpp/radarclient.cpp ../../../cpp/tcprad
 
 ## Build executable for Colossus publisher
 add_executable(colossus_publisher src/colossus_publisher.cpp)
-target_link_libraries(colossus_publisher iasdk_static)
 ament_target_dependencies(colossus_publisher rclcpp std_msgs)
 
 ## Build executable for Colossus subscriber
 add_executable(colossus_subscriber src/colossus_subscriber.cpp)
-target_link_libraries(colossus_subscriber iasdk_static)
 ament_target_dependencies(colossus_subscriber rclcpp std_msgs)
 
 ## Install the built executables
