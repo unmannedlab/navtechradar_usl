@@ -13,11 +13,13 @@
 #include <netinet/in.h>
 #endif
 
-#include "../common.h"
 #include "cndp_configuration_message.h"
 #include "cndp_fft_data_message.h"
 #include "cndp_network_data_message.h"
 #include "radar_client.h"
+#include <common.h>
+#include <configurationdata.pb.h>
+#include <utility/Protobuf_helpers.h>
 
 namespace Navtech {
     Radar_client::Radar_client(const std::string& radarAddress, const uint16_t& port) :
@@ -101,7 +103,7 @@ namespace Navtech {
         header.Init();
         header.Set_message_id(CNDPNetworkDataMessageType::SetNavThreshold);
         header.Set_payload_length(sizeof(threshold));
-        auto message = std::make_shared<Network_data_message>(header, buffer);
+        auto message = make_shared_owner<Network_data_message>(header, buffer);
 
         Helpers::Log("Set_navigation_threshold - Message Length [" + std::to_string(message->Message_data().size()) +
                      "]");
@@ -122,7 +124,7 @@ namespace Navtech {
         header.Init();
         header.Set_message_id(CNDPNetworkDataMessageType::SetNavRangeOffsetAndGain);
         header.Set_payload_length(sizeof(uint32_t) + sizeof(uint32_t));
-        auto message = std::make_shared<Network_data_message>(header, buffer);
+        auto message = make_shared_owner<Network_data_message>(header, buffer);
         radar_client.Send(message->Message_data());
     }
 
@@ -133,7 +135,7 @@ namespace Navtech {
         CNDPNetworkDataHeader header {};
         header.Init();
         header.Set_message_id(type);
-        auto message = std::make_shared<Network_data_message>(header);
+        auto message = make_shared_owner<Network_data_message>(header);
         radar_client.Send(message->Message_data());
     }
 
@@ -157,7 +159,7 @@ namespace Navtech {
         header.Init();
         header.Set_message_id(CNDPNetworkDataMessageType::ContourUpdate);
         header.Set_payload_length(static_cast<uint32_t>(contour.size()));
-        auto message = std::make_shared<Network_data_message>(header, contour);
+        auto message = make_shared_owner<Network_data_message>(header, contour);
         radar_client.Send(message->Message_data());
     }
 
@@ -165,7 +167,7 @@ namespace Navtech {
     {
         switch (message->Message_id()) {
             case CNDPNetworkDataMessageType::Configuration:
-                HandleConfigurationMessage(message);
+                Handle_configuration_message(message);
                 break;
             case CNDPNetworkDataMessageType::FFTData:
                 Handle_fft_data_message(message);
@@ -175,6 +177,9 @@ namespace Navtech {
                 break;
             case CNDPNetworkDataMessageType::NavigationAlarmData:
                 break;
+            case CNDPNetworkDataMessageType::Health:
+                Handle_health_message(message);
+                break;
             default:
                 Helpers::Log("Radar_client - Unhandled Message [" +
                              std::to_string(static_cast<uint32_t>(message->Message_id())) + "]");
@@ -182,7 +187,7 @@ namespace Navtech {
         }
     }
 
-    void Radar_client::HandleConfigurationMessage(const CNDPDataMessagePtr_t& configMessage)
+    void Radar_client::Handle_configuration_message(const CNDPDataMessagePtr_t& configMessage)
     {
         Helpers::Log("Radar_client - Handle Configuration Message");
 
@@ -205,7 +210,7 @@ namespace Navtech {
 
         if (send_radar_data) Send_simple_network_message(CNDPNetworkDataMessageType::StartFFTData);
 
-        auto configurationData                    = make_shared<Configuration_data>();
+        auto configurationData                    = make_shared_owner<Configuration_data>();
         configurationData->Azimuth_samples        = azimuth_amples;
         configurationData->Bin_size               = bin_size;
         configurationData->Range_in_bins          = range_in_bins;
@@ -214,6 +219,8 @@ namespace Navtech {
 
         configuration_fn(configurationData);
     }
+
+    void Radar_client::Handle_health_message(const CNDPDataMessagePtr_t& health_message) { }
 
     void Radar_client::Handle_fft_data_message(const CNDPDataMessagePtr_t& fft_data_message)
     {
@@ -229,7 +236,7 @@ namespace Navtech {
                     message_data.data(),
                     fft_data_header.HeaderLength() + fft_data_header.header.Header_length());
 
-        auto fftData               = make_shared<Fft_data>();
+        auto fftData               = make_shared_owner<Fft_data>();
         fftData->Azimuth           = ntohs(fft_data_header.azimuth);
         fftData->Angle             = (fftData->Azimuth * 360.0f) / (float)encoder_size;
         fftData->Sweep_counter     = ntohs(fft_data_header.sweep_counter);
@@ -259,7 +266,7 @@ namespace Navtech {
                     &navigation_message->Payload()[sizeof(net_azimuth) + sizeof(net_seconds)],
                     sizeof(net_split_seconds));
 
-        auto navigation_data               = make_shared<Navigation_data>();
+        auto navigation_data               = make_shared_owner<Navigation_data>();
         navigation_data->Azimuth           = ntohs(net_azimuth);
         navigation_data->Ntp_seconds       = ntohl(net_seconds);
         navigation_data->Ntp_split_seconds = ntohl(net_split_seconds);

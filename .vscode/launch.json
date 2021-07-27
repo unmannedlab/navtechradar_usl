@@ -5,30 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch C++17 Static",
+            "name": "(gdb) Launch Test Client",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/testclient_static",
-            "preLaunchTask": "Build",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
-        },
-        {
-            "name": "(gdb) Launch C++17 Dynamic",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/testclient_synamic",
+            "program": "${workspaceFolder}/build/testclient",
             "preLaunchTask": "Build",
             "args": [],
             "stopAtEntry": false,

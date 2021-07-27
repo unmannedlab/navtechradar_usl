@@ -88,8 +88,9 @@ namespace Navtech {
         uint16_t expected_rotation_rate = 0;
 
         void Handle_data(const CNDPDataMessagePtr_t& message);
-        void HandleConfigurationMessage(const CNDPDataMessagePtr_t& configMessage);
+        void Handle_configuration_message(const CNDPDataMessagePtr_t& configMessage);
         void Handle_fft_data_message(const CNDPDataMessagePtr_t& fftDataMessage);
+        void Handle_health_message(const CNDPDataMessagePtr_t& fftDataMessage);
         void Handle_navigation_data_message(const CNDPDataMessagePtr_t& navigationMessage);
         void Send_simple_network_message(const CNDPNetworkDataMessageType& type);
     };

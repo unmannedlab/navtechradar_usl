@@ -39,7 +39,7 @@ namespace Navtech {
     using Shared_owner = std::shared_ptr<T>;
 
     template<typename T, typename... Arg_Ty>
-    Shared_owner<T> make_shared(Arg_Ty&&... args)
+    Shared_owner<T> make_shared_owner(Arg_Ty&&... args)
     {
         return std::make_shared<T>(std::forward<Arg_Ty>(args)...);
     }

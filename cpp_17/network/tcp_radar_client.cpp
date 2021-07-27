@@ -4,11 +4,11 @@
 // for full license details.
 //
 
-#include "tcp_radar_client.h"
-#include "../common.h"
-
 #include <algorithm>
 #include <functional>
+
+#include "tcp_radar_client.h"
+#include <common.h>
 
 namespace Navtech {
     Tcp_radar_client::Tcp_radar_client(const std::string& ipAddress, const uint16_t& port) :
@@ -212,12 +212,12 @@ namespace Navtech {
             }
             bytes_transferred++;
 
-            CNDPDataMessagePtr_t streamData = std::make_shared<Network_data_message>(
+            CNDPDataMessagePtr_t streamData = make_shared_owner<Network_data_message>(
                 message_header, &payloadData[0], message_header.Payload_length());
             receive_data_queue.Enqueue(streamData);
         }
         else if (message_header.Header_is_valid()) {
-            CNDPDataMessagePtr_t streamData = std::make_shared<Network_data_message>(message_header);
+            CNDPDataMessagePtr_t streamData = make_shared_owner<Network_data_message>(message_header);
             receive_data_queue.Enqueue(streamData);
         }
 

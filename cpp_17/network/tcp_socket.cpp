@@ -16,8 +16,8 @@
 #include <unistd.h>
 #endif
 
-#include "../common.h"
 #include "tcp_socket.h"
+#include <common.h>
 
 namespace Navtech {
     Tcp_socket::Tcp_socket(const std::string& destination, const uint16_t& port) :

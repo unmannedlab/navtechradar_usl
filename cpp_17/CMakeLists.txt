@@ -5,14 +5,21 @@ cmake_minimum_required(VERSION 3.16)
 set (CMAKE_CXX_FLAGS " -Wall -Werror -pthread -std=c++17")
 add_definitions(${CMAKE_CXX_FLAGS})
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/protobuf)
+include_directories(${CMAKE_SOURCE_DIR})
+
+set (Protobuf_USE_STATIC_LIBS ON)
+find_package(Protobuf REQUIRED)
+include_directories(${PROTOBUF_INCLUDE_DIR})
+
+add_subdirectory(protobuf)
+include_directories(protobuf)
+
 add_subdirectory(utility)
 include_directories(utility)
 
 add_subdirectory(network)
 include_directories(network)
 
-add_executable(testclient_static testclient_main.cpp)
-target_link_libraries(testclient_static iasdk_network_static iasdk_utility_static)
-
-add_executable(testclient_dynamic testclient_main.cpp)
-target_link_libraries(testclient_dynamic iasdk_network iasdk_utility)
+add_executable(testclient testclient_main.cpp)
+target_link_libraries(testclient iasdk_network iasdk_utility iasdk_protobuf)
