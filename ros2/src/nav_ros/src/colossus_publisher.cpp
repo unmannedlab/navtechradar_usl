@@ -20,7 +20,7 @@ public:
     Colossus_publisher() : Node{ "colossus_publisher" }
     {
         Configuration_data_publisher = Node::create_publisher<interfaces::msg::ConfigurationDataMessage>("configuration_data", 5);
-        Fft_data_publisher = Node::create_publisher<interfaces::msg::FftDataMessage>("fft_data", 400);
+        Fft_data_publisher = Node::create_publisher<interfaces::msg::FftDataMessage>("fft_data", 1600);
     }
 };
 
@@ -29,28 +29,36 @@ std::shared_ptr<Colossus_publisher> node;
 
 void FFTDataHandler(const FFTDataPtr_t& data)
 {
-    auto message = interfaces::msg::ConfigurationDataMessage();
-    //message.data = "FFT Data";
-    //RCLCPP_INFO(node->get_logger(), "Publishing: '%s'", message.data.c_str());
-    //Fft_data_publisher->publish(message);
+    RCLCPP_INFO(node->get_logger(), "Publishing FFT Data");
+
+    auto message = interfaces::msg::FftDataMessage();
+    message.angle = data->Angle;
+    message.azimuth = data->Azimuth;
+    message.sweep_counter = data->SweepCounter;
+    message.ntp_seconds = data->NTPSeconds;
+    message.ntp_split_seconds = data->NTPSplitSeconds;
+    message.data = data->Data;
+
+    Fft_data_publisher->publish(message);
 }
 
 void ConfigurationDataHandler(const ConfigurationDataPtr_t& data)
 {
     RCLCPP_INFO(node->get_logger(), "Configuration Data recieved");
-    RCLCPP_INFO(node->get_logger(), "Expected Rotation Rate: %i", data->ExpectedRotationRate);
-    RCLCPP_INFO(node->get_logger(), "Range In Bins: : %i", data->RangeInBins);
-    RCLCPP_INFO(node->get_logger(), "Bin Size: %f", data->BinSize / 10000.0);
-    RCLCPP_INFO(node->get_logger(), "Range In Metres: %f", data->BinSize / 10000.0 * data->RangeInBins);
     RCLCPP_INFO(node->get_logger(), "Azimuth Samples: %i", data->AzimuthSamples);
+    RCLCPP_INFO(node->get_logger(), "Encoder Size: %i", data->EncoderSize);
+    RCLCPP_INFO(node->get_logger(), "Bin Size: %i", data->BinSize);
+    RCLCPP_INFO(node->get_logger(), "Range In Bins: : %i", data->RangeInBins);
+    RCLCPP_INFO(node->get_logger(), "Expected Rotation Rate: %i", data->ExpectedRotationRate);
+    RCLCPP_INFO(node->get_logger(), "Publishing Configuration Data");
 
-    //byte configDataBytes[10];
-    //memcpy(configDataBytes, &data, sizeof(configDataBytes));
-
-    //auto message = std_msgs::Int16MultiArray();
-    //message.data = configDataBytes;
-    //RCLCPP_INFO(node->get_logger(), "Publishing: '%s'", message.data.c_str());
-    //Configuration_data_publisher->publish(message);
+    auto message = interfaces::msg::ConfigurationDataMessage();
+    message.azimuth_samples = data->AzimuthSamples;
+    message.encoder_size = data->EncoderSize;
+    message.bin_size = data->BinSize;
+    message.range_in_bins = data->RangeInBins;
+    message.expected_rotation_rate = data->ExpectedRotationRate;
+    Configuration_data_publisher->publish(message);
 
     radarClient->StartFFTData();
 }
