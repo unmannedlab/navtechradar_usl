@@ -15,6 +15,7 @@ endif()
 ## Find required packages for build
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(interfaces REQUIRED) 
 find_package(std_msgs REQUIRED)
 
 ## Specify additional locations of header files
@@ -30,12 +31,12 @@ add_library(iasdk_static STATIC ../../../cpp/radarclient.cpp ../../../cpp/tcprad
 ## Build executable for Colossus publisher
 add_executable(colossus_publisher src/colossus_publisher.cpp)
 target_link_libraries(colossus_publisher iasdk_static)
-ament_target_dependencies(colossus_publisher rclcpp std_msgs)
+ament_target_dependencies(colossus_publisher rclcpp std_msgs interfaces)
 
 ## Build executable for Colossus subscriber
 add_executable(colossus_subscriber src/colossus_subscriber.cpp)
 target_link_libraries(colossus_subscriber iasdk_static)
-ament_target_dependencies(colossus_subscriber rclcpp std_msgs)
+ament_target_dependencies(colossus_subscriber rclcpp std_msgs interfaces)
 
 ## Install the built executables
 install(TARGETS
