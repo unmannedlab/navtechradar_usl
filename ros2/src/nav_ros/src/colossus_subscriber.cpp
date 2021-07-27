@@ -11,9 +11,9 @@ public:
     {
         using std::placeholders::_1;
 
-        Configuration_data_subscriber = Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
+        configuration_data_subscriber = Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
             "configuration_data", 5, std::bind(&Colossus_subscriber::configuration_data_callback, this, _1));
-        Fft_data_subscriber = Node::create_subscription<interfaces::msg::FftDataMessage>(
+        fft_data_subscriber = Node::create_subscription<interfaces::msg::FftDataMessage>(
             "fft_data", 1600, std::bind(&Colossus_subscriber::fft_data_callback, this, _1));
     }
 
@@ -37,8 +37,8 @@ private:
         RCLCPP_INFO(Node::get_logger(), "NTP Split Seconds: %i", msg->ntp_split_seconds);
     }
 
-    rclcpp::Subscription<interfaces::msg::ConfigurationDataMessage>::SharedPtr Configuration_data_subscriber;
-    rclcpp::Subscription<interfaces::msg::FftDataMessage>::SharedPtr Fft_data_subscriber;
+    rclcpp::Subscription<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_subscriber;
+    rclcpp::Subscription<interfaces::msg::FftDataMessage>::SharedPtr fft_data_subscriber;
 };
 
 int main(int argc, char* argv[])
