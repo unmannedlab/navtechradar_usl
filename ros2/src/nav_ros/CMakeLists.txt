@@ -15,20 +15,33 @@ endif()
 ## Find required packages for build
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(interfaces REQUIRED) 
 find_package(std_msgs REQUIRED)
 
-## Build executable for publisher/talker
-add_executable(talker src/publisher_member_function.cpp)
-ament_target_dependencies(talker rclcpp std_msgs)
+## Specify additional locations of header files
+## Your package locations should be listed before other locations
+include_directories(
+# include
+  ../../../cpp
+)
 
-## Build executable for subscriber/listener
-add_executable(listener src/subscriber_member_function.cpp)
-ament_target_dependencies(listener rclcpp std_msgs)
+## Add additional CPP libs
+add_library(iasdk_static STATIC ../../../cpp/radarclient.cpp ../../../cpp/tcpradarclient.cpp ../../../cpp/tcpsocket.cpp ../../../cpp/timer.cpp ../../../cpp/threadedclass.cpp)
+
+## Build executable for Colossus publisher
+add_executable(colossus_publisher src/colossus_publisher.cpp)
+target_link_libraries(colossus_publisher iasdk_static)
+ament_target_dependencies(colossus_publisher rclcpp std_msgs interfaces)
+
+## Build executable for Colossus subscriber
+add_executable(colossus_subscriber src/colossus_subscriber.cpp)
+target_link_libraries(colossus_subscriber iasdk_static)
+ament_target_dependencies(colossus_subscriber rclcpp std_msgs interfaces)
 
 ## Install the built executables
 install(TARGETS
-  talker
-  listener
+  colossus_publisher
+  colossus_subscriber
   DESTINATION lib/${PROJECT_NAME})
 
 ## Install the package
