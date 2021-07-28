@@ -105,7 +105,7 @@ namespace Navtech {
     {
         Helpers::Log("Tcp_radar_client - Connect Thread Started");
 
-        while (running && connection_state != Navtech::Connection_state::Connected) {
+        while (running) {
             std::unique_lock<std::mutex> lock(connect_mutex);
             connect_condition.wait(lock);
             if (!running) break;

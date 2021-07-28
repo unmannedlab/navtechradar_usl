@@ -11,9 +11,9 @@
 #include "timer.h"
 
 namespace Navtech {
-    Timer::Timer() : Timer::Timer(1000) { }
+    Timer::Timer() : Timer::Timer(std::chrono::milliseconds(1000)) { }
 
-    Timer::Timer(uint32_t timeout) : timeout_in_milliseconds { timeout }, is_enabled { false } { }
+    Timer::Timer(std::chrono::milliseconds timeout) : timeout_in_milliseconds { timeout }, is_enabled { false } { }
 
     void Timer::set_callback(std::function<void()> fn)
     {
@@ -21,28 +21,19 @@ namespace Navtech {
         callback = std::move(fn);
     }
 
-    uint32_t Timer::timeout() const { return timeout_in_milliseconds; }
+    std::chrono::milliseconds Timer::timeout() const { return timeout_in_milliseconds; }
 
-    void Timer::timeout(const uint32_t new_timeout) { timeout_in_milliseconds = new_timeout; }
+    void Timer::timeout(const std::chrono::milliseconds& new_timeout) { timeout_in_milliseconds = new_timeout; }
 
     void Timer::do_work()
     {
-        auto now =
-            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
-                .count();
+        auto now = std::chrono::steady_clock::now().time_since_epoch();
 
-        while (
-            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch())
-                .count() < now + timeout_in_milliseconds) {
+        while (std::chrono::steady_clock::now().time_since_epoch() < now + timeout_in_milliseconds) {
             std::this_thread::sleep_for(std::chrono::microseconds(10000));
 
-            if (std::abs(std::chrono::duration_cast<std::chrono::milliseconds>(
-                             std::chrono::steady_clock::now().time_since_epoch())
-                             .count() -
-                         now) > 15000) {
-                now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::steady_clock::now().time_since_epoch())
-                          .count();
+            if (std::chrono::steady_clock::now().time_since_epoch() - now > std::chrono::milliseconds(15000)) {
+                now = std::chrono::steady_clock::now().time_since_epoch();
             }
 
             if (stop_requested) break;

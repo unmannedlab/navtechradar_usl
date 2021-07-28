@@ -20,7 +20,7 @@ namespace Navtech {
     public:
         std::function<void()> callback = nullptr;
         std::mutex callback_mutex;
-        std::atomic<uint32_t> timeout_in_milliseconds; // TODO: Change to chrono::duration
+        std::chrono::milliseconds timeout_in_milliseconds;
         std::atomic_bool is_enabled;
 
     protected:
@@ -28,15 +28,15 @@ namespace Navtech {
 
     public:
         explicit Timer();
-        explicit Timer(uint32_t timeout);
+        explicit Timer(std::chrono::milliseconds timeout);
 
         Timer(const Timer&) = delete;
         Timer& operator=(const Timer&) = delete;
 
         void set_callback(std::function<void()> callback = nullptr);
         void enable(const bool enable);
-        uint32_t timeout() const;
-        void timeout(const uint32_t new_timeout);
+        std::chrono::milliseconds timeout() const;
+        void timeout(const std::chrono::milliseconds& new_timeout);
     };
 } // namespace Navtech
 

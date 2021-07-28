@@ -38,9 +38,9 @@ namespace Navtech {
 
     typedef Shared_owner<Connection_info> ConnectionInfoPtr_t;
 
-    constexpr uint16_t connection_check_timeout = 15000;
-    constexpr uint16_t read_timeout             = 60;
-    constexpr uint16_t send_timeout             = 10;
+    constexpr std::chrono::milliseconds connection_check_timeout = std::chrono::milliseconds(5000);
+    constexpr uint16_t read_timeout                              = 60;
+    constexpr uint16_t send_timeout                              = 10;
 
     class Tcp_radar_client {
     public:
