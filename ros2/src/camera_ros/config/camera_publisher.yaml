@@ -1,0 +1,11 @@
+/colossus_publisher:
+  ros__parameters:
+    qos_overrides:
+      /parameter_events:
+        publisher:
+          depth: 1000
+          durability: volatile
+          history: keep_last
+          reliability: reliable
+    camera_url: rtsp://10.77.2.210
+    use_sim_time: false

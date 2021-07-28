@@ -29,8 +29,8 @@ public:
         radar_ip = get_parameter("radar_ip").as_string();
         radar_port = get_parameter("radar_port").as_int();
 
-        configuration_data_publisher = Node::create_publisher<interfaces::msg::ConfigurationDataMessage>("configuration_data", 5);
-        fft_data_publisher = Node::create_publisher<interfaces::msg::FftDataMessage>("fft_data", 1600);
+        configuration_data_publisher = Node::create_publisher<interfaces::msg::ConfigurationDataMessage>("radar_data/configuration_data", 5);
+        fft_data_publisher = Node::create_publisher<interfaces::msg::FftDataMessage>("radar_data/fft_data", 1600);
     }
 
     void fft_data_handler(const FFTDataPtr_t& data)
