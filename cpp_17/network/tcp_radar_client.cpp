@@ -214,8 +214,8 @@ namespace Navtech {
         }
         std::memcpy(&message_header, &data[0], bytes_read);
         if (message_header.Header_is_valid() && message_header.Payload_length() != 0) {
-            std::vector<uint8_t> payloadData;
-            int32_t bytes_transferred = socket.receive(payloadData, message_header.Payload_length());
+            std::vector<uint8_t> payload_data;
+            int32_t bytes_transferred = socket.receive(payload_data, message_header.Payload_length());
             if (bytes_transferred <= 0 || !reading || !running) {
                 set_connection_state(Connection_state::Disconnected);
                 Helpers::Log("Tcp_radar_client - Failed to read payload");
@@ -223,13 +223,13 @@ namespace Navtech {
             }
             bytes_transferred++;
 
-            CNDPDataMessagePtr_t streamData =
-                allocate_shared<Network_data_message>(message_header, &payloadData[0], message_header.Payload_length());
-            receive_data_queue.enqueue(streamData);
+            CNDPDataMessagePtr_t stream_data = allocate_shared<Network_data_message>(
+                message_header, &payload_data[0], message_header.Payload_length());
+            receive_data_queue.enqueue(stream_data);
         }
         else if (message_header.Header_is_valid()) {
-            CNDPDataMessagePtr_t streamData = allocate_shared<Network_data_message>(message_header);
-            receive_data_queue.enqueue(streamData);
+            CNDPDataMessagePtr_t stream_data = allocate_shared<Network_data_message>(message_header);
+            receive_data_queue.enqueue(stream_data);
         }
 
         return true;

@@ -196,28 +196,28 @@ namespace Navtech {
         _callbackMutex.unlock();
         if (configuration_fn == nullptr) return;
 
-        CNDPConfigurationHeaderStruct configHeader {};
-        std::memset(&configHeader, 0, sizeof(configHeader));
-        std::memcpy(&configHeader,
+        CNDPConfigurationHeaderStruct config_header {};
+        std::memset(&config_header, 0, sizeof(config_header));
+        std::memcpy(&config_header,
                     config_message->Message_data().data(),
-                    configHeader.HeaderLength() + configHeader.header.Header_length());
+                    config_header.HeaderLength() + config_header.header.Header_length());
 
-        azimuth_amples         = ntohs(configHeader.azimuth_samples);
-        bin_size               = ntohs(configHeader.bin_size);
-        range_in_bins          = ntohs(configHeader.range_in_bins);
-        encoder_size           = ntohs(configHeader.encoder_size);
-        expected_rotation_rate = ntohs(configHeader.rotation_speed) / 1000;
+        azimuth_amples         = ntohs(config_header.azimuth_samples);
+        bin_size               = ntohs(config_header.bin_size);
+        range_in_bins          = ntohs(config_header.range_in_bins);
+        encoder_size           = ntohs(config_header.encoder_size);
+        expected_rotation_rate = ntohs(config_header.rotation_speed) / 1000;
 
         if (send_radar_data) send_simple_network_message(CNDPNetworkDataMessageType::StartFFTData);
 
-        auto configurationData                    = allocate_shared<Configuration_data>();
-        configurationData->azimuth_samples        = azimuth_amples;
-        configurationData->bin_size               = bin_size;
-        configurationData->range_in_bins          = range_in_bins;
-        configurationData->encoder_size           = encoder_size;
-        configurationData->expected_rotation_rate = expected_rotation_rate;
+        auto configuration_data                    = allocate_shared<Configuration_data>();
+        configuration_data->azimuth_samples        = azimuth_amples;
+        configuration_data->bin_size               = bin_size;
+        configuration_data->range_in_bins          = range_in_bins;
+        configuration_data->encoder_size           = encoder_size;
+        configuration_data->expected_rotation_rate = expected_rotation_rate;
 
-        configuration_fn(configurationData);
+        configuration_fn(configuration_data);
     }
 
     void Radar_client::handle_health_message(const CNDPDataMessagePtr_t& health_message) { }
