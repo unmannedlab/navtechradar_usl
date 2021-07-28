@@ -119,6 +119,7 @@ namespace Navtech {
     void Tcp_radar_client::connection_check_handler()
     {
         if (get_connection_state() != Connection_state::Disconnected) return;
+        Helpers::Log("Tcp_radar_client - Connection error try again");
         connect_condition.notify_one();
     }
 

@@ -32,13 +32,13 @@ namespace Navtech {
     }
 
 
+    // --------------------------------------------------------------------------------------------
     // Declares that the lifetime of the object is shared
     // by several objects. The last owner to go out of scope
     // destroys the shared object.
     //
     template<typename T>
     using Shared_owner = std::shared_ptr<T>;
-
 
     template<typename T, typename... Arg_Ty>
     Shared_owner<T> allocate_shared(Arg_Ty&&... args)
@@ -47,6 +47,7 @@ namespace Navtech {
     }
 
 
+    // --------------------------------------------------------------------------------------------
     // Declares that the class does NOT manage the lifetime
     // of the object, it simply _uses_ (that is, calls the
     // methods of) the object.
