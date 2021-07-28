@@ -4,6 +4,7 @@
 #include <memory>
 
 namespace Navtech {
+
     // ------------------------------------------------------
     // These type aliases provide a more specific declaration
     // for the use of the pointer; particularly with regards
@@ -38,11 +39,13 @@ namespace Navtech {
     template<typename T>
     using Shared_owner = std::shared_ptr<T>;
 
+
     template<typename T, typename... Arg_Ty>
     Shared_owner<T> allocate_shared(Arg_Ty&&... args)
     {
         return std::make_shared<T>(std::forward<Arg_Ty>(args)...);
     }
+
 
     // Declares that the class does NOT manage the lifetime
     // of the object, it simply _uses_ (that is, calls the
@@ -51,11 +54,13 @@ namespace Navtech {
     template<typename T>
     using Association_to = T*;
 
+
     template<typename T>
     auto associate_with(T& from)
     {
         return &from;
     }
+
 
     template<typename T>
     auto associate_with(T* from)
@@ -63,17 +68,20 @@ namespace Navtech {
         return from;
     }
 
+
     template<typename T>
     auto associate_with(Shared_owner<T>& from)
     {
         return from.get();
     }
 
+
     template<typename T>
     auto associate_with(Owner_of<T>& from)
     {
         return from.get();
     }
+
 } // namespace Navtech
 
 #endif // POINTER_TYPES_H
