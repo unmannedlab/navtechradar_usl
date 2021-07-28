@@ -1,0 +1,3 @@
+colossus_publisher:
+  ros__parameters:
+    radar_ip: "10.77.2.210"
