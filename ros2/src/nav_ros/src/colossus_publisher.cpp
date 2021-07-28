@@ -15,12 +15,20 @@ Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_da
 Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher;
 
 RadarClient* radar_client;
+string radar_ip;
+uint16_t radar_port;
 
 class Colossus_publisher : public rclcpp::Node
 {
 public:
     Colossus_publisher() : Node{ "colossus_publisher" }
     {
+        declare_parameter("radar_ip");
+        declare_parameter("radar_port");
+
+        radar_ip = get_parameter("radar_ip").as_string();
+        radar_port = get_parameter("radar_port").as_int();
+
         configuration_data_publisher = Node::create_publisher<interfaces::msg::ConfigurationDataMessage>("configuration_data", 5);
         fft_data_publisher = Node::create_publisher<interfaces::msg::FftDataMessage>("fft_data", 1600);
     }
@@ -42,7 +50,7 @@ public:
 
     void configuration_data_handler(const ConfigurationDataPtr_t& data)
     {
-        RCLCPP_INFO(Node::get_logger(), "Configuration Data recieved");
+        RCLCPP_INFO(Node::get_logger(), "Configuration Data Received");
         RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", data->AzimuthSamples);
         RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", data->EncoderSize);
         RCLCPP_INFO(Node::get_logger(), "Bin Size: %i", data->BinSize);
@@ -70,7 +78,7 @@ int main(int argc, char* argv[])
     node = std::make_shared<Colossus_publisher>();
 
     RCLCPP_INFO(node->get_logger(), "Starting radar client");
-    radar_client = new RadarClient("10.77.2.210");
+    radar_client = new RadarClient(radar_ip, radar_port);
     radar_client->SetFFTDataCallback(std::bind(&Colossus_publisher::fft_data_handler, node.get(), std::placeholders::_1));
     radar_client->SetConfigurationDataCallback(std::bind(&Colossus_publisher::configuration_data_handler, node.get(), std::placeholders::_1));
 
