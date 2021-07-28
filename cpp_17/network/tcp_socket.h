@@ -29,12 +29,12 @@ namespace Navtech {
 
         const bool is_valid() const;
 
-        bool Create(uint32_t receiveTimeout = 0);
-        bool Connect();
-        bool Close(bool shutdown = false);
-        uint32_t Send(const std::vector<uint8_t>& data);
-        uint32_t Receive(std::vector<uint8_t>& data, int32_t bytesToRead, bool peek = false);
-        void Set_send_timeout(uint32_t sendTimeout);
+        bool create(uint32_t receive_timeout = 0);
+        bool connect();
+        bool close(bool shutdown = false);
+        uint32_t send(const std::vector<uint8_t>& data);
+        uint32_t receive(std::vector<uint8_t>& data, int32_t bytes_to_read, bool peek = false);
+        void set_send_timeout(uint32_t send_timeout);
 
     private:
         std::atomic<int32_t> _sock { -1 };

@@ -14,9 +14,12 @@ namespace Navtech {
         }
     }
 
+
     void Threaded_class::post_stop() { }
 
+
     void Threaded_class::pre_stop(const bool finishWork) { }
+
 
     void Threaded_class::start()
     {
@@ -29,6 +32,7 @@ namespace Navtech {
         post_stop();
     }
 
+
     void Threaded_class::stop(const bool finishWork)
     {
         if (!thread.joinable() || stop_requested) return;
@@ -37,6 +41,7 @@ namespace Navtech {
         pre_stop(finishWork);
         join();
     }
+
 
     void Threaded_class::join(void)
     {

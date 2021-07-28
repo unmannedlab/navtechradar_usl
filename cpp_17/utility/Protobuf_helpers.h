@@ -83,12 +83,12 @@ namespace Navtech::Protobuf {
 
 
     template<class T, class U>
-    static bool SerializeToProtocolBufferString(std::string& objectString, const U& objectToSerialize)
+    static bool serialize_to_protocol_buffer_string(std::string& object_string, const U& object_to_serialize)
     {
         try {
             T protoObject;
-            objectToSerialize->ToProtocolBuffer(&protoObject);
-            google::protobuf::TextFormat::PrintToString(protoObject, &objectString);
+            object_to_serialize->to_protocol_buffer(&protoObject);
+            google::protobuf::TextFormat::PrintToString(protoObject, &object_string);
 
             return true;
         }
@@ -99,16 +99,16 @@ namespace Navtech::Protobuf {
 
 
     template<class T, class U>
-    static bool DeserializeFromProtocolBufferString(const std::string& objectString,
-                                                    std::shared_ptr<U>& objectToDeserializeInto)
+    static bool deserialize_from_protocol_buffer_string(const std::string& object_string,
+                                                        Shared_owner<U>& object_to_deserialize_into)
     {
         try {
             T protoObject;
             auto result = false;
-            result      = google::protobuf::TextFormat::ParseFromString(objectString, &protoObject);
+            result      = google::protobuf::TextFormat::ParseFromString(object_string, &protoObject);
 
             if (result) // Do not replace the object we passed if the decode was bad
-                objectToDeserializeInto = make_shared_owner<U>(protoObject);
+                object_to_deserialize_into = allocate_shared<U>(protoObject);
 
             return result;
         }
@@ -119,17 +119,17 @@ namespace Navtech::Protobuf {
 
 
     template<class T>
-    static bool SerializeToProtocolBuffer(std::vector<uint8_t>& data,
-                                          const std::shared_ptr<T>& protoObject,
-                                          bool humanReadable = false)
+    static bool serialize_to_protocol_buffer(std::vector<uint8_t>& data,
+                                             const Shared_owner<T>& proto_object,
+                                             bool human_readable = false)
     {
         try {
             std::string objectString;
 
-            if (humanReadable)
-                google::protobuf::TextFormat::PrintToString(*protoObject, &objectString);
+            if (human_readable)
+                google::protobuf::TextFormat::PrintToString(*proto_object, &objectString);
             else
-                protoObject->SerializeToString(&objectString);
+                proto_object->SerializeToString(&objectString);
 
             data = std::vector<uint8_t>(objectString.begin(), objectString.end());
             return true;
@@ -141,9 +141,9 @@ namespace Navtech::Protobuf {
 
 
     template<class T>
-    static bool DeserializeFromProtocolBuffer(const std::vector<uint8_t>& data,
-                                              std::shared_ptr<T>& objectToDeserializeInto,
-                                              bool humanReadable = false)
+    static bool deserialize_from_protocol_buffer(const std::vector<uint8_t>& data,
+                                                 Shared_owner<T>& object_to_deserialize_into,
+                                                 bool human_readable = false)
     {
         try {
             T protoObject;
@@ -152,13 +152,14 @@ namespace Navtech::Protobuf {
 
             auto objectString = std::string(data.begin(), data.end());
 
-            if (humanReadable)
-                result = google::protobuf::TextFormat::ParseFromString(objectString, &protoObject);
-            else
+            if (human_readable) { result = google::protobuf::TextFormat::ParseFromString(objectString, &protoObject); }
+            else {
                 result = protoObject.ParseFromString(objectString);
+            }
 
-            if (result) // Do not replace the object we passed if the decode was bad
-                objectToDeserializeInto = make_shared_owner<T>(protoObject);
+            if (result) { // Do not replace the object we passed if the decode was bad
+                object_to_deserialize_into = allocate_shared<T>(protoObject);
+            }
 
             return result;
         }

@@ -17,39 +17,42 @@
 
 using namespace Navtech;
 
-uint16_t _lastAzimuth       = 0;
-uint16_t _packetCount       = 0;
-uint64_t _lastRotationReset = Helpers::Now();
-Owner_of<Radar_client> _radarClient;
+uint16_t last_azimuth        = 0;
+uint16_t packet_count        = 0;
+uint64_t last_rotation_reset = Helpers::Now();
+bool rotated_once            = false;
+Owner_of<Radar_client> radar_client;
 
-void FFTDataHandler(const Fft_data::Pointer& data)
+void fft_data_handler(const Fft_data::Pointer& data)
 {
-    _packetCount++;
-    if (data->Azimuth < _lastAzimuth) {
-        auto diff = Helpers::Now() - _lastRotationReset;
-        Helpers::Log("FFTDataHandler - Rotating @ [" + std::to_string(1000.0 / diff) + "Hz] Packets [" +
-                     std::to_string(_packetCount) + "]");
-        _lastRotationReset = Helpers::Now();
-        _packetCount       = 0;
+    packet_count++;
+    if (data->azimuth < last_azimuth) {
+        auto diff = Helpers::Now() - last_rotation_reset;
+        if (rotated_once) {
+            Helpers::Log("fft_data_handler - Rotating @ [" + std::to_string(1000.0 / diff) + "Hz] Packets [" +
+                         std::to_string(packet_count) + "]");
+        }
+        last_rotation_reset = Helpers::Now();
+        packet_count        = 0;
+        rotated_once        = true;
     }
-    // std::cout << data->Azimuth << "\n";
-    _lastAzimuth = data->Azimuth;
+    last_azimuth = data->azimuth;
 }
 
-void ConfigurationDataHandler(const Configuration_data::Pointer& data)
+void configuration_data_handler(const Configuration_data::Pointer& data)
 {
-    Helpers::Log("ConfigurationDataHandler - Expected Rotation Rate [" + std::to_string(data->Expected_rotation_rate) +
-                 "Hz]");
-    Helpers::Log("ConfigurationDataHandler - Range In Bins [" + std::to_string(data->Range_in_bins) + "]");
-    Helpers::Log("ConfigurationDataHandler - Bin Size [" + std::to_string(data->Bin_size / 10000.0) + "cm]");
-    Helpers::Log("ConfigurationDataHandler - Range In Metres [" +
-                 std::to_string((data->Bin_size / 10000.0) * data->Range_in_bins) + "m]");
-    Helpers::Log("ConfigurationDataHandler - Azimuth Samples [" + std::to_string(data->Azimuth_samples) + "]");
+    Helpers::Log("configuration_data_handler - Expected Rotation Rate [" +
+                 std::to_string(data->expected_rotation_rate) + "Hz]");
+    Helpers::Log("configuration_data_handler - Range In Bins [" + std::to_string(data->range_in_bins) + "]");
+    Helpers::Log("configuration_data_handler - Bin Size [" + std::to_string(data->bin_size / 10000.0) + "cm]");
+    Helpers::Log("configuration_data_handler - Range In Metres [" +
+                 std::to_string((data->bin_size / 10000.0) * data->range_in_bins) + "m]");
+    Helpers::Log("configuration_data_handler - Azimuth Samples [" + std::to_string(data->azimuth_samples) + "]");
 
-    _packetCount = 0;
-    _lastAzimuth = 0;
+    packet_count = 0;
+    last_azimuth = 0;
 
-    _radarClient->Start_fft_data();
+    radar_client->start_fft_data();
 }
 
 int32_t main(int32_t argc, char** argv)
@@ -65,23 +68,23 @@ int32_t main(int32_t argc, char** argv)
 
     Helpers::Log("Test Client Starting");
 
-    _radarClient = make_owned<Radar_client>("10.77.2.211");
-    _radarClient->Set_fft_data_callback(std::bind(&FFTDataHandler, std::placeholders::_1));
-    _radarClient->Set_configuration_data_callback(std::bind(&ConfigurationDataHandler, std::placeholders::_1));
-    _radarClient->Start();
+    radar_client = allocate_owned<Radar_client>("10.77.2.211");
+    radar_client->set_fft_data_callback(std::bind(&fft_data_handler, std::placeholders::_1));
+    radar_client->set_configuration_data_callback(std::bind(&configuration_data_handler, std::placeholders::_1));
+    radar_client->start();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(6000));
 
     Helpers::Log("Test Client Stopping");
-    _radarClient->Stop_navigation_data();
-    _radarClient->Stop_fft_data();
+    radar_client->stop_navigation_data();
+    radar_client->stop_fft_data();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    _radarClient->Set_configuration_data_callback();
-    _radarClient->Set_fft_data_callback();
+    radar_client->set_configuration_data_callback();
+    radar_client->set_fft_data_callback();
 
-    _radarClient->Stop();
+    radar_client->stop();
 
     Helpers::Log("Test Client Stopped");
 

@@ -26,74 +26,74 @@ namespace Navtech {
         radar_client { radarAddress, port }, running { false }, send_radar_data { false }
     { }
 
-    void Radar_client::Set_fft_data_callback(std::function<void(const Fft_data::Pointer&)> fn)
+    void Radar_client::set_fft_data_callback(std::function<void(const Fft_data::Pointer&)> fn)
     {
         std::lock_guard<std::mutex> lock(_callbackMutex);
         fft_data_callback = std::move(fn);
     }
 
-    void Radar_client::Set_navigation_data_callback(std::function<void(const Navigation_data::Pointer&)> fn)
+    void Radar_client::set_navigation_data_callback(std::function<void(const Navigation_data::Pointer&)> fn)
     {
         std::lock_guard<std::mutex> lock(_callbackMutex);
         navigation_data_callback = std::move(fn);
     }
 
-    void Radar_client::Set_configuration_data_callback(std::function<void(const Configuration_data::Pointer&)> fn)
+    void Radar_client::set_configuration_data_callback(std::function<void(const Configuration_data::Pointer&)> fn)
     {
         std::lock_guard<std::mutex> lock(_callbackMutex);
         configuration_data_callback = std::move(fn);
     }
 
-    void Radar_client::Start()
+    void Radar_client::start()
     {
         if (running) return;
         Helpers::Log("Radar_client - Starting");
 
-        radar_client.Set_receive_data_callback(std::bind(&Radar_client::Handle_data, this, std::placeholders::_1));
-        radar_client.Start();
+        radar_client.set_receive_data_callback(std::bind(&Radar_client::handle_data, this, std::placeholders::_1));
+        radar_client.start();
         running = true;
 
         Helpers::Log("Radar_client - Started");
     }
 
-    void Radar_client::Stop()
+    void Radar_client::stop()
     {
         if (!running) return;
 
         running = false;
-        radar_client.Stop();
+        radar_client.stop();
         Helpers::Log("Radar_client - Stopped");
     }
 
-    void Radar_client::Start_fft_data()
+    void Radar_client::start_fft_data()
     {
         Helpers::Log("Radar_client - Start FFT Data");
-        Send_simple_network_message(CNDPNetworkDataMessageType::StartFFTData);
+        send_simple_network_message(CNDPNetworkDataMessageType::StartFFTData);
         send_radar_data = true;
     }
 
-    void Radar_client::Stop_fft_data()
+    void Radar_client::stop_fft_data()
     {
         Helpers::Log("Radar_client - Stop FFT Data");
-        Send_simple_network_message(CNDPNetworkDataMessageType::StopFFTData);
+        send_simple_network_message(CNDPNetworkDataMessageType::StopFFTData);
         send_radar_data = false;
     }
 
     void Radar_client::Start_navigation_data()
     {
         Helpers::Log("Radar_client - Start Navigation Data");
-        Send_simple_network_message(CNDPNetworkDataMessageType::StartNavData);
+        send_simple_network_message(CNDPNetworkDataMessageType::StartNavData);
     }
 
-    void Radar_client::Stop_navigation_data()
+    void Radar_client::stop_navigation_data()
     {
         Helpers::Log("Radar_client - Stop Navigation Data");
-        Send_simple_network_message(CNDPNetworkDataMessageType::StopNavData);
+        send_simple_network_message(CNDPNetworkDataMessageType::StopNavData);
     }
 
-    void Radar_client::Set_navigation_threshold(const uint16_t& threshold)
+    void Radar_client::set_navigation_threshold(const uint16_t& threshold)
     {
-        if (radar_client.Get_connection_state() != Connection_state::Connected) return;
+        if (radar_client.get_connection_state() != Connection_state::Connected) return;
 
         std::vector<uint8_t> buffer(sizeof(threshold));
         auto network_threshold = ntohs(threshold);
@@ -103,20 +103,20 @@ namespace Navtech {
         header.Init();
         header.Set_message_id(CNDPNetworkDataMessageType::SetNavThreshold);
         header.Set_payload_length(sizeof(threshold));
-        auto message = make_shared_owner<Network_data_message>(header, buffer);
+        auto message = allocate_shared<Network_data_message>(header, buffer);
 
-        Helpers::Log("Set_navigation_threshold - Message Length [" + std::to_string(message->Message_data().size()) +
+        Helpers::Log("set_navigation_threshold - Message Length [" + std::to_string(message->Message_data().size()) +
                      "]");
-        radar_client.Send(message->Message_data());
+        radar_client.send(message->Message_data());
     }
 
-    void Radar_client::Set_navigation_gain_and_offset(const float& gain, const float& offset)
+    void Radar_client::set_navigation_gain_and_offset(const float& gain, const float& offset)
     {
-        if (radar_client.Get_connection_state() != Connection_state::Connected) return;
+        if (radar_client.get_connection_state() != Connection_state::Connected) return;
 
         std::vector<uint8_t> buffer(sizeof(uint32_t) * 2);
-        uint32_t net_gain   = htonl(static_cast<uint32_t>(gain * RANGEMULTIPLIER));
-        uint32_t net_offset = htonl(static_cast<uint32_t>(offset * RANGEMULTIPLIER));
+        uint32_t net_gain   = htonl(static_cast<uint32_t>(gain * RANGE_MULTIPLIER));
+        uint32_t net_offset = htonl(static_cast<uint32_t>(offset * RANGE_MULTIPLIER));
         std::memcpy(buffer.data(), &net_gain, sizeof(net_gain));
         std::memcpy(&buffer[sizeof(net_gain)], &net_offset, sizeof(net_offset));
 
@@ -124,24 +124,24 @@ namespace Navtech {
         header.Init();
         header.Set_message_id(CNDPNetworkDataMessageType::SetNavRangeOffsetAndGain);
         header.Set_payload_length(sizeof(uint32_t) + sizeof(uint32_t));
-        auto message = make_shared_owner<Network_data_message>(header, buffer);
-        radar_client.Send(message->Message_data());
+        auto message = allocate_shared<Network_data_message>(header, buffer);
+        radar_client.send(message->Message_data());
     }
 
-    void Radar_client::Send_simple_network_message(const CNDPNetworkDataMessageType& type)
+    void Radar_client::send_simple_network_message(const CNDPNetworkDataMessageType& type)
     {
-        if (radar_client.Get_connection_state() != Connection_state::Connected) return;
+        if (radar_client.get_connection_state() != Connection_state::Connected) return;
 
         CNDPNetworkDataHeader header {};
         header.Init();
         header.Set_message_id(type);
-        auto message = make_shared_owner<Network_data_message>(header);
-        radar_client.Send(message->Message_data());
+        auto message = allocate_shared<Network_data_message>(header);
+        radar_client.send(message->Message_data());
     }
 
-    void Radar_client::Update_contour_map(const std::vector<uint8_t>& contour_data)
+    void Radar_client::update_contour_map(const std::vector<uint8_t>& contour_data)
     {
-        if (radar_client.Get_connection_state() != Connection_state::Connected) return;
+        if (radar_client.get_connection_state() != Connection_state::Connected) return;
 
         auto contour = std::vector<uint8_t>();
         if (contour_data.size() == 720) {
@@ -159,26 +159,26 @@ namespace Navtech {
         header.Init();
         header.Set_message_id(CNDPNetworkDataMessageType::ContourUpdate);
         header.Set_payload_length(static_cast<uint32_t>(contour.size()));
-        auto message = make_shared_owner<Network_data_message>(header, contour);
-        radar_client.Send(message->Message_data());
+        auto message = allocate_shared<Network_data_message>(header, contour);
+        radar_client.send(message->Message_data());
     }
 
-    void Radar_client::Handle_data(const CNDPDataMessagePtr_t& message)
+    void Radar_client::handle_data(const CNDPDataMessagePtr_t& message)
     {
         switch (message->Message_id()) {
             case CNDPNetworkDataMessageType::Configuration:
-                Handle_configuration_message(message);
+                handle_configuration_message(message);
                 break;
             case CNDPNetworkDataMessageType::FFTData:
-                Handle_fft_data_message(message);
+                handle_fft_data_message(message);
                 break;
             case CNDPNetworkDataMessageType::NavigationData:
-                Handle_navigation_data_message(message);
+                handle_navigation_data_message(message);
                 break;
             case CNDPNetworkDataMessageType::NavigationAlarmData:
                 break;
             case CNDPNetworkDataMessageType::Health:
-                Handle_health_message(message);
+                handle_health_message(message);
                 break;
             default:
                 Helpers::Log("Radar_client - Unhandled Message [" +
@@ -187,7 +187,7 @@ namespace Navtech {
         }
     }
 
-    void Radar_client::Handle_configuration_message(const CNDPDataMessagePtr_t& configMessage)
+    void Radar_client::handle_configuration_message(const CNDPDataMessagePtr_t& config_message)
     {
         Helpers::Log("Radar_client - Handle Configuration Message");
 
@@ -199,7 +199,7 @@ namespace Navtech {
         CNDPConfigurationHeaderStruct configHeader {};
         std::memset(&configHeader, 0, sizeof(configHeader));
         std::memcpy(&configHeader,
-                    configMessage->Message_data().data(),
+                    config_message->Message_data().data(),
                     configHeader.HeaderLength() + configHeader.header.Header_length());
 
         azimuth_amples         = ntohs(configHeader.azimuth_samples);
@@ -208,21 +208,21 @@ namespace Navtech {
         encoder_size           = ntohs(configHeader.encoder_size);
         expected_rotation_rate = ntohs(configHeader.rotation_speed) / 1000;
 
-        if (send_radar_data) Send_simple_network_message(CNDPNetworkDataMessageType::StartFFTData);
+        if (send_radar_data) send_simple_network_message(CNDPNetworkDataMessageType::StartFFTData);
 
-        auto configurationData                    = make_shared_owner<Configuration_data>();
-        configurationData->Azimuth_samples        = azimuth_amples;
-        configurationData->Bin_size               = bin_size;
-        configurationData->Range_in_bins          = range_in_bins;
-        configurationData->EncoderSize            = encoder_size;
-        configurationData->Expected_rotation_rate = expected_rotation_rate;
+        auto configurationData                    = allocate_shared<Configuration_data>();
+        configurationData->azimuth_samples        = azimuth_amples;
+        configurationData->bin_size               = bin_size;
+        configurationData->range_in_bins          = range_in_bins;
+        configurationData->encoder_size           = encoder_size;
+        configurationData->expected_rotation_rate = expected_rotation_rate;
 
         configuration_fn(configurationData);
     }
 
-    void Radar_client::Handle_health_message(const CNDPDataMessagePtr_t& health_message) { }
+    void Radar_client::handle_health_message(const CNDPDataMessagePtr_t& health_message) { }
 
-    void Radar_client::Handle_fft_data_message(const CNDPDataMessagePtr_t& fft_data_message)
+    void Radar_client::handle_fft_data_message(const CNDPDataMessagePtr_t& fft_data_message)
     {
         _callbackMutex.lock();
         auto fft_data_fn = fft_data_callback;
@@ -236,21 +236,21 @@ namespace Navtech {
                     message_data.data(),
                     fft_data_header.HeaderLength() + fft_data_header.header.Header_length());
 
-        auto fftData               = make_shared_owner<Fft_data>();
-        fftData->Azimuth           = ntohs(fft_data_header.azimuth);
-        fftData->Angle             = (fftData->Azimuth * 360.0f) / (float)encoder_size;
-        fftData->Sweep_counter     = ntohs(fft_data_header.sweep_counter);
-        fftData->Ntp_seconds       = fft_data_header.seconds;
-        fftData->Ntp_split_seconds = fft_data_header.split_seconds;
-        fftData->Data.resize(fft_data_header.header.Payload_length() - fft_data_header.HeaderLength());
-        std::memcpy(fftData->Data.data(),
+        auto fftData               = allocate_shared<Fft_data>();
+        fftData->azimuth           = ntohs(fft_data_header.azimuth);
+        fftData->angle             = (fftData->azimuth * 360.0f) / (float)encoder_size;
+        fftData->sweep_counter     = ntohs(fft_data_header.sweep_counter);
+        fftData->ntp_seconds       = fft_data_header.seconds;
+        fftData->ntp_split_seconds = fft_data_header.split_seconds;
+        fftData->data.resize(fft_data_header.header.Payload_length() - fft_data_header.HeaderLength());
+        std::memcpy(fftData->data.data(),
                     &message_data[fft_data_header.header.Header_length() + fft_data_header.HeaderLength()],
-                    fftData->Data.size());
+                    fftData->data.size());
 
         fft_data_fn(fftData);
     }
 
-    void Radar_client::Handle_navigation_data_message(const CNDPDataMessagePtr_t& navigation_message)
+    void Radar_client::handle_navigation_data_message(const CNDPDataMessagePtr_t& navigation_message)
     {
         _callbackMutex.lock();
         auto navigation_data_fn = navigation_data_callback;
@@ -266,21 +266,21 @@ namespace Navtech {
                     &navigation_message->Payload()[sizeof(net_azimuth) + sizeof(net_seconds)],
                     sizeof(net_split_seconds));
 
-        auto navigation_data               = make_shared_owner<Navigation_data>();
-        navigation_data->Azimuth           = ntohs(net_azimuth);
-        navigation_data->Ntp_seconds       = ntohl(net_seconds);
-        navigation_data->Ntp_split_seconds = ntohl(net_split_seconds);
-        navigation_data->Angle             = (navigation_data->Azimuth * 360.0f) / (float)encoder_size;
+        auto navigation_data               = allocate_shared<Navigation_data>();
+        navigation_data->azimuth           = ntohs(net_azimuth);
+        navigation_data->ntp_seconds       = ntohl(net_seconds);
+        navigation_data->ntp_split_seconds = ntohl(net_split_seconds);
+        navigation_data->angle             = (navigation_data->azimuth * 360.0f) / (float)encoder_size;
 
         auto offset      = sizeof(net_azimuth) + sizeof(net_seconds) + sizeof(net_split_seconds);
-        auto peaks_count = (navigation_message->Payload_size() - offset) / NAVDATARECORDLENGTH;
-        for (auto i = offset; i < (10 + (peaks_count * NAVDATARECORDLENGTH)); i += NAVDATARECORDLENGTH) {
+        auto peaks_count = (navigation_message->Payload_size() - offset) / NAV_DATA_RECORD_LENGTH;
+        for (auto i = offset; i < (10 + (peaks_count * NAV_DATA_RECORD_LENGTH)); i += NAV_DATA_RECORD_LENGTH) {
             uint32_t peak_resolve = 0;
             std::memcpy(&peak_resolve, &navigation_message->Payload()[i], sizeof(peak_resolve));
             uint16_t power = 0;
             std::memcpy(&power, &navigation_message->Payload()[i + sizeof(peak_resolve)], sizeof(power));
-            navigation_data->Peaks.push_back(
-                std::make_tuple<float, uint16_t>(htonl(peak_resolve) / RANGEMULTIPLIERFLOAT, htons(power)));
+            navigation_data->peaks.push_back(
+                std::make_tuple<float, uint16_t>(htonl(peak_resolve) / RANGE_MULTIPLIER_FLOAT, htons(power)));
         }
 
         navigation_data_fn(navigation_data);

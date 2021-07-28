@@ -18,6 +18,8 @@
 #include <netinet/in.h>
 #endif
 
+#include <Pointer_types.h>
+
 namespace Navtech {
     constexpr uint8_t ndmsync_header_length { 16 };
     constexpr uint8_t ndm_signature_length { ndmsync_header_length * sizeof(uint8_t) };
@@ -182,7 +184,7 @@ namespace Navtech {
         std::vector<uint8_t> payload;
     };
 
-    typedef std::shared_ptr<Network_data_message> CNDPDataMessagePtr_t;
+    typedef Shared_owner<Network_data_message> CNDPDataMessagePtr_t;
 
 #pragma pack(push)
 #pragma pack(1)

@@ -13,43 +13,43 @@
 #include <string>
 #include <vector>
 
-#include "../utility/Pointer_types.h"
 #include "tcp_radar_client.h"
+#include <Pointer_types.h>
 
 namespace Navtech {
-    constexpr uint32_t RANGEMULTIPLIER     = 1000000;
-    constexpr float RANGEMULTIPLIERFLOAT   = 1000000.0f;
-    constexpr uint32_t NAVDATARECORDLENGTH = (sizeof(uint32_t) + sizeof(uint16_t));
+    constexpr uint32_t RANGE_MULTIPLIER       = 1000000;
+    constexpr float RANGE_MULTIPLIER_FLOAT    = 1000000.0f;
+    constexpr uint32_t NAV_DATA_RECORD_LENGTH = (sizeof(uint32_t) + sizeof(uint16_t));
 
     class Fft_data {
     public:
         using Pointer = Shared_owner<Fft_data>;
-        float Angle { 0.0f };
-        uint16_t Azimuth { 0 };
-        uint16_t Sweep_counter { 0 };
-        uint32_t Ntp_seconds { 0 };
-        uint32_t Ntp_split_seconds { 0 };
-        std::vector<uint8_t> Data;
+        float angle { 0.0f };
+        uint16_t azimuth { 0 };
+        uint16_t sweep_counter { 0 };
+        uint32_t ntp_seconds { 0 };
+        uint32_t ntp_split_seconds { 0 };
+        std::vector<uint8_t> data;
     };
 
     class Navigation_data {
     public:
         using Pointer = Shared_owner<Navigation_data>;
-        float Angle { 0.0f };
-        uint16_t Azimuth { 0 };
-        uint32_t Ntp_seconds { 0 };
-        uint32_t Ntp_split_seconds { 0 };
-        std::vector<std::tuple<float, uint16_t>> Peaks;
+        float angle { 0.0f };
+        uint16_t azimuth { 0 };
+        uint32_t ntp_seconds { 0 };
+        uint32_t ntp_split_seconds { 0 };
+        std::vector<std::tuple<float, uint16_t>> peaks;
     };
 
     class Configuration_data {
     public:
         using Pointer = Shared_owner<Configuration_data>;
-        uint16_t Azimuth_samples { 0 };
-        uint16_t EncoderSize { 0 };
-        uint16_t Bin_size { 0 };
-        uint16_t Range_in_bins { 0 };
-        uint16_t Expected_rotation_rate { 0 };
+        uint16_t azimuth_samples { 0 };
+        uint16_t encoder_size { 0 };
+        uint16_t bin_size { 0 };
+        uint16_t range_in_bins { 0 };
+        uint16_t expected_rotation_rate { 0 };
     };
 
     class Radar_client {
@@ -58,19 +58,19 @@ namespace Navtech {
         explicit Radar_client(const Radar_client&) = delete;
         Radar_client& operator=(const Radar_client&) = delete;
 
-        void Start();
-        void Stop();
+        void start();
+        void stop();
 
-        void Update_contour_map(const std::vector<uint8_t>& contourData);
-        void Start_fft_data();
-        void Stop_fft_data();
+        void update_contour_map(const std::vector<uint8_t>& contourData);
+        void start_fft_data();
+        void stop_fft_data();
         void Start_navigation_data();
-        void Stop_navigation_data();
-        void Set_navigation_threshold(const uint16_t& threshold);
-        void Set_navigation_gain_and_offset(const float& gain, const float& offset);
-        void Set_fft_data_callback(std::function<void(const Fft_data::Pointer&)> fn = nullptr);
-        void Set_navigation_data_callback(std::function<void(const Navigation_data::Pointer&)> fn = nullptr);
-        void Set_configuration_data_callback(std::function<void(const Configuration_data::Pointer&)> fn = nullptr);
+        void stop_navigation_data();
+        void set_navigation_threshold(const uint16_t& threshold);
+        void set_navigation_gain_and_offset(const float& gain, const float& offset);
+        void set_fft_data_callback(std::function<void(const Fft_data::Pointer&)> fn = nullptr);
+        void set_navigation_data_callback(std::function<void(const Navigation_data::Pointer&)> fn = nullptr);
+        void set_configuration_data_callback(std::function<void(const Configuration_data::Pointer&)> fn = nullptr);
 
     private:
         Tcp_radar_client radar_client;
@@ -87,12 +87,12 @@ namespace Navtech {
         uint16_t azimuth_amples         = 0;
         uint16_t expected_rotation_rate = 0;
 
-        void Handle_data(const CNDPDataMessagePtr_t& message);
-        void Handle_configuration_message(const CNDPDataMessagePtr_t& configMessage);
-        void Handle_fft_data_message(const CNDPDataMessagePtr_t& fftDataMessage);
-        void Handle_health_message(const CNDPDataMessagePtr_t& fftDataMessage);
-        void Handle_navigation_data_message(const CNDPDataMessagePtr_t& navigationMessage);
-        void Send_simple_network_message(const CNDPNetworkDataMessageType& type);
+        void handle_data(const CNDPDataMessagePtr_t& message);
+        void handle_configuration_message(const CNDPDataMessagePtr_t& config_message);
+        void handle_fft_data_message(const CNDPDataMessagePtr_t& fft_data_message);
+        void handle_health_message(const CNDPDataMessagePtr_t& fft_data_message);
+        void handle_navigation_data_message(const CNDPDataMessagePtr_t& navigation_message);
+        void send_simple_network_message(const CNDPNetworkDataMessageType& type);
     };
 
 } // namespace Navtech

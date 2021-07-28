@@ -20,12 +20,12 @@ namespace Navtech {
         Threaded_class& operator=(const Threaded_class&) = delete;
 
         virtual void start();
-        virtual void stop(const bool finishWork = false);
+        virtual void stop(const bool finish_work = false);
         virtual void join(void);
 
     protected:
         virtual void do_work() = 0;
-        virtual void pre_stop(const bool finishWork = false);
+        virtual void pre_stop(const bool finish_work = false);
         virtual void post_stop();
 
         std::thread thread;

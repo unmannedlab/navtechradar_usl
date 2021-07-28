@@ -22,7 +22,8 @@ namespace Navtech {
     public:
         explicit Threaded_queue() = default;
 
-        void Enqueue(const T& item, bool notify = true)
+
+        void enqueue(const T& item, bool notify = true)
         {
             if (stopping || dequeue_callback == nullptr || !thread.joinable() || queue.size() > max_queue_depth) return;
             std::lock_guard<std::mutex> lock(queue_mutex);
@@ -30,10 +31,11 @@ namespace Navtech {
             if (notify) condition.notify_all();
         }
 
-        void Set_dequeue_callback(std::function<void(const T&)> dequeueCallback = nullptr)
+
+        void set_dequeue_callback(std::function<void(const T&)> fn = nullptr)
         {
             std::lock_guard<std::mutex> lock(queue_mutex);
-            dequeue_callback = std::move(dequeueCallback);
+            dequeue_callback = std::move(fn);
         }
 
         void notify() { condition.notify_all(); }
@@ -59,12 +61,13 @@ namespace Navtech {
             lock.unlock();
         }
 
-        void pre_stop(const bool finishWork)
+
+        void pre_stop(const bool finish_work)
         {
             stopping = true;
 
-            if (finishWork) {
-                while (!Dequeue()) { }
+            if (finish_work) {
+                while (!dequeue()) { }
             }
 
             std::queue<T> empty;
@@ -81,7 +84,7 @@ namespace Navtech {
         std::condition_variable condition;
         std::function<void(const T&)> dequeue_callback;
 
-        bool Dequeue()
+        bool dequeue()
         {
             if (!queue.empty()) {
                 T item = queue.front();

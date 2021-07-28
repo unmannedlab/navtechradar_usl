@@ -25,7 +25,7 @@ namespace Navtech {
     using Owner_of = std::unique_ptr<T>;
 
     template<typename T, typename... Arg_Ty>
-    Owner_of<T> make_owned(Arg_Ty&&... args)
+    Owner_of<T> allocate_owned(Arg_Ty&&... args)
     {
         return Owner_of<T> { new T { std::forward<Arg_Ty>(args)... } };
     }
@@ -39,7 +39,7 @@ namespace Navtech {
     using Shared_owner = std::shared_ptr<T>;
 
     template<typename T, typename... Arg_Ty>
-    Shared_owner<T> make_shared_owner(Arg_Ty&&... args)
+    Shared_owner<T> allocate_shared(Arg_Ty&&... args)
     {
         return std::make_shared<T>(std::forward<Arg_Ty>(args)...);
     }

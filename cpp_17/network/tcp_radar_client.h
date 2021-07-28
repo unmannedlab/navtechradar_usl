@@ -27,12 +27,13 @@ namespace Navtech {
     class Connection_info {
     public:
         explicit Connection_info(const uint32_t unique_id, const Connection_state state) :
-            State(state), Unique_id(unique_id)
+            state(state), unique_id(unique_id)
         { }
+
         explicit Connection_info(const Connection_info&) = delete;
         Connection_info& operator=(const Connection_info&) = delete;
-        Connection_state State                             = Connection_state::Disconnected;
-        uint32_t Unique_id                                 = 0;
+        Connection_state state                             = Connection_state::Disconnected;
+        uint32_t unique_id                                 = 0;
     };
 
     typedef Shared_owner<Connection_info> ConnectionInfoPtr_t;
@@ -43,19 +44,19 @@ namespace Navtech {
 
     class Tcp_radar_client {
     public:
-        explicit Tcp_radar_client(const std::string& ipAddress, const uint16_t& port = 6317);
+        explicit Tcp_radar_client(const std::string& ip_address, const uint16_t& port = 6317);
         explicit Tcp_radar_client(const Tcp_radar_client&) = delete;
         Tcp_radar_client& operator=(const Tcp_radar_client&) = delete;
-        void Start();
-        void Stop();
-        void Send(const std::vector<uint8_t> data);
-        void Set_receive_data_callback(std::function<void(const CNDPDataMessagePtr_t&)> callback = nullptr);
-        Navtech::Connection_state Get_connection_state();
+        void start();
+        void stop();
+        void send(const std::vector<uint8_t> data);
+        void set_receive_data_callback(std::function<void(const CNDPDataMessagePtr_t&)> callback = nullptr);
+        Navtech::Connection_state get_connection_state();
 
     private:
         Threaded_queue<CNDPDataMessagePtr_t> receive_data_queue;
         std::string ip_address { "192.168.0.1" };
-        std::uint16_t _port { 6317 };
+        std::uint16_t port { 6317 };
         Tcp_socket socket;
         Owner_of<std::thread> connect_thread;
         Owner_of<std::thread> read_thread = nullptr;
@@ -67,12 +68,12 @@ namespace Navtech {
         std::atomic_bool reading;
         std::atomic_bool running;
 
-        void Set_connection_state(const Connection_state& state);
-        void Connection_check_handler();
-        void Connect_thread();
-        void Connect();
-        void Read_thread();
-        inline bool Handle_data();
+        void set_connection_state(const Connection_state& state);
+        void connection_check_handler();
+        void connect_thread_handler();
+        void connect();
+        void read_thread_handler();
+        bool handle_data();
     };
 
 } // namespace Navtech

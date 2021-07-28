@@ -24,6 +24,7 @@ namespace Navtech {
         _sock { -1 }, _destination { destination }
     { }
 
+
     Tcp_socket::~Tcp_socket()
     {
         if (is_valid()) {
@@ -35,9 +36,11 @@ namespace Navtech {
         }
     }
 
+
     const bool Tcp_socket::is_valid() const { return _sock != -1; }
 
-    bool Tcp_socket::Create(uint32_t receiveTimeout)
+
+    bool Tcp_socket::create(uint32_t receive_timeout)
     {
         _sock = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -60,9 +63,9 @@ namespace Navtech {
             return false;
         }
 
-        if (receiveTimeout > 0) {
+        if (receive_timeout > 0) {
             struct timeval tv;
-            tv.tv_sec  = receiveTimeout;
+            tv.tv_sec  = receive_timeout;
             tv.tv_usec = 0; // Not initialising this can cause strange errors
             setsockopt(_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&tv, sizeof(struct timeval));
         }
@@ -71,17 +74,19 @@ namespace Navtech {
         return true;
     }
 
-    void Tcp_socket::Set_send_timeout(uint32_t sendTimeout)
+
+    void Tcp_socket::set_send_timeout(uint32_t send_timeout)
     {
-        if (sendTimeout > 0) {
+        if (send_timeout > 0) {
             struct timeval tv;
-            tv.tv_sec  = sendTimeout;
+            tv.tv_sec  = send_timeout;
             tv.tv_usec = 0; // Not initialising this can cause strange errors
             setsockopt(_sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&tv, sizeof(struct timeval));
         }
     }
 
-    bool Tcp_socket::Connect()
+
+    bool Tcp_socket::connect()
     {
         if (!is_valid()) return false;
 
@@ -97,7 +102,8 @@ namespace Navtech {
         }
     }
 
-    uint32_t Tcp_socket::Send(const std::vector<uint8_t>& data)
+
+    uint32_t Tcp_socket::send(const std::vector<uint8_t>& data)
     {
 #ifdef _WIN32
         auto status = ::send(_sock, (char*)&data[0], data.size(), 0);
@@ -115,7 +121,8 @@ namespace Navtech {
         }
     }
 
-    uint32_t Tcp_socket::Receive(std::vector<uint8_t>& data, int32_t bytesToRead, bool peek)
+
+    uint32_t Tcp_socket::receive(std::vector<uint8_t>& data, int32_t bytes_to_read, bool peek)
     {
         int32_t bytesRead = 0;
         int32_t flags     = 0;
@@ -123,9 +130,9 @@ namespace Navtech {
         if (peek) { flags |= MSG_PEEK; }
 
         int32_t status;
-        while (bytesRead < bytesToRead) {
-            std::vector<uint8_t> buf(bytesToRead, 0);
-            status = ::recv(_sock, (char*)buf.data(), bytesToRead - bytesRead, flags);
+        while (bytesRead < bytes_to_read) {
+            std::vector<uint8_t> buf(bytes_to_read, 0);
+            status = ::recv(_sock, (char*)buf.data(), bytes_to_read - bytesRead, flags);
 
             if (status <= 0) { return 0; }
             else
@@ -145,7 +152,8 @@ namespace Navtech {
         }
     }
 
-    bool Tcp_socket::Close(bool shutdown)
+
+    bool Tcp_socket::close(bool shutdown)
     {
         if (!is_valid()) return false;
         if (shutdown) ::shutdown(_sock, 2);
