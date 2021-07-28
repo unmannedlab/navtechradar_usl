@@ -184,8 +184,6 @@ namespace Navtech {
         std::vector<uint8_t> payload;
     };
 
-    typedef Shared_owner<Network_data_message> CNDPDataMessagePtr_t;
-
 #pragma pack(push)
 #pragma pack(1)
     typedef struct CNDPNetworkDataHeader : public Network_data_header

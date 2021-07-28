@@ -84,14 +84,14 @@ namespace Navtech {
         uint16_t encoder_size           = 0;
         uint16_t bin_size               = 0;
         uint16_t range_in_bins          = 0;
-        uint16_t azimuth_amples         = 0;
+        uint16_t azimuth_samples        = 0;
         uint16_t expected_rotation_rate = 0;
 
-        void handle_data(const CNDPDataMessagePtr_t& message);
-        void handle_configuration_message(const CNDPDataMessagePtr_t& config_message);
-        void handle_fft_data_message(const CNDPDataMessagePtr_t& fft_data_message);
-        void handle_health_message(const CNDPDataMessagePtr_t& fft_data_message);
-        void handle_navigation_data_message(const CNDPDataMessagePtr_t& navigation_message);
+        void handle_data(const std::vector<std::uint8_t>& data);
+        void handle_configuration_message(const std::vector<std::uint8_t>& data);
+        void handle_fft_data_message(const std::vector<std::uint8_t>& data);
+        void handle_health_message(const std::vector<std::uint8_t>& data);
+        void handle_navigation_data_message(const std::vector<std::uint8_t>& data);
         void send_simple_network_message(const CNDPNetworkDataMessageType& type);
     };
 

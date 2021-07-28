@@ -27,6 +27,11 @@ namespace Navtech::CNDP_network_protocol {
 
     Message::Message() { initialize(); }
 
+    Message::Message(const std::vector<std::uint8_t>& data)
+    {
+        initialize();
+        replace(data);
+    }
 
     Message::Message(const std::string& ip_addr, Message::ID id) : address { ip_addr }, identity { id }
     {

@@ -7,18 +7,19 @@
 #include <algorithm>
 #include <functional>
 
+#include "CNDP_network_message.h"
 #include "tcp_radar_client.h"
 #include <common.h>
 
 namespace Navtech {
     Tcp_radar_client::Tcp_radar_client(const std::string& ip_address, const uint16_t& port) :
-        receive_data_queue { Threaded_queue<CNDPDataMessagePtr_t>() }, ip_address { ip_address }, port { port },
+        receive_data_queue { Threaded_queue<std::vector<uint8_t>>() }, ip_address { ip_address }, port { port },
         socket { ip_address, port }, read_thread { nullptr }, connection_check_timer { connection_check_timeout },
         connection_state { Connection_state::Disconnected }, reading { false }, running { false }
     { }
 
 
-    void Tcp_radar_client::set_receive_data_callback(std::function<void(const CNDPDataMessagePtr_t&)> callback)
+    void Tcp_radar_client::set_receive_data_callback(std::function<void(const std::vector<uint8_t>&)> callback)
     {
         receive_data_queue.set_dequeue_callback(callback);
     }
@@ -201,35 +202,32 @@ namespace Navtech {
 
     bool Tcp_radar_client::handle_data()
     {
-        CNDPNetworkDataHeaderStruct message_header;
+        CNDP_network_protocol::Message msg {};
 
-        std::memset(&message_header, 0, message_header.Header_length());
-        std::vector<uint8_t> data;
-        int32_t bytes_read = socket.receive(data, message_header.Header_length());
+        std::vector<uint8_t> data {};
+        int32_t bytes_read = socket.receive(data, msg.header_size());
 
         if (bytes_read <= 0 || !reading || !running) {
             set_connection_state(Connection_state::Disconnected);
             Helpers::Log("Tcp_radar_client - Failed to read header");
             return false;
         }
-        std::memcpy(&message_header, &data[0], bytes_read);
-        if (message_header.Header_is_valid() && message_header.Payload_length() != 0) {
+
+        msg.replace(data);
+        if (msg.is_valid() && msg.payload().size() != 0) {
             std::vector<uint8_t> payload_data;
-            int32_t bytes_transferred = socket.receive(payload_data, message_header.Payload_length());
+            int32_t bytes_transferred = socket.receive(payload_data, msg.payload().size());
             if (bytes_transferred <= 0 || !reading || !running) {
                 set_connection_state(Connection_state::Disconnected);
                 Helpers::Log("Tcp_radar_client - Failed to read payload");
                 return false;
             }
             bytes_transferred++;
-
-            CNDPDataMessagePtr_t stream_data = allocate_shared<Network_data_message>(
-                message_header, &payload_data[0], message_header.Payload_length());
-            receive_data_queue.enqueue(stream_data);
+            msg.payload().insert(payload_data);
+            receive_data_queue.enqueue(msg.relinquish());
         }
-        else if (message_header.Header_is_valid()) {
-            CNDPDataMessagePtr_t stream_data = allocate_shared<Network_data_message>(message_header);
-            receive_data_queue.enqueue(stream_data);
+        else if (msg.is_valid()) {
+            receive_data_queue.enqueue(msg.relinquish());
         }
 
         return true;
