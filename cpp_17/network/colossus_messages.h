@@ -73,22 +73,6 @@ namespace Navtech::Colossus_network_protocol {
 #pragma pack()
     };
 
-
-    // Simple header-only message
-    //
-    class Set_navigation_threshold : public Message_base::Header_only<Set_navigation_threshold> {
-    public:
-        Set_navigation_threshold(Message::Payload& parent);
-
-        std::uint16_t threshold() const;
-        void threshold(std::uint16_t val);
-
-        std::size_t header_size() const;
-
-    private:
-        std::uint16_t threshold_val;
-    };
-
     class Fft_data : public Message_base::Header_only<Fft_data> {
     public:
         // Derived message types MUST provide a constructor in this form
@@ -133,6 +117,46 @@ namespace Navtech::Colossus_network_protocol {
         uint16_t azi;
         uint32_t seconds;
         uint32_t split_seconds;
+#pragma pack()
+    };
+
+    class Navigation_data : public Message_base::Header_only<Navigation_data> {
+    public:
+        // Derived message types MUST provide a constructor in this form
+        //
+        Navigation_data(Message::Payload& parent) : Header_only { parent } { }
+
+
+        // Accessor/mutator API; or, you could make the attributes public
+        // (but be careful of endianness issues!)
+        //
+        std::uint16_t azimuth() const { return ntohs(self()->net_azimuth); }
+        void azimuth(std::uint16_t val) { self()->net_azimuth = htons(val); }
+
+        std::uint32_t ntp_seconds() const { return ntohl(self()->seconds); }
+        void ntp_seconds(std::uint32_t val) { self()->seconds = htonl(val); }
+
+        std::uint32_t ntp_split_seconds() const { return ntohl(self()->split_seconds); }
+        void ntp_split_seconds(std::uint32_t val) { self()->split_seconds = htonl(val); }
+
+        std::vector<uint8_t> nav_data() const
+        {
+            return std::vector<std::uint8_t>(payload()->begin(), payload()->end());
+        }
+
+
+        // If your message has a header you MUST provide this function
+        //
+        std::size_t header_size() const { return (sizeof(std::uint16_t) + 2 * sizeof(uint32_t)); }
+
+    private:
+// Attribute order MUST match the actual message header, as
+// this is a memory overlay.
+//
+#pragma pack(1)
+        std::uint16_t net_azimuth;
+        std::uint32_t seconds;
+        std::uint32_t split_seconds;
 #pragma pack()
     };
 

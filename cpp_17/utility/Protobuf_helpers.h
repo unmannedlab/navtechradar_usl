@@ -49,7 +49,7 @@ namespace Navtech::Protobuf {
 
 
     template<class Protobuf_Ty>
-    std::optional<std::vector<uint8_t>> vector_from(Protobuf_Ty& proto_buf)
+    std::optional<std::vector<std::uint8_t>> vector_from(Protobuf_Ty& proto_buf)
     {
         try {
             std::string str;
@@ -65,7 +65,7 @@ namespace Navtech::Protobuf {
 
 
     template<class Protobuf_Ty>
-    std::optional<Protobuf_Ty> from_vector_into(const std::vector<uint8_t>& data)
+    std::optional<Protobuf_Ty> from_vector_into(const std::vector<std::uint8_t>& data)
     {
         try {
             Protobuf_Ty proto_buf;
@@ -119,7 +119,7 @@ namespace Navtech::Protobuf {
 
 
     template<class T>
-    static bool serialize_to_protocol_buffer(std::vector<uint8_t>& data,
+    static bool serialize_to_protocol_buffer(std::vector<std::uint8_t>& data,
                                              const Shared_owner<T>& proto_object,
                                              bool human_readable = false)
     {
@@ -141,7 +141,7 @@ namespace Navtech::Protobuf {
 
 
     template<class T>
-    static bool deserialize_from_protocol_buffer(const std::vector<uint8_t>& data,
+    static bool deserialize_from_protocol_buffer(const std::vector<std::uint8_t>& data,
                                                  Shared_owner<T>& object_to_deserialize_into,
                                                  bool human_readable = false)
     {

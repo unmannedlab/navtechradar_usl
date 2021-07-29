@@ -16,7 +16,6 @@
 #include <thread>
 
 #include "../utility/Pointer_types.h"
-#include "cndp_network_data_message.h"
 #include "tcp_socket.h"
 #include "threaded_queue.h"
 #include "timer.h"
@@ -26,25 +25,25 @@ namespace Navtech {
 
     class Connection_info {
     public:
-        explicit Connection_info(const uint32_t unique_id, const Connection_state state) :
+        explicit Connection_info(const std::uint32_t unique_id, const Connection_state state) :
             state(state), unique_id(unique_id)
         { }
 
         explicit Connection_info(const Connection_info&) = delete;
         Connection_info& operator=(const Connection_info&) = delete;
         Connection_state state                             = Connection_state::Disconnected;
-        uint32_t unique_id                                 = 0;
+        std::uint32_t unique_id                            = 0;
     };
 
     typedef Shared_owner<Connection_info> ConnectionInfoPtr_t;
 
     constexpr std::chrono::milliseconds connection_check_timeout = std::chrono::milliseconds(5000);
-    constexpr uint16_t read_timeout                              = 60;
-    constexpr uint16_t send_timeout                              = 10;
+    constexpr std::uint16_t read_timeout                         = 60;
+    constexpr std::uint16_t send_timeout                         = 10;
 
     class Tcp_radar_client {
     public:
-        explicit Tcp_radar_client(const std::string& ip_address, const uint16_t& port = 6317);
+        explicit Tcp_radar_client(const std::string& ip_address, const std::uint16_t& port = 6317);
         explicit Tcp_radar_client(const Tcp_radar_client&) = delete;
         Tcp_radar_client& operator=(const Tcp_radar_client&) = delete;
         void start();

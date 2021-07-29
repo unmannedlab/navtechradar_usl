@@ -14,11 +14,6 @@
 constexpr unsigned int largest_valid_message { 255 };
 constexpr unsigned int largest_payload { 1'000'000 };
 
-constexpr std::array<uint8_t, 16> valid_signature {
-    0x00, 0x01, 0x03, 0x03, 0x07, 0x07, 0x0F, 0x0F, 0x1F, 0x1F, 0x3F, 0x3F, 0x7F, 0x7F, 0xFE, 0xFE,
-};
-
-
 namespace Navtech::Colossus_network_protocol {
 
     // ---------------------------------------------------------------------------------------------------------
@@ -152,7 +147,7 @@ namespace Navtech::Colossus_network_protocol {
 
     bool Message::is_valid() const
     {
-        return (is_signature_valid() && static_cast<unsigned>(type()) <= largest_valid_message &&
+        return (is_version_valid() && is_signature_valid() && static_cast<unsigned>(type()) <= largest_valid_message &&
                 payload().size() < largest_payload);
     }
 
@@ -212,6 +207,8 @@ namespace Navtech::Colossus_network_protocol {
 
         data.resize(header_size());
         copy(begin(valid_signature), end(valid_signature), signature_begin());
+        auto header     = Header::overlay_onto(data.data());
+        header->version = version;
     }
 
 
@@ -225,6 +222,11 @@ namespace Navtech::Colossus_network_protocol {
         return (memcmp(valid_signature.begin(), signature_begin(), valid_signature.size()) == 0);
     }
 
+    bool Message::is_version_valid() const
+    {
+        auto header = Header::overlay_onto(data.data());
+        return header->version == version;
+    }
 
     Message::Iterator Message::signature_begin()
     {
@@ -243,14 +245,14 @@ namespace Navtech::Colossus_network_protocol {
     Message::Iterator Message::signature_end()
     {
         auto header = Header::overlay_onto(data.data());
-        return &(header->signature[Header::signature_sz]); // One-past-the-end
+        return &(header->signature[signature_sz]); // One-past-the-end
     }
 
 
     Message::Const_iterator Message::signature_end() const
     {
         auto header = Header::overlay_onto(data.data());
-        return &(header->signature[Header::signature_sz]);
+        return &(header->signature[signature_sz]);
     }
 
 

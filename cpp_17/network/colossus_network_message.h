@@ -5,10 +5,17 @@
 #include <vector>
 
 
+#include "../utility/Pointer_types.h"
 #include "IP_address.h"
-#include "Pointer_types.h"
 
 namespace Navtech::Colossus_network_protocol {
+
+    constexpr std::array<uint8_t, 16> valid_signature {
+        0x00, 0x01, 0x03, 0x03, 0x07, 0x07, 0x0F, 0x0F, 0x1F, 0x1F, 0x3F, 0x3F, 0x7F, 0x7F, 0xFE, 0xFE,
+    };
+
+    static constexpr std::size_t signature_sz { 16 };
+    static constexpr std::uint8_t version { 1 };
 
     // --------------------------------------------------------------------------------------------------
     // The Message class provides an interface for storing and accessing
@@ -59,7 +66,6 @@ namespace Navtech::Colossus_network_protocol {
         using ID             = std::uint32_t;
         using Iterator       = std::uint8_t*;
         using Const_iterator = const std::uint8_t*;
-
 
         // Payload provides an abstract interface into the payload
         // part of the message.  A Payload object is just an overlay
@@ -170,7 +176,7 @@ namespace Navtech::Colossus_network_protocol {
     protected:
         void initialize();
         bool is_signature_valid() const;
-
+        bool is_version_valid() const;
         void display();
 
         Iterator signature_begin();
@@ -185,8 +191,6 @@ namespace Navtech::Colossus_network_protocol {
 #pragma pack(1)
         struct Header
         {
-            static constexpr std::size_t signature_sz { 16 };
-
             std::uint8_t signature[signature_sz];
             std::uint8_t version;
             Type id;
