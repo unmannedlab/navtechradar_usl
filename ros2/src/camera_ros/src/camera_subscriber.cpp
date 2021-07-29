@@ -4,7 +4,10 @@
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "interfaces/msg/fft_data_message.hpp"
 
-class Colossus_subscriber : public rclcpp::Node
+using namespace std;
+using namespace rclcpp;
+
+class Colossus_subscriber : public Node
 {
 public:
     Colossus_subscriber() : Node{ "colossus_subscriber" }

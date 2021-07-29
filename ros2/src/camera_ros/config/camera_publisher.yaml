@@ -1,5 +1,6 @@
-/colossus_publisher:
+/camera_publisher:
   ros__parameters:
+    camera_url: rtsp://admin:Navtech Radar.1@10.77.3.103:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif
     qos_overrides:
       /parameter_events:
         publisher:
@@ -7,5 +8,4 @@
           durability: volatile
           history: keep_last
           reliability: reliable
-    camera_url: rtsp://10.77.2.210
     use_sim_time: false

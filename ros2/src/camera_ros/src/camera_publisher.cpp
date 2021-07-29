@@ -4,9 +4,12 @@
 #include <string>
 #include "rclcpp/rclcpp.hpp"
 #include "interfaces/msg/camera_image_message.hpp"
+#include "opencv2/opencv.hpp"
+#include "iostream"
 
 using namespace std;
 using namespace rclcpp;
+using namespace cv;
 
 Publisher<interfaces::msg::CameraImageMessage>::SharedPtr camera_image_publisher;
 
@@ -24,7 +27,7 @@ public:
         camera_image_publisher = Node::create_publisher<interfaces::msg::CameraImageMessage>("camera_data/image_data", 100);
     }
 
-    void camera_image_handler()
+    void camera_image_handler(Mat image)
     {
         RCLCPP_INFO(Node::get_logger(), "Publishing Camera Image Data");
 
@@ -43,8 +46,23 @@ int main(int argc, char* argv[])
 
     RCLCPP_INFO(node->get_logger(), "Starting camera publisher");
 
+    VideoCapture capture(camera_url);
+
+    if (!capture.isOpened()) {
+        RCLCPP_INFO(node->get_logger(), "Unable to connect to camera");
+    }
+    else {
+        RCLCPP_INFO(node->get_logger(), "Camera connected");
+        RCLCPP_INFO(node->get_logger(), "Width: %f", capture.get(CAP_PROP_FRAME_WIDTH));
+        RCLCPP_INFO(node->get_logger(), "Height: %f", capture.get(CAP_PROP_FRAME_HEIGHT)); 
+        RCLCPP_INFO(node->get_logger(), "FPS: %f", capture.get(CAP_PROP_FPS));
+    }
+
+    Mat image;
     while (ok()) {
-        spin(node);
+        capture >> image;
+        node->camera_image_handler(image);
+        spin_some(node);
     }
 
     shutdown();
