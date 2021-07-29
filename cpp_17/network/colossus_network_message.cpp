@@ -1,25 +1,25 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <iomanip>
+#include <iostream>
 
-#ifdef _WIN32
-#include <WinSock2.h>
-#else
-#include <netinet/in.h>
-#endif
+#include <arpa/inet.h>
+// #include "winsock.h" // For Windows
 
-#include "CNDP_network_message.h"
+#include "colossus_network_message.h"
 
 // Constants
 //
-constexpr unsigned int largest_valid_message { 128 };
-constexpr unsigned int largest_payload { 1'048'576 };
+constexpr unsigned int largest_valid_message { 255 };
+constexpr unsigned int largest_payload { 1'000'000 };
 
-constexpr std::array<uint8_t, 16> valid_signature { 0x00, 0x01, 0x03, 0x03, 0x07, 0x07, 0x0f, 0x0f,
-                                                    0x1f, 0x1f, 0x3f, 0x3f, 0x7f, 0x7f, 0xfe, 0xfe };
+constexpr std::array<uint8_t, 16> valid_signature {
+    0x00, 0x01, 0x03, 0x03, 0x07, 0x07, 0x0F, 0x0F, 0x1F, 0x1F, 0x3F, 0x3F, 0x7F, 0x7F, 0xFE, 0xFE,
+};
 
 
-namespace Navtech::CNDP_network_protocol {
+namespace Navtech::Colossus_network_protocol {
 
     // ---------------------------------------------------------------------------------------------------------
     // Message
@@ -27,11 +27,6 @@ namespace Navtech::CNDP_network_protocol {
 
     Message::Message() { initialize(); }
 
-    Message::Message(const std::vector<std::uint8_t>& data)
-    {
-        initialize();
-        replace(data);
-    }
 
     Message::Message(const std::string& ip_addr, Message::ID id) : address { ip_addr }, identity { id }
     {
@@ -47,8 +42,8 @@ namespace Navtech::CNDP_network_protocol {
         identity { id }
     {
         initialize();
-        payload().type(t);
-        payload().insert(payload_vector);
+        type(t);
+        payload().append(payload_vector);
     }
 
 
@@ -58,8 +53,8 @@ namespace Navtech::CNDP_network_protocol {
         using std::move;
 
         initialize();
-        payload().type(t);
-        payload().insert(move(payload_vector));
+        type(t);
+        payload().append(move(payload_vector));
     }
 
 
@@ -67,8 +62,8 @@ namespace Navtech::CNDP_network_protocol {
         address { ip_addr }, identity { id }
     {
         initialize();
-        payload().type(t);
-        payload().insert(payload_string);
+        type(t);
+        payload().append(payload_string);
     }
 
 
@@ -78,8 +73,8 @@ namespace Navtech::CNDP_network_protocol {
         using std::move;
 
         initialize();
-        payload().type(t);
-        payload().insert(move(payload_string));
+        type(t);
+        payload().append(move(payload_string));
     }
 
 
@@ -94,15 +89,59 @@ namespace Navtech::CNDP_network_protocol {
         using std::move;
 
         initialize();
-        payload().type(t);
-        payload().insert(payload_start, payload_sz);
+        type(t);
+        payload().append(payload_start, payload_sz);
     }
+
+
+    Message::Message(const std::string& ip_addr, Message::ID id, const std::vector<std::uint8_t>& message_vector) :
+        address { ip_addr }, identity { id }
+    {
+        replace(message_vector);
+    }
+
+
+    Message::Message(const std::string& ip_addr, Message::ID id, std::vector<std::uint8_t>&& message_vector) :
+        address { ip_addr }, identity { id }
+    {
+        replace(std::move(message_vector));
+    }
+
+
+    Message::Message(const std::string& ip_addr, ID id, Const_iterator message_start, std::size_t message_sz) :
+        address { ip_addr }, identity { id }
+    {
+        replace(message_start, message_sz);
+    }
+
+
+    Message::Message(const std::vector<std::uint8_t>& message_vector) { replace(message_vector); }
+
+
+    Message::Message(std::vector<std::uint8_t>&& message_vector) { replace(std::move(message_vector)); }
+
+
+    Message::Message(Const_iterator message_start, std::size_t message_sz) { replace(message_start, message_sz); }
 
 
     Message::ID Message::id() const { return identity; }
 
 
     void Message::id(Message::ID new_id) { identity = new_id; }
+
+
+    Message::Type Message::type() const
+    {
+        auto header = Header::overlay_onto(data.data());
+        return header->id;
+    }
+
+
+    void Message::type(Message::Type t)
+    {
+        auto header = Header::overlay_onto(data.data());
+        header->id  = t;
+    }
 
 
     const Utility::IP_address& Message::ip_address() const { return address; }
@@ -113,8 +152,8 @@ namespace Navtech::CNDP_network_protocol {
 
     bool Message::is_valid() const
     {
-        return (is_signature_valid() && static_cast<unsigned>(payload().type()) <= largest_valid_message &&
-                payload().size() <= largest_payload);
+        return (is_signature_valid() && static_cast<unsigned>(type()) <= largest_valid_message &&
+                payload().size() < largest_payload);
     }
 
 
@@ -129,6 +168,17 @@ namespace Navtech::CNDP_network_protocol {
         using std::move;
 
         data = move(src);
+    }
+
+
+    void Message::replace(Message::Const_iterator src_start, std::size_t src_size)
+    {
+        using std::back_inserter;
+        using std::copy_n;
+
+        data.clear();
+        data.reserve(src_size);
+        copy_n(src_start, src_size, back_inserter(data));
     }
 
 
@@ -204,13 +254,30 @@ namespace Navtech::CNDP_network_protocol {
     }
 
 
+    void Message::display()
+    {
+        using std::cout;
+        using std::dec;
+        using std::endl;
+        using std::hex;
+
+        cout << hex;
+
+        for (auto& val : data) {
+            cout << reinterpret_cast<unsigned long>(&val) << "\t" << static_cast<int>(val) << "\t" << val << endl;
+        }
+
+        cout << dec;
+        cout << endl;
+    }
+
     // ---------------------------------------------------------------------------------------------------------
     // Payload
     //
     Message::Payload::Payload(Message& parent) : msg { &parent } { }
 
 
-    void Message::Payload::insert(const std::vector<std::uint8_t>& src)
+    void Message::Payload::append(const std::vector<std::uint8_t>& src)
     {
         using std::back_inserter;
         using std::begin;
@@ -223,7 +290,7 @@ namespace Navtech::CNDP_network_protocol {
     }
 
 
-    void Message::Payload::insert(std::vector<std::uint8_t>&& src)
+    void Message::Payload::append(std::vector<std::uint8_t>&& src)
     {
         using std::back_inserter;
         using std::begin;
@@ -240,7 +307,7 @@ namespace Navtech::CNDP_network_protocol {
     }
 
 
-    void Message::Payload::insert(Const_iterator start, std::size_t n)
+    void Message::Payload::append(Const_iterator start, std::size_t n)
     {
         using std::back_inserter;
         using std::copy_n;
@@ -251,7 +318,7 @@ namespace Navtech::CNDP_network_protocol {
     }
 
 
-    void Message::Payload::insert(const std::string& str)
+    void Message::Payload::append(const std::string& str)
     {
         using std::back_inserter;
         using std::begin;
@@ -264,7 +331,7 @@ namespace Navtech::CNDP_network_protocol {
     }
 
 
-    void Message::Payload::insert(std::string&& str)
+    void Message::Payload::append(std::string&& str)
     {
         using std::back_inserter;
         using std::begin;
@@ -280,12 +347,129 @@ namespace Navtech::CNDP_network_protocol {
     }
 
 
-    std::string Message::Payload::as_string() const
+    Message::Payload& Message::Payload::operator+=(const std::vector<std::uint8_t>& data)
     {
+        append(data);
+        return *this;
+    }
+
+
+    Message::Payload& Message::Payload::operator+=(std::vector<std::uint8_t>&& data)
+    {
+        append(std::move(data));
+        return *this;
+    }
+
+
+    Message::Payload& Message::Payload::operator+=(const std::string& str)
+    {
+        append(str);
+        return *this;
+    }
+
+
+    Message::Payload& Message::Payload::operator+=(std::string&& str)
+    {
+        append(std::move(str));
+        return *this;
+    }
+
+
+    void Message::Payload::replace(const std::vector<std::uint8_t>& src)
+    {
+        using std::back_inserter;
+        using std::begin;
+        using std::copy;
+        using std::end;
+
+        msg->data.resize(msg->data.size() + src.size());
+        copy(begin(src), end(src), this->begin());
+        size(src.size());
+    }
+
+
+    void Message::Payload::replace(std::vector<std::uint8_t>&& src)
+    {
+        using std::back_inserter;
+        using std::begin;
+        using std::end;
+        using std::move;
+        using std::uint8_t;
+        using std::vector;
+
+        vector<uint8_t> temp { move(src) }; // To ensure correct move semantics
+
+        msg->data.resize(msg->data.size() + src.size());
+        copy(begin(temp), end(temp), this->begin());
+        size(temp.size());
+    }
+
+
+    void Message::Payload::replace(Const_iterator start, std::size_t n)
+    {
+        using std::back_inserter;
+        using std::copy_n;
+
+        msg->data.resize(msg->data.size() + n);
+        copy_n(start, n, this->begin());
+        size(n);
+    }
+
+
+    void Message::Payload::replace(const std::string& str)
+    {
+        using std::back_inserter;
+        using std::begin;
+        using std::copy;
+        using std::end;
+
+        msg->data.resize(msg->data.size() + str.size());
+        copy(begin(str), end(str), this->begin());
+        size(str.size());
+    }
+
+
+    void Message::Payload::replace(std::string&& str)
+    {
+        using std::back_inserter;
+        using std::begin;
+        using std::end;
+        using std::move;
         using std::string;
 
-        string ret_val { begin(), end() };
-        return ret_val;
+        string temp { move(str) }; // To ensure correct move semantics
+
+        msg->data.resize(msg->data.size() + temp.size());
+        copy(begin(temp), end(temp), this->begin());
+        size(temp.size());
+    }
+
+
+    Message::Payload& Message::Payload::operator=(const std::vector<std::uint8_t>& data)
+    {
+        replace(data);
+        return *this;
+    }
+
+
+    Message::Payload& Message::Payload::operator=(std::vector<std::uint8_t>&& data)
+    {
+        replace(std::move(data));
+        return *this;
+    }
+
+
+    Message::Payload& Message::Payload::operator=(const std::string& str)
+    {
+        replace(str);
+        return *this;
+    }
+
+
+    Message::Payload& Message::Payload::operator=(std::string&& str)
+    {
+        replace(std::move(str));
+        return *this;
     }
 
 
@@ -318,20 +502,6 @@ namespace Navtech::CNDP_network_protocol {
     }
 
 
-    Message::Type Message::Payload::type() const
-    {
-        auto header = Message::Header::overlay_onto(msg->data.data());
-        return header->id;
-    }
-
-
-    void Message::Payload::type(Message::Type t)
-    {
-        auto header = Message::Header::overlay_onto(msg->data.data());
-        header->id  = t;
-    }
-
-
     Message::Iterator Message::Payload::begin() { return &(*(msg->data.begin() + msg->header_size())); }
 
 
@@ -344,4 +514,4 @@ namespace Navtech::CNDP_network_protocol {
     Message::Const_iterator Message::Payload::end() const { return &(*(msg->data.cend())); }
 
 
-} // namespace Navtech::CNDP_network_protocol
+} // namespace Navtech::Colossus_network_protocol

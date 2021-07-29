@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <functional>
 
-#include "CNDP_network_message.h"
+#include "colossus_network_message.h"
 #include "tcp_radar_client.h"
 #include <common.h>
 
@@ -19,9 +19,9 @@ namespace Navtech {
     { }
 
 
-    void Tcp_radar_client::set_receive_data_callback(std::function<void(const std::vector<uint8_t>&)> callback)
+    void Tcp_radar_client::set_receive_data_callback(std::function<void(std::vector<uint8_t>&&)> callback)
     {
-        receive_data_queue.set_dequeue_callback(callback);
+        receive_data_queue.set_dequeue_callback(std::move(callback));
     }
 
 
@@ -203,7 +203,7 @@ namespace Navtech {
 
     bool Tcp_radar_client::handle_data()
     {
-        CNDP_network_protocol::Message msg {};
+        Navtech::Colossus_network_protocol::Message msg {};
 
         std::vector<uint8_t> data {};
         int32_t bytes_read = socket.receive(data, msg.header_size());
@@ -224,7 +224,7 @@ namespace Navtech {
                 return false;
             }
             bytes_transferred++;
-            msg.payload().insert(payload_data);
+            msg.payload().append(payload_data);
             receive_data_queue.enqueue(msg.relinquish());
         }
         else if (msg.is_valid()) {

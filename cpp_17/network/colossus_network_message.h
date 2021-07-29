@@ -4,10 +4,11 @@
 #include <cstdint>
 #include <vector>
 
-#include "../utility/IP_address.h"
-#include "../utility/Pointer_types.h"
 
-namespace Navtech::CNDP_network_protocol {
+#include "IP_address.h"
+#include "Pointer_types.h"
+
+namespace Navtech::Colossus_network_protocol {
 
     // --------------------------------------------------------------------------------------------------
     // The Message class provides an interface for storing and accessing
@@ -52,14 +53,14 @@ namespace Navtech::CNDP_network_protocol {
             navigation_alarm_data          = 143,
             set_nav_area_rules             = 144,
             nav_radar_reset                = 145,
-            nav_radar_halt                 = 146,
+            nav_radar_halt                 = 146
         };
 
         using ID             = std::uint32_t;
         using Iterator       = std::uint8_t*;
         using Const_iterator = const std::uint8_t*;
 
-    private:
+
         // Payload provides an abstract interface into the payload
         // part of the message.  A Payload object is just an overlay
         // into the message's data; it contains no data itself.
@@ -68,23 +69,42 @@ namespace Navtech::CNDP_network_protocol {
         public:
             Payload(Message& parent);
 
-            void insert(const std::vector<std::uint8_t>& data);
-            void insert(std::vector<std::uint8_t>&& data);
-            void insert(Const_iterator start, std::size_t n);
-            void insert(const std::string& str);
-            void insert(std::string&& str);
+            void append(const std::vector<std::uint8_t>& data);
+            void append(std::vector<std::uint8_t>&& data);
+            void append(Const_iterator start, std::size_t n);
+            void append(const std::string& str);
+            void append(std::string&& str);
 
-            std::string as_string() const;
+            Payload& operator+=(const std::vector<std::uint8_t>& data);
+            Payload& operator+=(std::vector<std::uint8_t>&& data);
+            Payload& operator+=(const std::string& str);
+            Payload& operator+=(std::string&& str);
+
+            void replace(const std::vector<std::uint8_t>& data);
+            void replace(std::vector<std::uint8_t>&& data);
+            void replace(Const_iterator start, std::size_t n);
+            void replace(const std::string& str);
+            void replace(std::string&& str);
+
+            Payload& operator=(const std::vector<std::uint8_t>& data);
+            Payload& operator=(std::vector<std::uint8_t>&& data);
+            Payload& operator=(const std::string& str);
+            Payload& operator=(std::string&& str);
+
             std::vector<std::uint8_t> relinquish();
 
             std::uint32_t size() const;
-            Type type() const;
-            void type(Type t);
 
             Iterator begin();
             Const_iterator begin() const;
             Iterator end();
             Const_iterator end() const;
+
+            template<typename Accessor_Ty>
+            Accessor_Ty as()
+            {
+                return Accessor_Ty { *this };
+            }
 
         protected:
             void size(std::uint32_t sz);
@@ -95,18 +115,35 @@ namespace Navtech::CNDP_network_protocol {
 
         friend class Payload;
 
-    public:
+
+        // Empty, but initialized, messages; ready for adding payload, etc.
+        //
         Message();
-        Message(const std::vector<std::uint8_t>& data);
         Message(const std::string& ip_addr, ID id);
+
+        // Initialize message with header information and payload
+        //
         Message(const std::string& ip_addr, ID id, Type t, const std::vector<std::uint8_t>& payload_vector);
         Message(const std::string& ip_addr, ID id, Type t, std::vector<std::uint8_t>&& payload_vector);
         Message(const std::string& ip_addr, ID id, Type t, const std::string& payload_string);
         Message(const std::string& ip_addr, ID id, Type t, std::string&& payload_string);
         Message(const std::string& ip_addr, ID id, Type t, Const_iterator payload_start, std::size_t payload_sz);
 
+        // Constructors to initialise from an (incoming) buffer of data; complete with
+        // header information.
+        //
+        Message(const std::vector<std::uint8_t>& message_vector);
+        Message(std::vector<std::uint8_t>&& message_vector);
+        Message(Const_iterator message_start, std::size_t message_sz);
+        Message(const std::string& ip_addr, ID id, const std::vector<std::uint8_t>& message_vector);
+        Message(const std::string& ip_addr, ID id, std::vector<std::uint8_t>&& message_vector);
+        Message(const std::string& ip_addr, ID id, Const_iterator message_start, std::size_t message_sz);
+
         ID id() const;
         void id(ID new_id);
+
+        Type type() const;
+        void type(Type t);
 
         const Utility::IP_address& ip_address() const;
         void ip_address(const std::string& ip_addr_str);
@@ -119,6 +156,7 @@ namespace Navtech::CNDP_network_protocol {
 
         void replace(const std::vector<std::uint8_t>& src);
         void replace(std::vector<std::uint8_t>&& src);
+        void replace(Const_iterator src_start, std::size_t src_sz);
         std::vector<std::uint8_t> relinquish();
 
         Iterator begin();
@@ -132,6 +170,8 @@ namespace Navtech::CNDP_network_protocol {
     protected:
         void initialize();
         bool is_signature_valid() const;
+
+        void display();
 
         Iterator signature_begin();
         Const_iterator signature_begin() const;
@@ -167,6 +207,6 @@ namespace Navtech::CNDP_network_protocol {
         std::vector<std::uint8_t> data {};
     };
 
-} // namespace Navtech::CNDP_network_protocol
+} // namespace Navtech::Colossus_network_protocol
 
 #endif // CP_NETWORK_MESSAGE_H

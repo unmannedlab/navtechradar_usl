@@ -50,7 +50,7 @@ namespace Navtech {
         void start();
         void stop();
         void send(const std::vector<uint8_t> data);
-        void set_receive_data_callback(std::function<void(const std::vector<uint8_t>&)> callback = nullptr);
+        void set_receive_data_callback(std::function<void(std::vector<uint8_t>&&)> callback = nullptr);
         Navtech::Connection_state get_connection_state();
 
     private:

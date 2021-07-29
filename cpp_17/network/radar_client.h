@@ -87,7 +87,7 @@ namespace Navtech {
         uint16_t azimuth_samples        = 0;
         uint16_t expected_rotation_rate = 0;
 
-        void handle_data(const std::vector<std::uint8_t>& data);
+        void handle_data(std::vector<std::uint8_t>&& data);
         void handle_configuration_message(const std::vector<std::uint8_t>& data);
         void handle_fft_data_message(const std::vector<std::uint8_t>& data);
         void handle_health_message(const std::vector<std::uint8_t>& data);

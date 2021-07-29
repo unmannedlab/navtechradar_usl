@@ -6,6 +6,8 @@
 
 #include <cmath>
 #include <cstring>
+#include <iomanip>
+#include <sstream>
 
 #ifdef _WIN32
 #include <WinSock2.h>
@@ -13,10 +15,11 @@
 #include <netinet/in.h>
 #endif
 
-#include "CNDP_network_message.h"
 #include "cndp_configuration_message.h"
 #include "cndp_fft_data_message.h"
 #include "cndp_network_data_message.h"
+#include "colossus_messages.h"
+#include "colossus_network_message.h"
 #include "radar_client.h"
 #include <common.h>
 #include <configurationdata.pb.h>
@@ -164,28 +167,28 @@ namespace Navtech {
         radar_client.send(message->Message_data());
     }
 
-    void Radar_client::handle_data(const std::vector<uint8_t>& data)
+    void Radar_client::handle_data(std::vector<uint8_t>&& data)
     {
-        CNDP_network_protocol::Message msg { data };
+        Colossus_network_protocol::Message msg { std::move(data) };
 
-        switch (msg.payload().type()) {
-            case CNDP_network_protocol::Message::Type::configuration:
-                handle_configuration_message(data);
+        switch (msg.type()) {
+            case Colossus_network_protocol::Message::Type::configuration:
+                handle_configuration_message(msg.relinquish());
                 break;
-            case CNDP_network_protocol::Message::Type::fft_data:
-                handle_fft_data_message(data);
+            case Colossus_network_protocol::Message::Type::fft_data:
+                handle_fft_data_message(msg.relinquish());
                 break;
-            case CNDP_network_protocol::Message::Type::navigation_data:
-                // handle_navigation_data_message(data);
+            case Colossus_network_protocol::Message::Type::navigation_data:
+                handle_navigation_data_message(msg.relinquish());
                 break;
-            case CNDP_network_protocol::Message::Type::navigation_alarm_data:
+            case Colossus_network_protocol::Message::Type::navigation_alarm_data:
                 break;
-            case CNDP_network_protocol::Message::Type::health:
-                handle_health_message(data);
+            case Colossus_network_protocol::Message::Type::health:
+                handle_health_message(msg.relinquish());
                 break;
             default:
-                Helpers::Log("Radar_client - Unhandled Message [" +
-                             std::to_string(static_cast<uint32_t>(msg.payload().type())) + "]");
+                Helpers::Log("Radar_client - Unhandled Message [" + std::to_string(static_cast<uint32_t>(msg.type())) +
+                             "]");
                 break;
         }
     }
@@ -199,15 +202,16 @@ namespace Navtech {
         _callbackMutex.unlock();
         if (configuration_fn == nullptr) return;
 
-        CNDPConfigurationHeaderStruct config_header {};
-        std::memset(&config_header, 0, sizeof(config_header));
-        std::memcpy(&config_header, &data[0], config_header.HeaderLength() + config_header.header.Header_length());
+        Colossus_network_protocol::Message msg { data };
+        auto config = msg.payload().as<Colossus_network_protocol::Configuration>();
+        Colossus::Protobuf::ConfigurationData configuration_d;
+        configuration_d.ParseFromString(config.to_string());
 
-        azimuth_samples        = ntohs(config_header.azimuth_samples);
-        bin_size               = ntohs(config_header.bin_size);
-        range_in_bins          = ntohs(config_header.range_in_bins);
-        encoder_size           = ntohs(config_header.encoder_size);
-        expected_rotation_rate = ntohs(config_header.rotation_speed) / 1000;
+        azimuth_samples        = config.azimuth_samples();
+        bin_size               = config.bin_size();
+        range_in_bins          = config.range_in_bins();
+        encoder_size           = config.encoder_size();
+        expected_rotation_rate = config.rotation_speed() / 1000;
 
         if (send_radar_data) send_simple_network_message(CNDPNetworkDataMessageType::StartFFTData);
 
@@ -219,7 +223,6 @@ namespace Navtech {
         configuration_data->expected_rotation_rate = expected_rotation_rate;
 
         // TODO: Extract Protobuf Data and send through callback
-        // TODO: Change callback to take all of the parameters
 
         configuration_fn(configuration_data);
     }
@@ -233,21 +236,16 @@ namespace Navtech {
         _callbackMutex.unlock();
         if (fft_data_fn == nullptr) return;
 
-        CNDPNetworkDataFftDataHeaderStruct fft_data_header {};
-
-        std::memcpy(
-            &fft_data_header, &data[0], fft_data_header.HeaderLength() + fft_data_header.header.Header_length());
+        Colossus_network_protocol::Message msg { data };
+        auto fft_data = msg.payload().as<Colossus_network_protocol::Fft_data>();
 
         auto fftData               = allocate_shared<Fft_data>();
-        fftData->azimuth           = ntohs(fft_data_header.azimuth);
-        fftData->angle             = (fftData->azimuth * 360.0f) / (float)encoder_size;
-        fftData->sweep_counter     = ntohs(fft_data_header.sweep_counter);
-        fftData->ntp_seconds       = fft_data_header.seconds;
-        fftData->ntp_split_seconds = fft_data_header.split_seconds;
-        fftData->data.resize(fft_data_header.header.Payload_length() - fft_data_header.HeaderLength());
-        std::memcpy(fftData->data.data(),
-                    &data[fft_data_header.header.Header_length() + fft_data_header.HeaderLength()],
-                    fftData->data.size());
+        fftData->azimuth           = fft_data.azimuth();
+        fftData->angle             = (fft_data.azimuth() * 360.0f) / (float)encoder_size;
+        fftData->sweep_counter     = fft_data.sweep_counter();
+        fftData->ntp_seconds       = fft_data.ntp_seconds();
+        fftData->ntp_split_seconds = fft_data.ntp_split_seconds();
+        fftData->data              = fft_data.fft_data();
 
         // TODO: Change callback to take all of the parameters
         fft_data_fn(fftData);
@@ -260,7 +258,7 @@ namespace Navtech {
         _callbackMutex.unlock();
         if (navigation_data_fn == nullptr) return;
 
-        CNDP_network_protocol::Message msg { data };
+        Colossus_network_protocol::Message msg { data };
         auto payload = std::vector<std::uint8_t>(msg.payload().begin(), msg.payload().end());
 
         uint16_t net_azimuth = 0;
