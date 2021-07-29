@@ -94,10 +94,10 @@ namespace Navtech {
         std::uint16_t expected_rotation_rate = 0;
 
         void handle_data(std::vector<std::uint8_t>&& data);
-        void handle_configuration_message(const std::vector<std::uint8_t>& data);
-        void handle_fft_data_message(const std::vector<std::uint8_t>& data);
-        void handle_health_message(const std::vector<std::uint8_t>& data);
-        void handle_navigation_data_message(const std::vector<std::uint8_t>& data);
+        void handle_configuration_message(Colossus_network_protocol::Message& msg);
+        void handle_fft_data_message(Colossus_network_protocol::Message& msg);
+        void handle_health_message(Colossus_network_protocol::Message& data);
+        void handle_navigation_data_message(Colossus_network_protocol::Message& data);
         void send_simple_network_message(const Colossus_network_protocol::Message::Type& type);
     };
 

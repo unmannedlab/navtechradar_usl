@@ -27,10 +27,11 @@ void fft_data_handler(const Fft_data::Pointer& data)
 {
     packet_count++;
     if (data->azimuth < last_azimuth) {
-        auto diff = Helpers::Now() - last_rotation_reset;
+        auto diff         = Helpers::Now() - last_rotation_reset;
+        auto packate_rate = packet_count / (diff / 1000.0);
         if (rotated_once) {
             Helpers::Log("fft_data_handler - Rotating @ [" + std::to_string(1000.0 / diff) + "Hz] Packets [" +
-                         std::to_string(packet_count) + "]");
+                         std::to_string(packet_count) + "] [" + std::to_string(packate_rate) + "]");
         }
         last_rotation_reset = Helpers::Now();
         packet_count        = 0;

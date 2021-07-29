@@ -14,8 +14,8 @@ namespace Navtech::Colossus_network_protocol {
         0x00, 0x01, 0x03, 0x03, 0x07, 0x07, 0x0F, 0x0F, 0x1F, 0x1F, 0x3F, 0x3F, 0x7F, 0x7F, 0xFE, 0xFE,
     };
 
-    static constexpr std::size_t signature_sz { 16 };
-    static constexpr std::uint8_t version { 1 };
+    constexpr std::size_t signature_sz { valid_signature.size() };
+    constexpr std::uint8_t version { 1 };
 
     // --------------------------------------------------------------------------------------------------
     // The Message class provides an interface for storing and accessing

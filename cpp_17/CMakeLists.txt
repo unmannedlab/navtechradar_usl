@@ -2,7 +2,7 @@ project(iasdk C CXX)
 
 cmake_minimum_required(VERSION 3.16)
 
-set (CMAKE_CXX_FLAGS " -Wall -Werror -pthread -std=c++17")
+set (CMAKE_CXX_FLAGS " -Wall -pthread -std=c++17")
 add_definitions(${CMAKE_CXX_FLAGS})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/protobuf)

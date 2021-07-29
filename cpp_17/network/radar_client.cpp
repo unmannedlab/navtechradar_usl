@@ -102,7 +102,6 @@ namespace Navtech {
         Colossus_network_protocol::Message msg {};
         msg.type(Colossus_network_protocol::Message::Type::set_nav_threshold);
         msg.payload().replace(buffer);
-        auto d = msg.relinquish();
         radar_client.send(msg.relinquish());
     }
 
@@ -119,7 +118,6 @@ namespace Navtech {
         Colossus_network_protocol::Message msg {};
         msg.type(Colossus_network_protocol::Message::Type::set_nav_range_offset_and_gain);
         msg.payload().replace(buffer);
-        auto d = msg.relinquish();
         radar_client.send(msg.relinquish());
     }
 
@@ -152,7 +150,6 @@ namespace Navtech {
         Colossus_network_protocol::Message msg {};
         msg.type(Colossus_network_protocol::Message::Type::contour_update);
         msg.payload().replace(contour);
-        auto d = msg.relinquish();
         radar_client.send(msg.relinquish());
     }
 
@@ -162,18 +159,18 @@ namespace Navtech {
 
         switch (msg.type()) {
             case Colossus_network_protocol::Message::Type::configuration:
-                handle_configuration_message(msg.relinquish());
+                handle_configuration_message(msg);
                 break;
             case Colossus_network_protocol::Message::Type::fft_data:
-                handle_fft_data_message(msg.relinquish());
+                handle_fft_data_message(msg);
                 break;
             case Colossus_network_protocol::Message::Type::navigation_data:
-                handle_navigation_data_message(msg.relinquish());
+                handle_navigation_data_message(msg);
                 break;
             case Colossus_network_protocol::Message::Type::navigation_alarm_data:
                 break;
             case Colossus_network_protocol::Message::Type::health:
-                handle_health_message(msg.relinquish());
+                handle_health_message(msg);
                 break;
             default:
                 Helpers::Log("Radar_client - Unhandled Message [" + std::to_string(static_cast<uint32_t>(msg.type())) +
@@ -182,7 +179,7 @@ namespace Navtech {
         }
     }
 
-    void Radar_client::handle_configuration_message(const std::vector<std::uint8_t>& data)
+    void Radar_client::handle_configuration_message(Colossus_network_protocol::Message& msg)
     {
         Helpers::Log("Radar_client - Handle Configuration Message");
 
@@ -191,10 +188,10 @@ namespace Navtech {
         _callbackMutex.unlock();
         if (configuration_fn == nullptr) return;
 
-        Colossus_network_protocol::Message msg { data };
-        auto config                 = msg.payload().as<Colossus_network_protocol::Configuration>();
+        auto payload                = msg.payload();
+        auto config                 = payload.as<Colossus_network_protocol::Configuration>();
         auto protobuf_configuration = allocate_shared<Colossus::Protobuf::ConfigurationData>();
-        protobuf_configuration->ParseFromString(config.to_string());
+        // protobuf_configuration->ParseFromString(config.to_string());
 
         azimuth_samples        = config.azimuth_samples();
         bin_size               = config.bin_size();
@@ -214,16 +211,15 @@ namespace Navtech {
         configuration_fn(configuration_data, protobuf_configuration);
     }
 
-    void Radar_client::handle_health_message(const std::vector<std::uint8_t>& health_message) { }
+    void Radar_client::handle_health_message(Colossus_network_protocol::Message& msg) { }
 
-    void Radar_client::handle_fft_data_message(const std::vector<std::uint8_t>& data)
+    void Radar_client::handle_fft_data_message(Colossus_network_protocol::Message& msg)
     {
         _callbackMutex.lock();
         auto fft_data_fn = fft_data_callback;
         _callbackMutex.unlock();
         if (fft_data_fn == nullptr) return;
 
-        Colossus_network_protocol::Message msg { data };
         auto fft_data = msg.payload().as<Colossus_network_protocol::Fft_data>();
 
         auto fftData               = allocate_shared<Fft_data>();
@@ -237,14 +233,13 @@ namespace Navtech {
         fft_data_fn(fftData);
     }
 
-    void Radar_client::handle_navigation_data_message(const std::vector<std::uint8_t>& data)
+    void Radar_client::handle_navigation_data_message(Colossus_network_protocol::Message& msg)
     {
         _callbackMutex.lock();
         auto navigation_data_fn = navigation_data_callback;
         _callbackMutex.unlock();
         if (navigation_data_fn == nullptr) return;
 
-        Colossus_network_protocol::Message msg { data };
         auto nav_data = msg.payload().as<Colossus_network_protocol::Navigation_data>();
         auto targets  = nav_data.nav_data();
 
@@ -255,7 +250,7 @@ namespace Navtech {
         navigation_data->angle             = (nav_data.azimuth() * 360.0f) / (float)encoder_size;
 
         auto peaks_count = targets.size() / NAV_DATA_RECORD_LENGTH;
-        for (auto i = 0; i < (10 + (peaks_count * NAV_DATA_RECORD_LENGTH)); i += NAV_DATA_RECORD_LENGTH) {
+        for (auto i = 0u; i < (10 + (peaks_count * NAV_DATA_RECORD_LENGTH)); i += NAV_DATA_RECORD_LENGTH) {
             uint32_t peak_resolve = 0;
             std::memcpy(&peak_resolve, &targets[i], sizeof(peak_resolve));
             uint16_t power = 0;
