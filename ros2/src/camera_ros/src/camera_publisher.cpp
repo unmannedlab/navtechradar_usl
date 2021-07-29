@@ -2,6 +2,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <ctime>
 #include "rclcpp/rclcpp.hpp"
 #include "interfaces/msg/camera_image_message.hpp"
 #include "opencv2/opencv.hpp"
@@ -30,8 +31,26 @@ public:
     void camera_image_handler(Mat image)
     {
         RCLCPP_INFO(Node::get_logger(), "Publishing Camera Image Data");
+        RCLCPP_INFO(Node::get_logger(), "Mat rows: %i", image.rows);
+        RCLCPP_INFO(Node::get_logger(), "Mat columns: %i", image.cols);
+        RCLCPP_INFO(Node::get_logger(), "Mat size: %i", image.rows * image.cols);
+        RCLCPP_INFO(Node::get_logger(), "Mat type: %i", image.type());
+
+        auto buffer_length = image.cols * image.rows * sizeof(uint8_t) * 3;
+        auto image_buffer = new uint8_t[buffer_length];
+        memcpy(image_buffer, image.ptr(0), image.cols * image.rows * sizeof(uint8_t) * 3);
+        const unsigned char* charBuffer = (unsigned char*)image_buffer;
+        vector<unsigned char> vectorBuffer(charBuffer, charBuffer + buffer_length);
+
+        auto seconds = time(NULL);
+
+        RCLCPP_INFO(Node::get_logger(), "Image buffer size: %i", buffer_length);
 
         auto message = interfaces::msg::CameraImageMessage();
+        message.data = vectorBuffer;
+        message.data_length = buffer_length;
+        message.ntp_seconds = seconds;
+        message.ntp_split_seconds = 0;
 
         camera_image_publisher->publish(message);
     }
