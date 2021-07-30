@@ -6,6 +6,7 @@
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "interfaces/msg/fft_data_message.hpp"
 #include "radarclient.h"
+#include "Pointer_types.h"
 
 using namespace std;
 using namespace Navtech;
@@ -14,7 +15,7 @@ using namespace rclcpp;
 Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher;
 Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher;
 
-RadarClient* radar_client;
+Owner_of<RadarClient> radar_client{ };
 string radar_ip;
 uint16_t radar_port;
 
@@ -78,7 +79,7 @@ int main(int argc, char* argv[])
     node = std::make_shared<Colossus_publisher>();
 
     RCLCPP_INFO(node->get_logger(), "Starting radar client");
-    radar_client = new RadarClient(radar_ip, radar_port);
+    radar_client = allocate_owned<RadarClient>(radar_ip, radar_port);
     radar_client->SetFFTDataCallback(std::bind(&Colossus_publisher::fft_data_handler, node.get(), std::placeholders::_1));
     radar_client->SetConfigurationDataCallback(std::bind(&Colossus_publisher::configuration_data_handler, node.get(), std::placeholders::_1));
 
