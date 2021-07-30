@@ -21,7 +21,7 @@ class Camera_publisher : public rclcpp::Node
 public:
     Camera_publisher() : Node{ "camera_publisher" }
     {
-        declare_parameter("camera_url");
+        declare_parameter("camera_url", "");
 
         camera_url = get_parameter("camera_url").as_string();
 
@@ -44,11 +44,13 @@ public:
 
         auto seconds = time(NULL);
 
-        RCLCPP_INFO(Node::get_logger(), "Image buffer size: %i", buffer_length);
+        RCLCPP_INFO(Node::get_logger(), "Image buffer size: %li", buffer_length);
 
         auto message = interfaces::msg::CameraImageMessage();
-        message.data = vectorBuffer;
-        message.data_length = buffer_length;
+        message.image_data = vectorBuffer;
+        message.image_rows = image.rows;
+        message.image_cols = image.cols;
+        message.image_channels = image.channels();
         message.ntp_seconds = seconds;
         message.ntp_split_seconds = 0;
 

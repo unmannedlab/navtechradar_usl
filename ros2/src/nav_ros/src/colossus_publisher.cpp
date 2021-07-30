@@ -23,8 +23,8 @@ class Colossus_publisher : public rclcpp::Node
 public:
     Colossus_publisher() : Node{ "colossus_publisher" }
     {
-        declare_parameter("radar_ip");
-        declare_parameter("radar_port");
+        declare_parameter("radar_ip", "");
+        declare_parameter("radar_port", 0);
 
         radar_ip = get_parameter("radar_ip").as_string();
         radar_port = get_parameter("radar_port").as_int();
