@@ -11,6 +11,7 @@
 using namespace std;
 using namespace rclcpp;
 using namespace cv;
+using namespace chrono;
 
 Publisher<interfaces::msg::CameraImageMessage>::SharedPtr camera_image_publisher;
 
@@ -42,7 +43,8 @@ public:
         const unsigned char* charBuffer = (unsigned char*)image_buffer;
         vector<unsigned char> vectorBuffer(charBuffer, charBuffer + buffer_length);
 
-        auto seconds = time(NULL);
+        auto millisec_since_epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        auto sec_since_epoch = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
 
         RCLCPP_INFO(Node::get_logger(), "Image buffer size: %li", buffer_length);
 
@@ -51,8 +53,8 @@ public:
         message.image_rows = image.rows;
         message.image_cols = image.cols;
         message.image_channels = image.channels();
-        message.ntp_seconds = seconds;
-        message.ntp_split_seconds = 0;
+        message.ntp_seconds = sec_since_epoch;
+        message.ntp_split_seconds = millisec_since_epoch - (sec_since_epoch * 1000);
 
         camera_image_publisher->publish(message);
     }
