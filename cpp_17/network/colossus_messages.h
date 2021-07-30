@@ -19,6 +19,12 @@ namespace Navtech::Colossus_network_protocol {
     // of the Curiously Recurring Template Pattern (CRTP)
     //
     class Configuration : public Message_base::Protocol_buffer<Configuration> {
+        union float_uint32_map
+        {
+            float f;
+            uint32_t i;
+        };
+
     public:
         // Derived message types MUST provide a constructor in this form
         //
@@ -46,16 +52,38 @@ namespace Navtech::Colossus_network_protocol {
         std::uint16_t packet_rate() const { return ntohs(self()->pckt_rate); }
         void packet_rate(std::uint16_t val) { self()->pckt_rate = htons(val); }
 
-        float range_gain() const { return self()->gain; }
-        void range_gain(float val) { self()->gain = val; }
+        float range_gain() const
+        {
+            float_uint32_map float_value { 0 };
+            float_value.i = ntohl(self()->gain);
+            return float_value.f;
+        }
 
-        float range_offset() const { return self()->offset; }
-        void range_offset(float val) { self()->offset = val; }
+        void range_gain(float val)
+        {
+            float_uint32_map float_value { 0 };
+            float_value.f = val;
+            self()->gain  = htonl(float_value.i);
+        }
+
+        float range_offset() const
+        {
+            float_uint32_map float_value { 0 };
+            float_value.i = ntohl(self()->offset);
+            return float_value.f;
+        }
+
+        void range_offset(float val)
+        {
+            float_uint32_map float_value { 0 };
+            float_value.f  = val;
+            self()->offset = htonl(float_value.i);
+        }
 
 
         // If your message has a header you MUST provide this function
         //
-        std::size_t header_size() const { return (6 * sizeof(std::uint16_t) + 2 * sizeof(float)); }
+        std::size_t header_size() const { return (6 * sizeof(std::uint16_t) + 2 * sizeof(std::uint32_t)); }
 
     private:
 // Attribute order MUST match the actual message header, as
@@ -68,8 +96,8 @@ namespace Navtech::Colossus_network_protocol {
         std::uint16_t encoder_sz;
         std::uint16_t rotation_spd;
         std::uint16_t pckt_rate;
-        float gain;
-        float offset;
+        std::uint32_t gain;
+        std::uint32_t offset;
 #pragma pack()
     };
 
