@@ -9,8 +9,6 @@ namespace Navtech {
     constexpr std::uint8_t min_bins_to_operate_on = 5;
     constexpr std::uint8_t max_bins_to_operate_on = 15;
 
-    Peak_finder::Peak_finder() { }
-
     void Peak_finder::set_target_callback(std::function<void(Azimuth_target&&)> fn) { target_callback = std::move(fn); }
 
 
@@ -50,7 +48,7 @@ namespace Navtech {
             buffered_data = std::vector<double>(fft_data->data.begin(), fft_data->data.end());
         }
 
-        find_peaks(fft_data->azimuth, fft_data->angle, buffered_data);
+        find_peaks(fft_data->azimuth, fft_data->angle, fft_data->ntp_seconds, fft_data->ntp_split_seconds, buffered_data);
     }
 
 
@@ -74,7 +72,11 @@ namespace Navtech {
     }
 
 
-    void Peak_finder::find_peaks(std::uint16_t azimuth, double angle, const std::vector<double>& data)
+    void Peak_finder::find_peaks(std::uint16_t azimuth,
+                                 double angle,
+                                 std::uint32_t ntp_seconds,
+                                 std::uint32_t ntp_split_seconds,
+                                 const std::vector<double>& data)
     {
         awaiting_rise                = false;
         std::uint16_t peak_bin       = 0;
@@ -82,7 +84,7 @@ namespace Navtech {
         auto min_bin_to_operate_upon = min_bin_to_operate_on;
         auto minimum_range           = bins_to_operate_on * protobuf_configuration->rangeresolutionmetres();
         auto maximum_range           = configuration->range_in_bins * protobuf_configuration->rangeresolutionmetres();
-        Azimuth_target target { azimuth, angle };
+        Azimuth_target target { azimuth, angle, ntp_seconds, ntp_split_seconds };
 
         while (peak_bin != configuration->range_in_bins) {
             peak_bin                = find_peak_bin(data, min_bin_to_operate_upon, configuration->range_in_bins, bins_to_operate_on);

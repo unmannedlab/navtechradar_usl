@@ -24,15 +24,19 @@ namespace Navtech {
 
     class Azimuth_target {
     public:
-        Azimuth_target(std::uint16_t azi, double ang) : azimuth { azi }, angle { ang } { }
+        Azimuth_target(std::uint16_t azi, double ang, std::uint32_t seconds, std::uint32_t split_seconds) :
+            azimuth { azi }, angle { ang }, ntp_seconds(seconds), ntp_split_seconds(split_seconds)
+        { }
         std::uint16_t azimuth;
         double angle;
         std::vector<Target> targets;
+        std::uint32_t ntp_seconds { 0 };
+        std::uint32_t ntp_split_seconds { 0 };
     };
 
     class Peak_finder {
     public:
-        Peak_finder();
+        Peak_finder() = default;
         void set_target_callback(std::function<void(Azimuth_target&&)> fn = nullptr);
         void fft_data_handler(const Fft_data::Pointer& fft_data);
         void configure(const Configuration_data::Pointer& data,
@@ -65,7 +69,11 @@ namespace Navtech {
                                const std::uint16_t& end_bin,
                                const std::uint8_t& bins_to_operate_upon);
 
-        void find_peaks(std::uint16_t azimuth, double angle, const std::vector<double>& data);
+        void find_peaks(std::uint16_t azimuth,
+                        double angle,
+                        std::uint32_t ntp_seconds,
+                        std::uint32_t ntp_split_seconds,
+                        const std::vector<double>& data);
     };
 
 } // namespace Navtech
