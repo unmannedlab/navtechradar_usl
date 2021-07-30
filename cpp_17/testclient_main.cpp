@@ -30,8 +30,8 @@ void fft_data_handler(const Fft_data::Pointer& data)
         auto diff         = Helpers::Now() - last_rotation_reset;
         auto packate_rate = packet_count / (diff / 1000.0);
         if (rotated_once) {
-            Helpers::Log("fft_data_handler - Rotating @ [" + std::to_string(1000.0 / diff) + "Hz] Packets [" +
-                         std::to_string(packet_count) + "] [" + std::to_string(packate_rate) + "]");
+            Helpers::Log("fft_data_handler - Rotating @ [" + std::to_string(1000.0 / diff) + "Hz] Packets [" + std::to_string(packet_count) + "] [" +
+                         std::to_string(packate_rate) + "]");
         }
         last_rotation_reset = Helpers::Now();
         packet_count        = 0;
@@ -40,20 +40,15 @@ void fft_data_handler(const Fft_data::Pointer& data)
     last_azimuth = data->azimuth;
 }
 
-void configuration_data_handler(const Configuration_data::Pointer& data,
-                                const Configuration_data::ProtobufPointer& protobuf_configuration)
+void configuration_data_handler(const Configuration_data::Pointer& data, const Configuration_data::ProtobufPointer& protobuf_configuration)
 {
-    Helpers::Log("configuration_data_handler - Expected Rotation Rate [" +
-                 std::to_string(data->expected_rotation_rate) + " Hz]");
+    Helpers::Log("configuration_data_handler - Expected Rotation Rate [" + std::to_string(data->expected_rotation_rate) + " Hz]");
     Helpers::Log("configuration_data_handler - Range In Bins [" + std::to_string(data->range_in_bins) + "]");
-    Helpers::Log("configuration_data_handler - Range In Metres [" +
-                 std::to_string((data->bin_size / 10000.0) * data->range_in_bins) + " m]");
+    Helpers::Log("configuration_data_handler - Range In Metres [" + std::to_string((data->bin_size / 10000.0) * data->range_in_bins) + " m]");
     Helpers::Log("configuration_data_handler - Azimuth Samples [" + std::to_string(data->azimuth_samples) + "]");
     Helpers::Log("configuration_data_handler - Bin Size [" + std::to_string(data->bin_size / 10000.0) + " m]");
-    Helpers::Log("configuration_data_handler - Range Resolution [" +
-                 std::to_string(protobuf_configuration->rangeresolutionmetres()) + " m]");
-    Helpers::Log("configuration_data_handler - Resolution Hz [" +
-                 std::to_string(protobuf_configuration->rangeresolutionhz()) + " Hz]");
+    Helpers::Log("configuration_data_handler - Range Resolution [" + std::to_string(protobuf_configuration->rangeresolutionmetres()) + " m]");
+    Helpers::Log("configuration_data_handler - Resolution Hz [" + std::to_string(protobuf_configuration->rangeresolutionhz()) + " Hz]");
 
     packet_count = 0;
     last_azimuth = 0;
@@ -76,8 +71,7 @@ std::int32_t main(std::int32_t argc, char** argv)
 
     radar_client = allocate_owned<Radar_client>("10.77.2.211");
     radar_client->set_fft_data_callback(std::bind(&fft_data_handler, std::placeholders::_1));
-    radar_client->set_configuration_data_callback(
-        std::bind(&configuration_data_handler, std::placeholders::_1, std::placeholders::_2));
+    radar_client->set_configuration_data_callback(std::bind(&configuration_data_handler, std::placeholders::_1, std::placeholders::_2));
     radar_client->start();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(6000));

@@ -20,9 +20,7 @@
 #include <common.h>
 
 namespace Navtech {
-    Tcp_socket::Tcp_socket(const std::string& destination, const std::uint16_t& port) :
-        _sock { -1 }, _destination { destination }
-    { }
+    Tcp_socket::Tcp_socket(const std::string& destination, const std::uint16_t& port) : _sock { -1 }, _destination { destination } { }
 
 
     Tcp_socket::~Tcp_socket()

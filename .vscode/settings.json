@@ -2,7 +2,7 @@
     "editor.formatOnSave": true,
     "C_Cpp.clang_format_style": "file",
     "editor.rulers": [
-        120
+        150
     ],
     "files.associations": {
         "cctype": "cpp",

@@ -25,9 +25,7 @@ namespace Navtech {
 
     class Connection_info {
     public:
-        explicit Connection_info(const std::uint32_t unique_id, const Connection_state state) :
-            state(state), unique_id(unique_id)
-        { }
+        explicit Connection_info(const std::uint32_t unique_id, const Connection_state state) : state(state), unique_id(unique_id) { }
 
         explicit Connection_info(const Connection_info&) = delete;
         Connection_info& operator=(const Connection_info&) = delete;

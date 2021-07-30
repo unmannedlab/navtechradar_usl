@@ -173,8 +173,7 @@ namespace Navtech {
                 handle_health_message(msg);
                 break;
             default:
-                Helpers::Log("Radar_client - Unhandled Message [" + std::to_string(static_cast<uint32_t>(msg.type())) +
-                             "]");
+                Helpers::Log("Radar_client - Unhandled Message [" + std::to_string(static_cast<uint32_t>(msg.type())) + "]");
                 break;
         }
     }
@@ -255,8 +254,7 @@ namespace Navtech {
             std::memcpy(&peak_resolve, &targets[i], sizeof(peak_resolve));
             uint16_t power = 0;
             std::memcpy(&power, &targets[i + sizeof(peak_resolve)], sizeof(power));
-            navigation_data->peaks.push_back(
-                std::make_tuple<float, uint16_t>(htonl(peak_resolve) / RANGE_MULTIPLIER_FLOAT, htons(power)));
+            navigation_data->peaks.push_back(std::make_tuple<float, uint16_t>(htonl(peak_resolve) / RANGE_MULTIPLIER_FLOAT, htons(power)));
         }
 
         navigation_data_fn(navigation_data);

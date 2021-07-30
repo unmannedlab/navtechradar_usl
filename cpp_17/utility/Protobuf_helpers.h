@@ -99,8 +99,7 @@ namespace Navtech::Protobuf {
 
 
     template<class T, class U>
-    static bool deserialize_from_protocol_buffer_string(const std::string& object_string,
-                                                        Shared_owner<U>& object_to_deserialize_into)
+    static bool deserialize_from_protocol_buffer_string(const std::string& object_string, Shared_owner<U>& object_to_deserialize_into)
     {
         try {
             T protoObject;
@@ -119,9 +118,7 @@ namespace Navtech::Protobuf {
 
 
     template<class T>
-    static bool serialize_to_protocol_buffer(std::vector<std::uint8_t>& data,
-                                             const Shared_owner<T>& proto_object,
-                                             bool human_readable = false)
+    static bool serialize_to_protocol_buffer(std::vector<std::uint8_t>& data, const Shared_owner<T>& proto_object, bool human_readable = false)
     {
         try {
             std::string objectString;

@@ -23,18 +23,11 @@ namespace Navtech::Colossus_network_protocol {
     Message::Message() { initialize(); }
 
 
-    Message::Message(const std::string& ip_addr, Message::ID id) : address { ip_addr }, identity { id }
-    {
-        initialize();
-    }
+    Message::Message(const std::string& ip_addr, Message::ID id) : address { ip_addr }, identity { id } { initialize(); }
 
 
-    Message::Message(const std::string& ip_addr,
-                     Message::ID id,
-                     Type t,
-                     const std::vector<std::uint8_t>& payload_vector) :
-        address { ip_addr },
-        identity { id }
+    Message::Message(const std::string& ip_addr, Message::ID id, Type t, const std::vector<std::uint8_t>& payload_vector) :
+        address { ip_addr }, identity { id }
     {
         initialize();
         type(t);
@@ -53,8 +46,7 @@ namespace Navtech::Colossus_network_protocol {
     }
 
 
-    Message::Message(const std::string& ip_addr, Message::ID id, Type t, const std::string& payload_string) :
-        address { ip_addr }, identity { id }
+    Message::Message(const std::string& ip_addr, Message::ID id, Type t, const std::string& payload_string) : address { ip_addr }, identity { id }
     {
         initialize();
         type(t);
@@ -62,8 +54,7 @@ namespace Navtech::Colossus_network_protocol {
     }
 
 
-    Message::Message(const std::string& ip_addr, Message::ID id, Type t, std::string&& payload_string) :
-        address { ip_addr }, identity { id }
+    Message::Message(const std::string& ip_addr, Message::ID id, Type t, std::string&& payload_string) : address { ip_addr }, identity { id }
     {
         using std::move;
 
@@ -73,13 +64,8 @@ namespace Navtech::Colossus_network_protocol {
     }
 
 
-    Message::Message(const std::string& ip_addr,
-                     Message::ID id,
-                     Type t,
-                     Const_iterator payload_start,
-                     std::size_t payload_sz) :
-        address { ip_addr },
-        identity { id }
+    Message::Message(const std::string& ip_addr, Message::ID id, Type t, Const_iterator payload_start, std::size_t payload_sz) :
+        address { ip_addr }, identity { id }
     {
         using std::move;
 
@@ -96,15 +82,13 @@ namespace Navtech::Colossus_network_protocol {
     }
 
 
-    Message::Message(const std::string& ip_addr, Message::ID id, std::vector<std::uint8_t>&& message_vector) :
-        address { ip_addr }, identity { id }
+    Message::Message(const std::string& ip_addr, Message::ID id, std::vector<std::uint8_t>&& message_vector) : address { ip_addr }, identity { id }
     {
         replace(std::move(message_vector));
     }
 
 
-    Message::Message(const std::string& ip_addr, ID id, Const_iterator message_start, std::size_t message_sz) :
-        address { ip_addr }, identity { id }
+    Message::Message(const std::string& ip_addr, ID id, Const_iterator message_start, std::size_t message_sz) : address { ip_addr }, identity { id }
     {
         replace(message_start, message_sz);
     }

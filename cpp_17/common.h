@@ -18,9 +18,7 @@ namespace Navtech {
     public:
         static uint64_t Now()
         {
-            return std::chrono::duration_cast<std::chrono::milliseconds>(
-                       std::chrono::system_clock::now().time_since_epoch())
-                .count();
+            return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
         }
 
         static void Log(const std::string& message)
@@ -28,9 +26,8 @@ namespace Navtech {
             auto now       = std::chrono::system_clock::now();
             auto in_time_t = std::chrono::system_clock::to_time_t(now);
 
-            auto nowSeconds = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
-            auto nowMilliseconds =
-                std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+            auto nowSeconds            = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
+            auto nowMilliseconds       = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
             auto millisecondsRemaining = nowMilliseconds - (nowSeconds * 1000);
 
             constexpr auto bufsize        = 20;

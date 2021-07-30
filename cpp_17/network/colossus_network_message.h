@@ -197,10 +197,7 @@ namespace Navtech::Colossus_network_protocol {
             std::uint32_t payload_size;
 
             static Header* overlay_onto(std::uint8_t* from) { return reinterpret_cast<Header*>(from); }
-            static const Header* overlay_onto(const std::uint8_t* from)
-            {
-                return reinterpret_cast<const Header*>(from);
-            }
+            static const Header* overlay_onto(const std::uint8_t* from) { return reinterpret_cast<const Header*>(from); }
         };
 #pragma pack()
 

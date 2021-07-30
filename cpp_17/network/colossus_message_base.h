@@ -67,17 +67,11 @@ namespace Navtech::Colossus_network_protocol {
 
             Protocol_buffer(Message::Payload& parent) : Header_only<Derived_Ty> { parent } { }
 
-            std::size_t protobuf_size() const
-            {
-                return (Header_msg::payload()->size() - Header_msg::self()->header_size());
-            }
+            std::size_t protobuf_size() const { return (Header_msg::payload()->size() - Header_msg::self()->header_size()); }
 
             std::uint8_t* begin() { return (Header_msg::payload()->begin() + Header_msg::self()->header_size()); }
 
-            const std::uint8_t* begin() const
-            {
-                return (Header_msg::payload()->begin() + Header_msg::self()->header_size());
-            }
+            const std::uint8_t* begin() const { return (Header_msg::payload()->begin() + Header_msg::self()->header_size()); }
 
             std::uint8_t* end() { return Header_msg::payload()->end(); }
 
