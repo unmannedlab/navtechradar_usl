@@ -101,7 +101,7 @@ namespace Navtech {
     }
 
 
-    uint32_t Tcp_socket::send(const std::vector<std::uint8_t>& data)
+    std::uint32_t Tcp_socket::send(const std::vector<std::uint8_t>& data)
     {
 #ifdef _WIN32
         auto status = ::send(_sock, (char*)&data[0], data.size(), 0);

@@ -110,8 +110,8 @@ namespace Navtech {
         if (radar_client.get_connection_state() != Connection_state::Connected) return;
 
         std::vector<std::uint8_t> buffer(sizeof(std::uint32_t) * 2);
-        uint32_t net_gain   = htonl(static_cast<std::uint32_t>(gain * RANGE_MULTIPLIER));
-        uint32_t net_offset = htonl(static_cast<std::uint32_t>(offset * RANGE_MULTIPLIER));
+        std::uint32_t net_gain   = htonl(static_cast<std::uint32_t>(gain * RANGE_MULTIPLIER));
+        std::uint32_t net_offset = htonl(static_cast<std::uint32_t>(offset * RANGE_MULTIPLIER));
         std::memcpy(buffer.data(), &net_gain, sizeof(net_gain));
         std::memcpy(&buffer[sizeof(net_gain)], &net_offset, sizeof(net_offset));
 
@@ -138,10 +138,9 @@ namespace Navtech {
         auto contour = std::vector<std::uint8_t>();
         if (contour_data.size() == 720) {
             contour.resize(contour_data.size());
-            auto resolution = bin_size / 10000.0;
             for (std::size_t i = 0; i < contour_data.size(); i += 2) {
                 auto result    = (((contour_data[i]) << 8) | ((contour_data[i + 1])));
-                result         = (std::uint16_t)std::ceil(result / resolution);
+                result         = (std::uint16_t)std::ceil(result / bin_size);
                 contour[i]     = (result & 0xff00) >> 8;
                 contour[i + 1] = result & 0x00ff;
             }
@@ -190,22 +189,20 @@ namespace Navtech {
         auto payload                = msg.payload();
         auto config                 = payload.as<Colossus_network_protocol::Configuration>();
         auto protobuf_configuration = allocate_shared<Colossus::Protobuf::ConfigurationData>();
-        // protobuf_configuration->ParseFromString(config.to_string());
-
-        azimuth_samples        = config.azimuth_samples();
-        bin_size               = config.bin_size();
-        range_in_bins          = config.range_in_bins();
-        encoder_size           = config.encoder_size();
-        expected_rotation_rate = config.rotation_speed() / 1000;
+        protobuf_configuration->ParseFromString(config.to_string());
 
         if (send_radar_data) send_simple_network_message(Colossus_network_protocol::Message::Type::start_fft_data);
 
+        encoder_size                               = config.encoder_size();
+        bin_size                                   = protobuf_configuration->rangeresolutionmetres();
         auto configuration_data                    = allocate_shared<Configuration_data>();
-        configuration_data->azimuth_samples        = azimuth_samples;
+        configuration_data->azimuth_samples        = config.azimuth_samples();
         configuration_data->bin_size               = bin_size;
-        configuration_data->range_in_bins          = range_in_bins;
+        configuration_data->range_in_bins          = config.range_in_bins();
         configuration_data->encoder_size           = encoder_size;
-        configuration_data->expected_rotation_rate = expected_rotation_rate;
+        configuration_data->expected_rotation_rate = config.rotation_speed() / 1000;
+        configuration_data->range_gain             = config.range_gain();
+        configuration_data->range_offset           = config.range_offset();
 
         configuration_fn(configuration_data, protobuf_configuration);
     }
@@ -223,7 +220,7 @@ namespace Navtech {
 
         auto fftData               = allocate_shared<Fft_data>();
         fftData->azimuth           = fft_data.azimuth();
-        fftData->angle             = (fft_data.azimuth() * 360.0f) / (float)encoder_size;
+        fftData->angle             = (fft_data.azimuth() * 360.0f) / encoder_size;
         fftData->sweep_counter     = fft_data.sweep_counter();
         fftData->ntp_seconds       = fft_data.ntp_seconds();
         fftData->ntp_split_seconds = fft_data.ntp_split_seconds();
@@ -246,15 +243,15 @@ namespace Navtech {
         navigation_data->azimuth           = nav_data.azimuth();
         navigation_data->ntp_seconds       = nav_data.ntp_seconds();
         navigation_data->ntp_split_seconds = nav_data.ntp_split_seconds();
-        navigation_data->angle             = (nav_data.azimuth() * 360.0f) / (float)encoder_size;
+        navigation_data->angle             = (nav_data.azimuth() * 360.0f) / encoder_size;
 
         auto peaks_count = targets.size() / NAV_DATA_RECORD_LENGTH;
         for (auto i = 0u; i < (10 + (peaks_count * NAV_DATA_RECORD_LENGTH)); i += NAV_DATA_RECORD_LENGTH) {
-            uint32_t peak_resolve = 0;
+            std::uint32_t peak_resolve = 0;
             std::memcpy(&peak_resolve, &targets[i], sizeof(peak_resolve));
-            uint16_t power = 0;
+            std::uint16_t power = 0;
             std::memcpy(&power, &targets[i + sizeof(peak_resolve)], sizeof(power));
-            navigation_data->peaks.push_back(std::make_tuple<float, uint16_t>(htonl(peak_resolve) / RANGE_MULTIPLIER_FLOAT, htons(power)));
+            navigation_data->peaks.push_back(std::make_tuple<float, std::uint16_t>(htonl(peak_resolve) / RANGE_MULTIPLIER_FLOAT, htons(power)));
         }
 
         navigation_data_fn(navigation_data);

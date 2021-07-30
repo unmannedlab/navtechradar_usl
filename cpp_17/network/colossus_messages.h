@@ -22,7 +22,7 @@ namespace Navtech::Colossus_network_protocol {
         union float_uint32_map
         {
             float f;
-            uint32_t i;
+            std::uint32_t i;
         };
 
     public:
@@ -126,22 +126,22 @@ namespace Navtech::Colossus_network_protocol {
         std::uint32_t ntp_split_seconds() const { return ntohl(self()->split_seconds); }
         void ntp_split_seconds(std::uint32_t val) { self()->split_seconds = htonl(val); }
 
-        std::vector<uint8_t> fft_data() const { return std::vector<std::uint8_t>(payload()->begin() + fft_data_offset(), payload()->end()); }
+        std::vector<std::uint8_t> fft_data() const { return std::vector<std::uint8_t>(payload()->begin() + fft_data_offset(), payload()->end()); }
 
         // If your message has a header you MUST provide this function
         //
-        std::size_t header_size() const { return (3 * sizeof(std::uint16_t) + 2 * sizeof(uint32_t)); }
+        std::size_t header_size() const { return (3 * sizeof(std::uint16_t) + 2 * sizeof(std::uint32_t)); }
 
     private:
 // Attribute order MUST match the actual message header, as
 // this is a memory overlay.
 //
 #pragma pack(1)
-        uint16_t data_offset;
-        uint16_t sweep;
-        uint16_t azi;
-        uint32_t seconds;
-        uint32_t split_seconds;
+        std::uint16_t data_offset;
+        std::uint16_t sweep;
+        std::uint16_t azi;
+        std::uint32_t seconds;
+        std::uint32_t split_seconds;
 #pragma pack()
     };
 
@@ -164,12 +164,12 @@ namespace Navtech::Colossus_network_protocol {
         std::uint32_t ntp_split_seconds() const { return ntohl(self()->split_seconds); }
         void ntp_split_seconds(std::uint32_t val) { self()->split_seconds = htonl(val); }
 
-        std::vector<uint8_t> nav_data() const { return std::vector<std::uint8_t>(payload()->begin(), payload()->end()); }
+        std::vector<std::uint8_t> nav_data() const { return std::vector<std::uint8_t>(payload()->begin(), payload()->end()); }
 
 
         // If your message has a header you MUST provide this function
         //
-        std::size_t header_size() const { return (sizeof(std::uint16_t) + 2 * sizeof(uint32_t)); }
+        std::size_t header_size() const { return (sizeof(std::uint16_t) + 2 * sizeof(std::uint32_t)); }
 
     private:
 // Attribute order MUST match the actual message header, as

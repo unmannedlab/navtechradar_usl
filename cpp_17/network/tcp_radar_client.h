@@ -46,12 +46,12 @@ namespace Navtech {
         Tcp_radar_client& operator=(const Tcp_radar_client&) = delete;
         void start();
         void stop();
-        void send(const std::vector<uint8_t> data);
-        void set_receive_data_callback(std::function<void(std::vector<uint8_t>&&)> callback = nullptr);
+        void send(const std::vector<std::uint8_t> data);
+        void set_receive_data_callback(std::function<void(std::vector<std::uint8_t>&&)> callback = nullptr);
         Navtech::Connection_state get_connection_state();
 
     private:
-        Threaded_queue<std::vector<uint8_t>> receive_data_queue;
+        Threaded_queue<std::vector<std::uint8_t>> receive_data_queue;
         std::string ip_address { "192.168.0.1" };
         std::uint16_t port { 6317 };
         Tcp_socket socket;

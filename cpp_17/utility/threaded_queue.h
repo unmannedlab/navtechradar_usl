@@ -14,7 +14,7 @@
 
 #include "threaded_class.h"
 
-constexpr uint32_t max_queue_depth = 10000;
+constexpr std::uint32_t max_queue_depth = 10000;
 
 namespace Navtech {
     template<class T>

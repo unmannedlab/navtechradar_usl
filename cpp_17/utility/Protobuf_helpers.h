@@ -128,7 +128,7 @@ namespace Navtech::Protobuf {
             else
                 proto_object->SerializeToString(&objectString);
 
-            data = std::vector<uint8_t>(objectString.begin(), objectString.end());
+            data = std::vector<std::uint8_t>(objectString.begin(), objectString.end());
             return true;
         }
         catch (std::exception&) {

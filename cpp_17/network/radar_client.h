@@ -26,7 +26,7 @@ namespace Navtech {
     class Fft_data {
     public:
         using Pointer = Shared_owner<Fft_data>;
-        float angle { 0.0f };
+        double angle { 0.0 };
         std::uint16_t azimuth { 0 };
         std::uint16_t sweep_counter { 0 };
         std::uint32_t ntp_seconds { 0 };
@@ -37,7 +37,7 @@ namespace Navtech {
     class Navigation_data {
     public:
         using Pointer = Shared_owner<Navigation_data>;
-        float angle { 0.0f };
+        double angle { 0.0 };
         std::uint16_t azimuth { 0 };
         std::uint32_t ntp_seconds { 0 };
         std::uint32_t ntp_split_seconds { 0 };
@@ -50,9 +50,11 @@ namespace Navtech {
         using ProtobufPointer = Shared_owner<Colossus::Protobuf::ConfigurationData>;
         std::uint16_t azimuth_samples { 0 };
         std::uint16_t encoder_size { 0 };
-        std::uint16_t bin_size { 0 };
+        double bin_size { 0 };
         std::uint16_t range_in_bins { 0 };
         std::uint16_t expected_rotation_rate { 0 };
+        float range_gain { 0.0f };
+        float range_offset { 0.0f };
     };
 
     class Radar_client {
@@ -85,11 +87,8 @@ namespace Navtech {
         std::function<void(const Navigation_data::Pointer&)> navigation_data_callback                                                   = nullptr;
         std::function<void(const Configuration_data::Pointer&, const Configuration_data::ProtobufPointer&)> configuration_data_callback = nullptr;
 
-        std::uint16_t encoder_size           = 0;
-        std::uint16_t bin_size               = 0;
-        std::uint16_t range_in_bins          = 0;
-        std::uint16_t azimuth_samples        = 0;
-        std::uint16_t expected_rotation_rate = 0;
+        std::uint16_t encoder_size = 0;
+        double bin_size            = 0;
 
         void handle_data(std::vector<std::uint8_t>&& data);
         void handle_configuration_message(Colossus_network_protocol::Message& msg);
