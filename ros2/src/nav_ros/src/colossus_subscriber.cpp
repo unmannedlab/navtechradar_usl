@@ -12,9 +12,9 @@ public:
         using std::placeholders::_1;
 
         configuration_data_subscriber = Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
-            "configuration_data", 5, std::bind(&Colossus_subscriber::configuration_data_callback, this, _1));
+            "radar_data/configuration_data", 5, std::bind(&Colossus_subscriber::configuration_data_callback, this, _1));
         fft_data_subscriber = Node::create_subscription<interfaces::msg::FftDataMessage>(
-            "fft_data", 1600, std::bind(&Colossus_subscriber::fft_data_callback, this, _1));
+            "radar_data/fft_data", 1600, std::bind(&Colossus_subscriber::fft_data_callback, this, _1));
     }
 
 private:
