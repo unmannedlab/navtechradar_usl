@@ -29,13 +29,13 @@ public:
         camera_image_publisher = Node::create_publisher<interfaces::msg::CameraImageMessage>("camera_data/image_data", 100);
     }
 
-    void camera_image_handler(Mat image)
+    void camera_image_handler(Mat image, int fps)
     {
-        RCLCPP_INFO(Node::get_logger(), "Publishing Camera Image Data");
-        RCLCPP_INFO(Node::get_logger(), "Mat rows: %i", image.rows);
-        RCLCPP_INFO(Node::get_logger(), "Mat columns: %i", image.cols);
-        RCLCPP_INFO(Node::get_logger(), "Mat size: %i", image.rows * image.cols);
-        RCLCPP_INFO(Node::get_logger(), "Mat type: %i", image.type());
+        //RCLCPP_INFO(Node::get_logger(), "Publishing Camera Image Data");
+        //RCLCPP_INFO(Node::get_logger(), "Mat rows: %i", image.rows);
+        //RCLCPP_INFO(Node::get_logger(), "Mat columns: %i", image.cols);
+        //RCLCPP_INFO(Node::get_logger(), "Mat size: %i", image.rows * image.cols);
+        //RCLCPP_INFO(Node::get_logger(), "Mat type: %i", image.type());
 
         auto buffer_length = image.cols * image.rows * sizeof(uint8_t) * 3;
         auto image_buffer = new uint8_t[buffer_length];
@@ -46,13 +46,14 @@ public:
         auto millisec_since_epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         auto sec_since_epoch = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
 
-        RCLCPP_INFO(Node::get_logger(), "Image buffer size: %li", buffer_length);
+        //RCLCPP_INFO(Node::get_logger(), "Image buffer size: %li", buffer_length);
 
         auto message = interfaces::msg::CameraImageMessage();
         message.image_data = vectorBuffer;
         message.image_rows = image.rows;
         message.image_cols = image.cols;
         message.image_channels = image.channels();
+        message.image_fps = fps;
         message.ntp_seconds = sec_since_epoch;
         message.ntp_split_seconds = millisec_since_epoch - (sec_since_epoch * 1000);
 
@@ -84,7 +85,7 @@ int main(int argc, char* argv[])
     Mat image;
     while (ok()) {
         capture >> image;
-        node->camera_image_handler(image);
+        node->camera_image_handler(image, capture.get(CAP_PROP_FPS));
         spin_some(node);
     }
 

@@ -1,0 +1,8 @@
+// Launch radar and camera with paramaters from yaml file
+ros2 launch launch_ros launch_radar_and_camera.launch.py
+
+// Record camera data and radar data to user defined folder and file
+ros2 bag record -o recordings/record_test /radar_data/configuration_data /radar_data/fft_data camera_data/image_data
+
+// Play back example for above
+ros2 bag play recordings/record_test/record_test_0.db3

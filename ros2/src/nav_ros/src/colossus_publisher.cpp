@@ -36,7 +36,7 @@ public:
 
     void fft_data_handler(const FFTDataPtr_t& data)
     {
-        RCLCPP_INFO(Node::get_logger(), "Publishing FFT Data");
+        //RCLCPP_INFO(Node::get_logger(), "Publishing FFT Data");
 
         auto message = interfaces::msg::FftDataMessage();
         message.angle = data->Angle;
