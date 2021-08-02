@@ -1,6 +1,7 @@
-project(iasdk C CXX)
-
 cmake_minimum_required(VERSION 3.16)
+
+project(iasdk C CXX)
+enable_testing()
 
 set (CMAKE_CXX_FLAGS " -Wall -pthread -std=c++17")
 add_definitions(${CMAKE_CXX_FLAGS})
@@ -29,3 +30,5 @@ target_link_libraries(testclient iasdk_network iasdk_utility iasdk_protobuf)
 
 add_executable(navigationclient navigation_main.cpp)
 target_link_libraries(navigationclient iasdk_network iasdk_utility iasdk_protobuf iasdk_navigation)
+
+add_subdirectory(unittests)
