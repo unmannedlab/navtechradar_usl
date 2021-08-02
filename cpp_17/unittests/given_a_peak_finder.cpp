@@ -113,6 +113,8 @@ TEST_F(given_a_peak_finder, WhenCallingFindPeakBinWithATwinPeaksAboveThresholdSh
     std::function<void(Azimuth_target &&)> lambda = [&target_found, &target_count](Azimuth_target&& target) {
         target_found = true;
         target_count = target.targets.size();
+        ASSERT_EQ(2.0, target.targets[0].range);
+        ASSERT_EQ(6.25, target.targets[1].range);
         return;
     };
 
