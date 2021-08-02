@@ -1,13 +1,14 @@
 #ifndef COLOSSUS_MESSAGE_BASE_H
 #define COLOSSUS_MESSAGE_BASE_H
 
+#include <cstddef>
 #include <cstdint>
 
 // DEBUG ONLY
 #include <iomanip>
 #include <iostream>
 
-#include "../utility/Pointer_types.h"
+#include "Pointer_types.h"
 #include "colossus_network_message.h"
 
 namespace Navtech::Colossus_network_protocol {
@@ -21,64 +22,70 @@ namespace Navtech::Colossus_network_protocol {
     namespace Message_base {
 
         template<typename Derived_Ty>
+        class Protocol_buffer;
+
+#pragma pack(1)
+        template<typename Derived_Ty>
         class Header_only {
         public:
-            Header_only(Message::Payload& parent) : payload_ptr { associate_with(parent) } { }
-
-            // self() returns an overlay to the underlying payload.  It ensures
-            // the Derived_Ty is correctly aligned to the raw (payload) data.
-            // Derived types MUST use self() to access any of their attributes
-            //
-            Derived_Ty* self() { return reinterpret_cast<Derived_Ty*>(payload()->begin() - sizeof(Header_only)); }
-
-            const Derived_Ty* self() const
-            {
-                // auto base = payload()->begin();
-                // auto sz   = sizeof(Header_only);
-
-                // std::cout << std::hex;
-                // std::cout << "base addr: " << reinterpret_cast<unsigned long>(base) << std::endl;
-                // std::cout << "size:      " << sz << std::endl;
-                // std::cout << "self:      " << reinterpret_cast<unsigned long>((payload()->begin() -
-                // sizeof(Header_only))) << std::endl; std::cout << std::dec << std::endl;
-
-                return reinterpret_cast<const Derived_Ty*>(payload()->begin() - sizeof(Header_only));
-            }
-
-
             // Derived types MUST override this function to return the size
             // of their header (in bytes)
             //
-            std::size_t header_size() const { return 0; }
+            std::size_t header_size() const { return actual().size(); }
 
-            Association_to<Message::Payload> payload() { return payload_ptr; }
+            // begin() and end() give pointers to the Derived_Ty
+            // object.
+            //
+            const std::uint8_t* begin() const { return (reinterpret_cast<const std::uint8_t*>(this) + sizeof(Header_only)); }
 
-            Association_to<const Message::Payload> payload() const { return payload_ptr; }
+            std::uint8_t* begin() { return (reinterpret_cast<std::uint8_t*>(this) + sizeof(Header_only)); }
+
+            const std::uint8_t* end() const { return begin() + header_size(); }
+
+            std::uint8_t* end() { return begin() + header_size(); }
 
         protected:
-            Association_to<Message::Payload> payload_ptr;
+            friend Protocol_buffer<Derived_Ty>;
+
+            Derived_Ty& actual() { return *(reinterpret_cast<Derived_Ty*>(this)); }
+
+            const Derived_Ty& actual() const { return *(reinterpret_cast<const Derived_Ty*>(this)); }
+
+            const std::uint8_t* payload_begin() const { return payload_start; }
+
+            const std::uint8_t* payload_end() const { return payload_finish; }
+
+            std::size_t size() const { return 0; }
+
+            // The pointers are overlaid on the raw message buffer, re-using the
+            // header signature memory.
+            const std::uint8_t* const payload_start {};
+            const std::uint8_t* const payload_finish {};
+
+            static constexpr auto padding_sz = Message::header_size() - 2 * sizeof(std::uint8_t*);
+            const std::byte alignment_padding[padding_sz] {};
         };
+#pragma pack()
 
-
+#pragma pack(1)
         template<typename Derived_Ty>
         class Protocol_buffer : public Header_only<Derived_Ty> {
         public:
-            using Header_msg = Header_only<Derived_Ty>;
+            std::string to_string() const { return std::string { protobuf_begin(), protobuf_end() }; }
 
-            Protocol_buffer(Message::Payload& parent) : Header_only<Derived_Ty> { parent } { }
+            std::vector<std::uint8_t> to_vector() const { return std::vector<std::uint8_t> { protobuf_begin(), protobuf_end() }; }
 
-            std::size_t protobuf_size() const { return (Header_msg::payload()->size() - Header_msg::self()->header_size()); }
+            std::size_t protobuf_size() const { return protobuf_end() - protobuf_begin(); }
 
-            std::uint8_t* begin() { return (Header_msg::payload()->begin() + Header_msg::self()->header_size()); }
+        protected:
+            using Header = Header_only<Derived_Ty>;
 
-            const std::uint8_t* begin() const { return (Header_msg::payload()->begin() + Header_msg::self()->header_size()); }
 
-            std::uint8_t* end() { return Header_msg::payload()->end(); }
+            const std::uint8_t* protobuf_begin() const { return Header::end(); }
 
-            const std::uint8_t* end() const { return Header_msg::payload()->end(); }
-
-            std::string to_string() const { return std::string { begin(), end() }; }
+            const std::uint8_t* protobuf_end() const { return Header::payload_end(); }
         };
+#pragma pack()
 
     } // namespace Message_base
 

@@ -101,10 +101,7 @@ namespace Navtech {
             }
             if (peaks_found >= max_peaks_per_azimuth) break;
         }
-        if (peaks_found > 0 && target_callback != nullptr) {
-            auto d = 10;
-            target_callback(std::move(target));
-        }
+        if (peaks_found > 0 && target_callback != nullptr) { target_callback(std::move(target)); }
     }
 
 

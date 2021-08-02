@@ -101,7 +101,7 @@ namespace Navtech {
 
         Colossus_network_protocol::Message msg {};
         msg.type(Colossus_network_protocol::Message::Type::set_nav_threshold);
-        msg.payload().replace(buffer);
+        msg.append(buffer);
         radar_client.send(msg.relinquish());
     }
 
@@ -117,7 +117,7 @@ namespace Navtech {
 
         Colossus_network_protocol::Message msg {};
         msg.type(Colossus_network_protocol::Message::Type::set_nav_range_offset_and_gain);
-        msg.payload().replace(buffer);
+        msg.append(buffer);
         radar_client.send(msg.relinquish());
     }
 
@@ -127,8 +127,7 @@ namespace Navtech {
 
         Colossus_network_protocol::Message msg {};
         msg.type(type);
-        auto d = msg.relinquish();
-        radar_client.send(d);
+        radar_client.send(msg.relinquish());
     }
 
     void Radar_client::update_contour_map(const std::vector<std::uint8_t>& contour_data)
@@ -148,7 +147,7 @@ namespace Navtech {
 
         Colossus_network_protocol::Message msg {};
         msg.type(Colossus_network_protocol::Message::Type::contour_update);
-        msg.payload().replace(contour);
+        msg.append(contour);
         radar_client.send(msg.relinquish());
     }
 
@@ -186,23 +185,22 @@ namespace Navtech {
         _callbackMutex.unlock();
         if (configuration_fn == nullptr) return;
 
-        auto payload                = msg.payload();
-        auto config                 = payload.as<Colossus_network_protocol::Configuration>();
+        auto config                 = msg.view_as<Colossus_network_protocol::Configuration>();
         auto protobuf_configuration = allocate_shared<Colossus::Protobuf::ConfigurationData>();
-        protobuf_configuration->ParseFromString(config.to_string());
+        protobuf_configuration->ParseFromString(config->to_string());
 
         if (send_radar_data) send_simple_network_message(Colossus_network_protocol::Message::Type::start_fft_data);
 
-        encoder_size                               = config.encoder_size();
+        encoder_size                               = config->encoder_size();
         bin_size                                   = protobuf_configuration->rangeresolutionmetres();
         auto configuration_data                    = allocate_shared<Configuration_data>();
-        configuration_data->azimuth_samples        = config.azimuth_samples();
+        configuration_data->azimuth_samples        = config->azimuth_samples();
         configuration_data->bin_size               = bin_size;
-        configuration_data->range_in_bins          = config.range_in_bins();
+        configuration_data->range_in_bins          = config->range_in_bins();
         configuration_data->encoder_size           = encoder_size;
-        configuration_data->expected_rotation_rate = config.rotation_speed() / 1000;
-        configuration_data->range_gain             = config.range_gain();
-        configuration_data->range_offset           = config.range_offset();
+        configuration_data->expected_rotation_rate = config->rotation_speed() / 1000;
+        configuration_data->range_gain             = config->range_gain();
+        configuration_data->range_offset           = config->range_offset();
 
         configuration_fn(configuration_data, protobuf_configuration);
     }
@@ -216,15 +214,15 @@ namespace Navtech {
         _callbackMutex.unlock();
         if (fft_data_fn == nullptr) return;
 
-        auto fft_data = msg.payload().as<Colossus_network_protocol::Fft_data>();
+        auto fft_data = msg.view_as<Colossus_network_protocol::Fft_data>();
 
         auto fftData               = allocate_shared<Fft_data>();
-        fftData->azimuth           = fft_data.azimuth();
-        fftData->angle             = (fft_data.azimuth() * 360.0f) / encoder_size;
-        fftData->sweep_counter     = fft_data.sweep_counter();
-        fftData->ntp_seconds       = fft_data.ntp_seconds();
-        fftData->ntp_split_seconds = fft_data.ntp_split_seconds();
-        fftData->data              = fft_data.fft_data();
+        fftData->azimuth           = fft_data->azimuth();
+        fftData->angle             = (fft_data->azimuth() * 360.0f) / encoder_size;
+        fftData->sweep_counter     = fft_data->sweep_counter();
+        fftData->ntp_seconds       = fft_data->ntp_seconds();
+        fftData->ntp_split_seconds = fft_data->ntp_split_seconds();
+        fftData->data              = fft_data->fft_data();
 
         fft_data_fn(fftData);
     }
@@ -236,14 +234,14 @@ namespace Navtech {
         _callbackMutex.unlock();
         if (navigation_data_fn == nullptr) return;
 
-        auto nav_data = msg.payload().as<Colossus_network_protocol::Navigation_data>();
-        auto targets  = nav_data.nav_data();
+        auto nav_data = msg.view_as<Colossus_network_protocol::Navigation_data>();
+        auto targets  = nav_data->nav_data();
 
         auto navigation_data               = allocate_shared<Navigation_data>();
-        navigation_data->azimuth           = nav_data.azimuth();
-        navigation_data->ntp_seconds       = nav_data.ntp_seconds();
-        navigation_data->ntp_split_seconds = nav_data.ntp_split_seconds();
-        navigation_data->angle             = (nav_data.azimuth() * 360.0f) / encoder_size;
+        navigation_data->azimuth           = nav_data->azimuth();
+        navigation_data->ntp_seconds       = nav_data->ntp_seconds();
+        navigation_data->ntp_split_seconds = nav_data->ntp_split_seconds();
+        navigation_data->angle             = (nav_data->azimuth() * 360.0f) / encoder_size;
 
         auto peaks_count = targets.size() / NAV_DATA_RECORD_LENGTH;
         for (auto i = 0u; i < (10 + (peaks_count * NAV_DATA_RECORD_LENGTH)); i += NAV_DATA_RECORD_LENGTH) {

@@ -63,7 +63,7 @@ void navigation_data_handler(Azimuth_target&& target_data)
 
 void configuration_data_handler(const Configuration_data::Pointer& configuration, const Configuration_data::ProtobufPointer& protobuf_configuration)
 {
-    auto threshold             = 100.0;            // Threshold in dB
+    auto threshold             = 140.0;            // Threshold in dB
     auto bins_to_operate_on    = 4;                // Radar bins window size to search for peaks in
     auto start_bin             = 50;               // Start Bin
     auto buffer_mode           = BufferModes::Off; // Buffer mode should only be used with a staring radar

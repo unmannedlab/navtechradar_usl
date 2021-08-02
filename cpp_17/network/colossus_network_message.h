@@ -5,8 +5,8 @@
 #include <vector>
 
 
-#include "../utility/Pointer_types.h"
 #include "IP_address.h"
+#include "Pointer_types.h"
 
 namespace Navtech::Colossus_network_protocol {
 
@@ -14,7 +14,7 @@ namespace Navtech::Colossus_network_protocol {
         0x00, 0x01, 0x03, 0x03, 0x07, 0x07, 0x0F, 0x0F, 0x1F, 0x1F, 0x3F, 0x3F, 0x7F, 0x7F, 0xFE, 0xFE,
     };
 
-    constexpr std::size_t signature_sz { valid_signature.size() };
+    static constexpr std::size_t signature_sz { valid_signature.size() };
     constexpr std::uint8_t version { 1 };
 
     // --------------------------------------------------------------------------------------------------
@@ -66,85 +66,24 @@ namespace Navtech::Colossus_network_protocol {
         using ID             = std::uint32_t;
         using Iterator       = std::uint8_t*;
         using Const_iterator = const std::uint8_t*;
-
-        // Payload provides an abstract interface into the payload
-        // part of the message.  A Payload object is just an overlay
-        // into the message's data; it contains no data itself.
-        //
-        class Payload {
-        public:
-            Payload(Message& parent);
-
-            void append(const std::vector<std::uint8_t>& data);
-            void append(std::vector<std::uint8_t>&& data);
-            void append(Const_iterator start, std::size_t n);
-            void append(const std::string& str);
-            void append(std::string&& str);
-
-            Payload& operator+=(const std::vector<std::uint8_t>& data);
-            Payload& operator+=(std::vector<std::uint8_t>&& data);
-            Payload& operator+=(const std::string& str);
-            Payload& operator+=(std::string&& str);
-
-            void replace(const std::vector<std::uint8_t>& data);
-            void replace(std::vector<std::uint8_t>&& data);
-            void replace(Const_iterator start, std::size_t n);
-            void replace(const std::string& str);
-            void replace(std::string&& str);
-
-            Payload& operator=(const std::vector<std::uint8_t>& data);
-            Payload& operator=(std::vector<std::uint8_t>&& data);
-            Payload& operator=(const std::string& str);
-            Payload& operator=(std::string&& str);
-
-            std::vector<std::uint8_t> relinquish();
-
-            std::uint32_t size() const;
-
-            Iterator begin();
-            Const_iterator begin() const;
-            Iterator end();
-            Const_iterator end() const;
-
-            template<typename Accessor_Ty>
-            Accessor_Ty as()
-            {
-                return Accessor_Ty { *this };
-            }
-
-        protected:
-            void size(std::uint32_t sz);
-
-        private:
-            Association_to<Message> msg;
-        };
-
-        friend class Payload;
+        using Buffer         = std::vector<std::uint8_t>;
 
 
-        // Empty, but initialized, messages; ready for adding payload, etc.
+        // Constructors
         //
         Message();
         Message(const std::string& ip_addr, ID id);
 
-        // Initialize message with header information and payload
-        //
-        Message(const std::string& ip_addr, ID id, Type t, const std::vector<std::uint8_t>& payload_vector);
-        Message(const std::string& ip_addr, ID id, Type t, std::vector<std::uint8_t>&& payload_vector);
-        Message(const std::string& ip_addr, ID id, Type t, const std::string& payload_string);
-        Message(const std::string& ip_addr, ID id, Type t, std::string&& payload_string);
-        Message(const std::string& ip_addr, ID id, Type t, Const_iterator payload_start, std::size_t payload_sz);
-
-        // Constructors to initialise from an (incoming) buffer of data; complete with
-        // header information.
-        //
-        Message(const std::vector<std::uint8_t>& message_vector);
-        Message(std::vector<std::uint8_t>&& message_vector);
+        Message(const Buffer& message_vector);
+        Message(Buffer&& message_vector);
         Message(Const_iterator message_start, std::size_t message_sz);
-        Message(const std::string& ip_addr, ID id, const std::vector<std::uint8_t>& message_vector);
-        Message(const std::string& ip_addr, ID id, std::vector<std::uint8_t>&& message_vector);
+
+        Message(const std::string& ip_addr, ID id, const Buffer& message);
+        Message(const std::string& ip_addr, ID id, Buffer&& message);
         Message(const std::string& ip_addr, ID id, Const_iterator message_start, std::size_t message_sz);
 
+        // Colossus message interface
+        //
         ID id() const;
         void id(ID new_id);
 
@@ -154,31 +93,69 @@ namespace Navtech::Colossus_network_protocol {
         const Utility::IP_address& ip_address() const;
         void ip_address(const std::string& ip_addr_str);
 
-        // Network message interface - header + payload information
-        //
         bool is_valid() const;
+
+        // size() = header_size() + payload_size()
+        //
         std::size_t size() const;
+        std::size_t payload_size() const;
         static constexpr std::size_t header_size() { return sizeof(Header); }
 
-        void replace(const std::vector<std::uint8_t>& src);
-        void replace(std::vector<std::uint8_t>&& src);
+        // Replace or retrieve the entire data contents of the message.
+        // These functions will invalidate any views.
+        //
+        void replace(const Buffer& src);
+        void replace(Buffer&& src);
         void replace(Const_iterator src_start, std::size_t src_sz);
+
         std::vector<std::uint8_t> relinquish();
 
-        Iterator begin();
-        Const_iterator begin() const;
-        Iterator end();
-        Const_iterator end() const;
+        // Add a protocol buffer of data to the message
+        // These functions will invalidate any views.
+        //
+        Message& append(const Buffer& protocol_buffer);
+        Message& append(Buffer&& protocol_buffer);
+        Message& append(const std::string& protocol_buffer);
+        Message& append(std::string&& protocol_buffer);
 
-        Payload payload() { return Payload { *this }; }
-        const Payload payload() const { return Payload { *(const_cast<Message*>(this)) }; }
+        Message& operator<<(const Buffer& protocol_buffer);
+        Message& operator<<(Buffer&& protocol_buffer);
+        Message& operator<<(const std::string& protocol_buffer);
+        Message& operator<<(std::string&& protocol_buffer);
+
+        // Add a header.  The header is always inserted before any
+        // protocol buffer.  In general, prefer to add the header
+        // *before* adding the protocol buffer.
+        // This function will invalidate any views.
+        //
+        template<typename Message_Ty>
+        Message& append(const Message_Ty& header);
+
+        template<typename Message_Ty>
+        Message& operator<<(const Message_Ty& header);
+
+        // Interpret the message contents as the provided message type.
+        // Pre-conditions:
+        // - Message is valid
+        // - Message type is correct (matches return from type())
+        //
+        template<typename Message_Ty>
+        Message_Ty* view_as();
 
     protected:
         void initialize();
-        bool is_signature_valid() const;
-        bool is_version_valid() const;
+
+        void set_view_iterators();
+        void payload_size(std::uint32_t sz);
+        Iterator payload_begin();
+        Const_iterator payload_begin() const;
+        Iterator payload_end();
+        Const_iterator payload_end() const;
+
         void display();
 
+        bool is_signature_valid() const;
+        void add_signature();
         Iterator signature_begin();
         Const_iterator signature_begin() const;
         Iterator signature_end();
@@ -191,7 +168,19 @@ namespace Navtech::Colossus_network_protocol {
 #pragma pack(1)
         struct Header
         {
-            std::uint8_t signature[signature_sz];
+            struct Iterators
+            {
+                Iterator begin;
+                Iterator end;
+            };
+
+            union Signature_memory
+            {
+                std::uint8_t as_signature[signature_sz];
+                Iterators as_iterators;
+            };
+
+            Signature_memory signature;
             std::uint8_t version;
             Type id;
             std::uint32_t payload_size;
@@ -205,8 +194,47 @@ namespace Navtech::Colossus_network_protocol {
 
         Utility::IP_address address {};
         ID identity {};
-        std::vector<std::uint8_t> data {};
+        bool has_protobuf {};
+        Buffer data {};
     };
+
+
+    template<typename Message_Ty>
+    Message& Message::append(const Message_Ty& header)
+    {
+        using std::begin;
+        using std::copy_backward;
+        using std::end;
+
+        data.resize(size() + header.header_size());
+
+        if (has_protobuf) {
+            auto start  = payload_begin();
+            auto finish = start + payload_size();
+            copy_backward(start, finish, end(data));
+        }
+
+        std::copy(header.begin(), header.end(), payload_begin());
+
+        payload_size(payload_size() + header.header_size());
+
+        return *this;
+    }
+
+
+    template<typename Message_Ty>
+    Message& Message::operator<<(const Message_Ty& header)
+    {
+        return append(header);
+    }
+
+
+    template<typename Message_Ty>
+    Message_Ty* Message::view_as()
+    {
+        set_view_iterators();
+        return reinterpret_cast<Message_Ty*>(data.data());
+    }
 
 } // namespace Navtech::Colossus_network_protocol
 

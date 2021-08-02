@@ -217,16 +217,16 @@ namespace Navtech {
         }
 
         msg.replace(data);
-        if (msg.is_valid() && msg.payload().size() != 0) {
+        if (msg.is_valid() && msg.payload_size() != 0) {
             std::vector<std::uint8_t> payload_data;
-            std::int32_t bytes_transferred = socket.receive(payload_data, msg.payload().size());
+            std::int32_t bytes_transferred = socket.receive(payload_data, msg.payload_size());
             if (bytes_transferred <= 0 || !reading || !running) {
                 set_connection_state(Connection_state::Disconnected);
                 Helpers::Log("Tcp_radar_client - Failed to read payload");
                 return false;
             }
             bytes_transferred++;
-            msg.payload().append(payload_data);
+            msg.append(payload_data);
             receive_data_queue.enqueue(msg.relinquish());
         }
         else if (msg.is_valid()) {
