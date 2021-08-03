@@ -17,11 +17,13 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(interfaces REQUIRED) 
 find_package(std_msgs REQUIRED)
+find_package(OpenCV 4.5.3 REQUIRED)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
 # include
+  ${OpenCV_INCLUDE_DIRS}
   ../../../cpp
 )
 
@@ -38,10 +40,16 @@ add_executable(colossus_subscriber src/colossus_subscriber.cpp)
 target_link_libraries(colossus_subscriber iasdk_static)
 ament_target_dependencies(colossus_subscriber rclcpp std_msgs interfaces)
 
+## Build executable for Colossus subscriber to video
+add_executable(colossus_subscriber_to_video src/colossus_subscriber_to_video.cpp)
+target_link_libraries(colossus_subscriber_to_video iasdk_static)
+ament_target_dependencies(colossus_subscriber_to_video rclcpp std_msgs interfaces OpenCV)
+
 ## Install the built executables
 install(TARGETS
   colossus_publisher
   colossus_subscriber
+  colossus_subscriber_to_video
   DESTINATION lib/${PROJECT_NAME})
 
 ## Install the package

@@ -36,7 +36,7 @@ add_executable(camera_subscriber src/camera_subscriber.cpp)
 target_link_libraries(camera_subscriber)
 ament_target_dependencies(camera_subscriber rclcpp std_msgs interfaces OpenCV)
 
-## Build executable for Camera subscriber
+## Build executable for Camera subscriber tovideo
 add_executable(camera_subscriber_to_video src/camera_subscriber_to_video.cpp)
 target_link_libraries(camera_subscriber_to_video)
 ament_target_dependencies(camera_subscriber_to_video rclcpp std_msgs interfaces OpenCV)
