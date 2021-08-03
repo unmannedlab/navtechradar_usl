@@ -22,7 +22,7 @@
 using namespace Navtech;
 
 Radar_client radar_client { "10.77.2.211" };
-Peak_finder peak_finder;
+Peak_finder peak_finder {};
 bool running { true };
 
 #ifdef __linux__
@@ -61,23 +61,30 @@ void navigation_data_handler(Azimuth_target&& target_data)
 }
 
 
-void configuration_data_handler(const Configuration_data::Pointer& configuration, const Configuration_data::ProtobufPointer& protobuf_configuration)
+void configuration_data_handler(const Configuration_data::Pointer& configuration,
+                                const Configuration_data::ProtobufPointer& protobuf_configuration)
 {
-    auto threshold             = 140.0;            // Threshold in dB
-    auto bins_to_operate_on    = 4;                // Radar bins window size to search for peaks in
-    auto start_bin             = 50;               // Start Bin
-    auto buffer_mode           = BufferModes::Off; // Buffer mode should only be used with a staring radar
-    auto buffer_length         = 10;               // Buffer Length
-    auto max_peaks_per_azimuth = 2;                // Maximum number of peaks to find in a single azimuth
+    double threshold                    = 140.0;            // Threshold in dB
+    std::uint8_t bins_to_operate_on     = 4;                // Radar bins window size to search for peaks in
+    std::uint16_t start_bin             = 50;               // Start Bin
+    BufferModes buffer_mode             = BufferModes::Off; // Buffer mode should only be used with a staring radar
+    std::size_t buffer_length           = 10;               // Buffer Length
+    std::uint32_t max_peaks_per_azimuth = 2;                // Maximum number of peaks to find in a single azimuth
 
-    peak_finder.configure(
-        configuration, protobuf_configuration, threshold, bins_to_operate_on, start_bin, buffer_mode, buffer_length, max_peaks_per_azimuth);
+    peak_finder.configure(configuration,
+                          protobuf_configuration,
+                          threshold,
+                          bins_to_operate_on,
+                          start_bin,
+                          buffer_mode,
+                          buffer_length,
+                          max_peaks_per_azimuth);
 
     radar_client.start_fft_data();
 }
 
 
-std::int32_t main(std::int32_t argc, char** argv)
+int main(int argc, char** argv)
 {
 #ifdef __linux__
     _signalHandler.RegisterHandler(SIGINT, &HandleSigInt);
@@ -100,7 +107,8 @@ std::int32_t main(std::int32_t argc, char** argv)
 
     peak_finder.set_target_callback(std::bind(&navigation_data_handler, std::placeholders::_1));
     radar_client.set_fft_data_callback(std::bind(&fft_data_handler, std::placeholders::_1));
-    radar_client.set_configuration_data_callback(std::bind(&configuration_data_handler, std::placeholders::_1, std::placeholders::_2));
+    radar_client.set_configuration_data_callback(
+        std::bind(&configuration_data_handler, std::placeholders::_1, std::placeholders::_2));
     radar_client.start();
 
     while (running) {
