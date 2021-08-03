@@ -8,12 +8,23 @@ Communication between the sensor and the software is over Ethernet and utilises 
 
 ## SDK Requirements
 
-### C++
+### C++ 11
+
+In the cpp folder is a C++11 version of the IASDK, this now deprecated, meaning no further changes will be made to his SDK.
 
 * C++11 Compiler
 * GCC 4.8 and above
-* clang 3.5 and above
+* Clang 3.5 and above
 * Visual Studio 2019 (VC++ 2019 runtime libraries)
+
+### C++ 17
+
+In the cpp_17 folder is a C++17 version of the IASDK.
+This folder is configured to use VS Code Build Task and CMake Extensions to enable fast development setup times.
+
+* C++17 Compiler
+* GCC 9.x and above
+* Clang 10 and above
 
 ### Microsoft .NET
 
