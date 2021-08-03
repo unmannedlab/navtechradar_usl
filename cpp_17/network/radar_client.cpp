@@ -47,13 +47,13 @@ namespace Navtech {
     void Radar_client::start()
     {
         if (running) return;
-        Helpers::Log("Radar_client - Starting");
+        Log("Radar_client - Starting");
 
         radar_client.set_receive_data_callback(std::bind(&Radar_client::handle_data, this, std::placeholders::_1));
         radar_client.start();
         running = true;
 
-        Helpers::Log("Radar_client - Started");
+        Log("Radar_client - Started");
     }
 
     void Radar_client::stop()
@@ -62,32 +62,32 @@ namespace Navtech {
 
         running = false;
         radar_client.stop();
-        Helpers::Log("Radar_client - Stopped");
+        Log("Radar_client - Stopped");
     }
 
     void Radar_client::start_fft_data()
     {
-        Helpers::Log("Radar_client - Start FFT Data");
+        Log("Radar_client - Start FFT Data");
         send_simple_network_message(Colossus_network_protocol::Message::Type::start_fft_data);
         send_radar_data = true;
     }
 
     void Radar_client::stop_fft_data()
     {
-        Helpers::Log("Radar_client - Stop FFT Data");
+        Log("Radar_client - Stop FFT Data");
         send_simple_network_message(Colossus_network_protocol::Message::Type::stop_fft_data);
         send_radar_data = false;
     }
 
     void Radar_client::Start_navigation_data()
     {
-        Helpers::Log("Radar_client - Start Navigation Data");
+        Log("Radar_client - Start Navigation Data");
         send_simple_network_message(Colossus_network_protocol::Message::Type::start_nav_data);
     }
 
     void Radar_client::stop_navigation_data()
     {
-        Helpers::Log("Radar_client - Stop Navigation Data");
+        Log("Radar_client - Stop Navigation Data");
         send_simple_network_message(Colossus_network_protocol::Message::Type::stop_nav_data);
     }
 
@@ -171,14 +171,14 @@ namespace Navtech {
                 handle_health_message(msg);
                 break;
             default:
-                Helpers::Log("Radar_client - Unhandled Message [" + std::to_string(static_cast<uint32_t>(msg.type())) + "]");
+                Log("Radar_client - Unhandled Message [" + std::to_string(static_cast<uint32_t>(msg.type())) + "]");
                 break;
         }
     }
 
     void Radar_client::handle_configuration_message(Colossus_network_protocol::Message& msg)
     {
-        Helpers::Log("Radar_client - Handle Configuration Message");
+        Log("Radar_client - Handle Configuration Message");
 
         _callbackMutex.lock();
         auto configuration_fn = configuration_data_callback;

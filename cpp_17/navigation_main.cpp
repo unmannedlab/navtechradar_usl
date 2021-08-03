@@ -53,10 +53,10 @@ void fft_data_handler(const Fft_data::Pointer& data)
 
 void navigation_data_handler(Azimuth_target&& target_data)
 {
-    Helpers::Log("navigation_data_handler - Found Targets in Angle [" + std::to_string(target_data.angle) + "] Target Count [" +
-                 std::to_string(target_data.targets.size()) + "]");
+    Log("navigation_data_handler - Found Targets in Angle [" + std::to_string(target_data.angle) + "] Target Count [" +
+        std::to_string(target_data.targets.size()) + "]");
     for (auto t : target_data.targets) {
-        Helpers::Log("\t Range [" + std::to_string(t.range) + "] Power [" + std::to_string(t.power) + "]");
+        Log("\t Range [" + std::to_string(t.range) + "] Power [" + std::to_string(t.power) + "]");
     }
 }
 
@@ -91,12 +91,12 @@ std::int32_t main(std::int32_t argc, char** argv)
     WSADATA wsaData;
     auto err = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (err != 0) {
-        Helpers::Log("Tracker - WSAStartup failed with error [" + std::to_string(err) + "]");
+        Log("Tracker - WSAStartup failed with error [" + std::to_string(err) + "]");
         return EXIT_FAILURE;
     }
 #endif
 
-    Helpers::Log("Navigation Client Starting");
+    Log("Navigation Client Starting");
 
     peak_finder.set_target_callback(std::bind(&navigation_data_handler, std::placeholders::_1));
     radar_client.set_fft_data_callback(std::bind(&fft_data_handler, std::placeholders::_1));
@@ -107,7 +107,7 @@ std::int32_t main(std::int32_t argc, char** argv)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    Helpers::Log("Navigation Client Stopping");
+    Log("Navigation Client Stopping");
 
     radar_client.stop_fft_data();
     peak_finder.set_target_callback();
@@ -122,5 +122,5 @@ std::int32_t main(std::int32_t argc, char** argv)
     _signalHandler.UnRegisterHandler(SIGTERM);
 #endif
 
-    Helpers::Log("Navigation Client Stopped");
+    Log("Navigation Client Stopped");
 }

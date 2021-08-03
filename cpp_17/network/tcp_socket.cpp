@@ -43,13 +43,13 @@ namespace Navtech {
         _sock = socket(AF_INET, SOCK_STREAM, 0);
 
         if (!is_valid()) {
-            Helpers::Log("Failed to create socket");
+            Log("Failed to create socket");
             return false;
         }
 
         auto on = 1;
         if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on)) == -1) {
-            Helpers::Log("Failed to set SO_REUSEADDR socket option on socket [" + std::to_string(_sock) + "]");
+            Log("Failed to set SO_REUSEADDR socket option on socket [" + std::to_string(_sock) + "]");
             return false;
         }
 
@@ -57,7 +57,7 @@ namespace Navtech {
         lingerVal.l_onoff  = 0;
         lingerVal.l_linger = 2;
         if (setsockopt(_sock, SOL_SOCKET, SO_LINGER, (const char*)&lingerVal, sizeof(lingerVal)) == -1) {
-            Helpers::Log("Failed to set SO_LINGER socket option on socket [" + std::to_string(_sock) + "]");
+            Log("Failed to set SO_LINGER socket option on socket [" + std::to_string(_sock) + "]");
             return false;
         }
 
@@ -68,7 +68,7 @@ namespace Navtech {
             setsockopt(_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&tv, sizeof(struct timeval));
         }
 
-        Helpers::Log("Created socket [" + std::to_string(_sock) + "]");
+        Log("Created socket [" + std::to_string(_sock) + "]");
         return true;
     }
 
@@ -95,7 +95,7 @@ namespace Navtech {
 
         if (status == 0) { return true; }
         else {
-            Helpers::Log("Failed to connect socket [" + std::to_string(_sock) + "]");
+            Log("Failed to connect socket [" + std::to_string(_sock) + "]");
             return false;
         }
     }
@@ -111,7 +111,7 @@ namespace Navtech {
 
         if (status == -1) {
             auto errorNumber = errno;
-            Helpers::Log("Send error");
+            Log("Send error");
             return errorNumber;
         }
         else {
@@ -163,11 +163,11 @@ namespace Navtech {
 #endif
 
         if (close_return == -1) {
-            Helpers::Log("Failed to close socket [" + std::to_string(_sock) + "]");
+            Log("Failed to close socket [" + std::to_string(_sock) + "]");
             return false;
         }
 
-        Helpers::Log("Closed socket [" + std::to_string(_sock) + "]");
+        Log("Closed socket [" + std::to_string(_sock) + "]");
         _sock = -1;
         return true;
     }

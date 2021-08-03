@@ -97,13 +97,13 @@ namespace Navtech {
                 break;
         }
 
-        Helpers::Log("Tcp_radar_client - Connection State Changed [" + stateString + "] for [" + ip_address + ":" + std::to_string(port) + "]");
+        Log("Tcp_radar_client - Connection State Changed [" + stateString + "] for [" + ip_address + ":" + std::to_string(port) + "]");
     }
 
 
     void Tcp_radar_client::connect_thread_handler()
     {
-        Helpers::Log("Tcp_radar_client - Connect Thread Started");
+        Log("Tcp_radar_client - Connect Thread Started");
 
         while (running) {
             std::unique_lock<std::mutex> lock(connect_mutex);
@@ -112,14 +112,14 @@ namespace Navtech {
             connect();
         }
 
-        Helpers::Log("Tcp_radar_client - Connect Thread Finished");
+        Log("Tcp_radar_client - Connect Thread Finished");
     }
 
 
     void Tcp_radar_client::connection_check_handler()
     {
         if (get_connection_state() != Connection_state::Disconnected) return;
-        Helpers::Log("Tcp_radar_client - Connection error try again");
+        Log("Tcp_radar_client - Connection error try again");
         connect_condition.notify_one();
     }
 
@@ -151,7 +151,7 @@ namespace Navtech {
 
     void Tcp_radar_client::read_thread_handler()
     {
-        Helpers::Log("Tcp_radar_client - Read Thread Started");
+        Log("Tcp_radar_client - Read Thread Started");
 
         using std::array;
         using std::begin;
@@ -175,7 +175,7 @@ namespace Navtech {
                 bytes_read = socket.receive(signature, 1);
                 if (bytes_read <= 0 || !reading || !running) {
                     set_connection_state(Connection_state::Disconnected);
-                    Helpers::Log("Tcp_radar_client - Read Failed Signature");
+                    Log("Tcp_radar_client - Read Failed Signature");
                     break;
                 }
                 continue;
@@ -183,12 +183,12 @@ namespace Navtech {
 
             if (!handle_data() || !reading || !running) {
                 set_connection_state(Connection_state::Disconnected);
-                Helpers::Log("Tcp_radar_client - Failed Handle_data");
+                Log("Tcp_radar_client - Failed Handle_data");
                 break;
             }
         }
         reading = false;
-        Helpers::Log("Tcp_radar_client - Read Thread Exited");
+        Log("Tcp_radar_client - Read Thread Exited");
     }
 
 
@@ -198,7 +198,7 @@ namespace Navtech {
 
         if (socket.send(data) != 0) {
             set_connection_state(Connection_state::Disconnected);
-            Helpers::Log("Tcp_radar_client - Send Failed");
+            Log("Tcp_radar_client - Send Failed");
         }
     }
 
@@ -212,7 +212,7 @@ namespace Navtech {
 
         if (bytes_read <= 0 || !reading || !running) {
             set_connection_state(Connection_state::Disconnected);
-            Helpers::Log("Tcp_radar_client - Failed to read header");
+            Log("Tcp_radar_client - Failed to read header");
             return false;
         }
 
@@ -222,7 +222,7 @@ namespace Navtech {
             std::int32_t bytes_transferred = socket.receive(payload_data, msg.payload_size());
             if (bytes_transferred <= 0 || !reading || !running) {
                 set_connection_state(Connection_state::Disconnected);
-                Helpers::Log("Tcp_radar_client - Failed to read payload");
+                Log("Tcp_radar_client - Failed to read payload");
                 return false;
             }
             bytes_transferred++;
