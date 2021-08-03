@@ -19,7 +19,7 @@ namespace Navtech {
         std::vector<double> buffered_data;
 
         if (buffer_mode != BufferModes::Off) {
-            data_buffer.push_back(std::vector<double>(fft_data->data.begin(), fft_data->data.end()));
+            data_buffer.emplace_back(std::vector<double>(fft_data->data.begin(), fft_data->data.end()));
             if (data_buffer.size() < buffer_length) { return; }
             buffered_data.resize(configuration->range_in_bins);
             if (buffer_mode == BufferModes::Average) {
@@ -48,7 +48,8 @@ namespace Navtech {
             buffered_data = std::vector<double>(fft_data->data.begin(), fft_data->data.end());
         }
 
-        find_peaks(fft_data->azimuth, fft_data->angle, fft_data->ntp_seconds, fft_data->ntp_split_seconds, buffered_data);
+        find_peaks(
+            fft_data->azimuth, fft_data->angle, fft_data->ntp_seconds, fft_data->ntp_split_seconds, buffered_data);
     }
 
 
@@ -64,11 +65,11 @@ namespace Navtech {
         configuration          = config;
         protobuf_configuration = protobuf;
         threshold              = thresh;
-        bins_to_operate_on     = std::max(std::min(bins_to_operate_upon, max_bins_to_operate_on), min_bins_to_operate_on);
-        min_bin_to_operate_on  = min_bin_to_operate_upon;
-        buffer_mode            = mode;
-        buffer_length          = buf_length;
-        max_peaks_per_azimuth  = max_peaks_per_azi;
+        bins_to_operate_on = std::max(std::min(bins_to_operate_upon, max_bins_to_operate_on), min_bins_to_operate_on);
+        min_bin_to_operate_on = min_bin_to_operate_upon;
+        buffer_mode           = mode;
+        buffer_length         = buf_length;
+        max_peaks_per_azimuth = max_peaks_per_azi;
     }
 
 
@@ -87,13 +88,14 @@ namespace Navtech {
         Azimuth_target target { azimuth, angle, ntp_seconds, ntp_split_seconds };
 
         while (peak_bin != configuration->range_in_bins) {
-            peak_bin                = find_peak_bin(data, min_bin_to_operate_upon, configuration->range_in_bins, bins_to_operate_on);
+            peak_bin = find_peak_bin(data, min_bin_to_operate_upon, configuration->range_in_bins, bins_to_operate_on);
             min_bin_to_operate_upon = peak_bin + bins_to_operate_on;
 
             if (peak_bin < configuration->range_in_bins) {
                 auto resolvedBin = peak_resolve(data, peak_bin, bins_to_operate_on);
                 auto range =
-                    (resolvedBin * configuration->range_gain * protobuf_configuration->rangeresolutionmetres()) + configuration->range_offset;
+                    (resolvedBin * configuration->range_gain * protobuf_configuration->rangeresolutionmetres()) +
+                    configuration->range_offset;
 
                 if (std::isinf(range) || range < minimum_range || range > maximum_range) continue;
                 target.targets.emplace_back(range, data[peak_bin]);
@@ -127,7 +129,9 @@ namespace Navtech {
     }
 
 
-    double Peak_finder::peak_resolve(const std::vector<double>& data, const std::uint16_t& peak_bin, const std::uint8_t& bins_to_operate_upon)
+    double Peak_finder::peak_resolve(const std::vector<double>& data,
+                                     const std::uint16_t& peak_bin,
+                                     const std::uint8_t& bins_to_operate_upon)
     {
         const std::uint8_t bins_to_offset = (bins_to_operate_upon - 1) / 2;
         double x[max_bins_to_operate_on]  = { 0.0 };
@@ -144,7 +148,8 @@ namespace Navtech {
             y[index] = data[startBin + index];
 
         double Sx = 0.0, Sx2 = 0.0, Sx3 = 0.0, Sx4 = 0.0;
-        double x2[max_bins_to_operate_on] = { 0.0 }, x3[max_bins_to_operate_on] = { 0.0 }, x4[max_bins_to_operate_on] = { 0.0 };
+        double x2[max_bins_to_operate_on] = { 0.0 }, x3[max_bins_to_operate_on] = { 0.0 },
+               x4[max_bins_to_operate_on] = { 0.0 };
 
         Vector_maths::scalar_sum(x, bins_to_operate_upon, Sx);
         Vector_maths::scalar_square(x, bins_to_operate_upon, Sx2);
