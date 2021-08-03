@@ -93,6 +93,7 @@ namespace Navtech::Colossus_network_protocol {
         const Utility::IP_address& ip_address() const;
         void ip_address(const std::string& ip_addr_str);
 
+        bool is_version_valid() const;
         bool is_valid() const;
 
         // size() = header_size() + payload_size()
@@ -186,7 +187,10 @@ namespace Navtech::Colossus_network_protocol {
             std::uint32_t payload_size;
 
             static Header* overlay_onto(std::uint8_t* from) { return reinterpret_cast<Header*>(from); }
-            static const Header* overlay_onto(const std::uint8_t* from) { return reinterpret_cast<const Header*>(from); }
+            static const Header* overlay_onto(const std::uint8_t* from)
+            {
+                return reinterpret_cast<const Header*>(from);
+            }
         };
 #pragma pack()
 

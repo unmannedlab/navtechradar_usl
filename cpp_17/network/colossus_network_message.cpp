@@ -22,7 +22,10 @@ namespace Navtech::Colossus_network_protocol {
     Message::Message() { initialize(); }
 
 
-    Message::Message(const std::string& ip_addr, Message::ID id) : address { ip_addr }, identity { id } { initialize(); }
+    Message::Message(const std::string& ip_addr, Message::ID id) : address { ip_addr }, identity { id }
+    {
+        initialize();
+    }
 
 
     Message::Message(const Message::Buffer& message) { replace(message); }
@@ -34,19 +37,22 @@ namespace Navtech::Colossus_network_protocol {
     Message::Message(Const_iterator message_start, std::size_t message_sz) { replace(message_start, message_sz); }
 
 
-    Message::Message(const std::string& ip_addr, Message::ID id, const Message::Buffer& message) : address { ip_addr }, identity { id }
+    Message::Message(const std::string& ip_addr, Message::ID id, const Message::Buffer& message) :
+        address { ip_addr }, identity { id }
     {
         replace(message);
     }
 
 
-    Message::Message(const std::string& ip_addr, Message::ID id, Message::Buffer&& message) : address { ip_addr }, identity { id }
+    Message::Message(const std::string& ip_addr, Message::ID id, Message::Buffer&& message) :
+        address { ip_addr }, identity { id }
     {
         replace(std::move(message));
     }
 
 
-    Message::Message(const std::string& ip_addr, ID id, Const_iterator message_start, std::size_t message_sz) : address { ip_addr }, identity { id }
+    Message::Message(const std::string& ip_addr, ID id, Const_iterator message_start, std::size_t message_sz) :
+        address { ip_addr }, identity { id }
     {
         replace(message_start, message_sz);
     }
@@ -82,9 +88,8 @@ namespace Navtech::Colossus_network_protocol {
     {
         if (data.empty()) return false;
 
-        return (is_signature_valid() &&
-
-                static_cast<unsigned>(type()) <= largest_valid_message && payload_size() < largest_payload);
+        return (is_version_valid() && is_signature_valid() && static_cast<unsigned>(type()) <= largest_valid_message &&
+                payload_size() < largest_payload);
     }
 
 
@@ -255,6 +260,13 @@ namespace Navtech::Colossus_network_protocol {
         data.resize(header_size());
         add_signature();
         data[signature_sz] = version;
+    }
+
+
+    bool Message::is_version_valid() const
+    {
+        auto header = Header::overlay_onto(data.data());
+        return header->version == version;
     }
 
 
