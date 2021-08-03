@@ -16,3 +16,5 @@ The code uses using statments to make pointer ownership more obvious:
 
 * Owner_of is a std::unique_ptr;
 * Shared_owner is a std::shared_ptr;
+
+Please see utility/Pointer_types.h

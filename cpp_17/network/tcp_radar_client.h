@@ -23,16 +23,10 @@
 namespace Navtech {
     enum class Connection_state { disconnected, connecting, connected };
 
-    class Connection_info {
-    public:
-        explicit Connection_info(const std::uint32_t unique_id, const Connection_state state) :
-            state(state), unique_id(unique_id)
-        { }
-
-        explicit Connection_info(const Connection_info&) = delete;
-        Connection_info& operator=(const Connection_info&) = delete;
-        Connection_state state                             = Connection_state::disconnected;
-        std::uint32_t unique_id                            = 0;
+    struct Connection_info
+    {
+        std::uint32_t unique_id { 0 };
+        Connection_state state { Connection_state::disconnected };
     };
 
     typedef Shared_owner<Connection_info> ConnectionInfoPtr_t;

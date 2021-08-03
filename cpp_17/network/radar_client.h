@@ -73,8 +73,8 @@ namespace Navtech {
         void stop_fft_data();
         void Start_navigation_data();
         void stop_navigation_data();
-        void set_navigation_threshold(const std::uint16_t& threshold);
-        void set_navigation_gain_and_offset(const float& gain, const float& offset);
+        void set_navigation_threshold(std::uint16_t threshold);
+        void set_navigation_gain_and_offset(float gain, float offset);
         void set_fft_data_callback(std::function<void(const Fft_data::Pointer&)> fn = nullptr);
         void set_navigation_data_callback(std::function<void(const Navigation_data::Pointer&)> fn = nullptr);
         void set_configuration_data_callback(

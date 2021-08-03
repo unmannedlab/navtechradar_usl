@@ -39,8 +39,8 @@ TEST_F(given_a_peak_finder, WhenCallingFindPeakBinWithNoDataAboveThresholdShould
 {
     Peak_finder pf {};
 
-    auto target_found                             = false;
-    std::function<void(Azimuth_target &&)> lambda = [&target_found](Azimuth_target&& target) {
+    auto target_found                                 = false;
+    std::function<void(const Azimuth_target&)> lambda = [&target_found](const Azimuth_target& target) {
         target_found = true;
         return;
     };
@@ -79,9 +79,9 @@ TEST_F(given_a_peak_finder, WhenCallingFindPeakBinWithASinglePeakAboveThresholdS
 {
     Peak_finder pf {};
 
-    auto target_count                             = 0;
-    auto target_found                             = false;
-    std::function<void(Azimuth_target &&)> lambda = [&target_found, &target_count](Azimuth_target&& target) {
+    auto target_count                                 = 0;
+    auto target_found                                 = false;
+    std::function<void(const Azimuth_target&)> lambda = [&target_found, &target_count](const Azimuth_target& target) {
         target_found = true;
         target_count = target.targets.size();
         ASSERT_EQ(2.0, target.targets[0].range);
@@ -123,9 +123,9 @@ TEST_F(given_a_peak_finder, WhenCallingFindPeakBinWithATwinPeaksAboveThresholdSh
 {
     Peak_finder pf {};
 
-    auto target_count                             = 0;
-    auto target_found                             = false;
-    std::function<void(Azimuth_target &&)> lambda = [&target_found, &target_count](Azimuth_target&& target) {
+    auto target_count                                 = 0;
+    auto target_found                                 = false;
+    std::function<void(const Azimuth_target&)> lambda = [&target_found, &target_count](const Azimuth_target& target) {
         target_found = true;
         target_count = target.targets.size();
         ASSERT_EQ(2.0, target.targets[0].range);

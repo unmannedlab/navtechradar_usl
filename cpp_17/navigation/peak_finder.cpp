@@ -9,7 +9,10 @@ namespace Navtech {
     constexpr std::uint8_t min_bins_to_operate_on = 5;
     constexpr std::uint8_t max_bins_to_operate_on = 15;
 
-    void Peak_finder::set_target_callback(std::function<void(Azimuth_target&&)> fn) { target_callback = std::move(fn); }
+    void Peak_finder::set_target_callback(std::function<void(const Azimuth_target&)> fn)
+    {
+        target_callback = std::move(fn);
+    }
 
 
     void Peak_finder::fft_data_handler(const Fft_data::Pointer& fft_data)
@@ -103,7 +106,7 @@ namespace Navtech {
             }
             if (peaks_found >= max_peaks_per_azimuth) break;
         }
-        if (peaks_found > 0 && target_callback != nullptr) { target_callback(std::move(target)); }
+        if (peaks_found > 0 && target_callback != nullptr) { target_callback(target); }
     }
 
 

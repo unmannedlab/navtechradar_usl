@@ -36,7 +36,7 @@ namespace Navtech {
 
     class Peak_finder {
     public:
-        void set_target_callback(std::function<void(Azimuth_target&&)> fn = nullptr);
+        void set_target_callback(std::function<void(const Azimuth_target&)> fn = nullptr);
         void fft_data_handler(const Fft_data::Pointer& fft_data);
         void configure(const Configuration_data::Pointer& data,
                        const Configuration_data::ProtobufPointer& protobuf_configuration,
@@ -60,7 +60,7 @@ namespace Navtech {
         Configuration_data::Pointer configuration;
         Configuration_data::ProtobufPointer protobuf_configuration;
 
-        std::function<void(Azimuth_target&&)> target_callback = nullptr;
+        std::function<void(const Azimuth_target&)> target_callback = nullptr;
 
         double peak_resolve(const std::vector<double>& data,
                             const std::uint16_t& peak_bin,

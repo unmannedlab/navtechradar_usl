@@ -21,7 +21,7 @@
 
 using namespace Navtech;
 
-Radar_client radar_client { "10.77.2.210" };
+Radar_client radar_client { "192.168.0.1" };
 Peak_finder peak_finder {};
 bool running { true };
 
@@ -51,7 +51,7 @@ void fft_data_handler(const Fft_data::Pointer& data)
 }
 
 
-void navigation_data_handler(Azimuth_target&& target_data)
+void navigation_data_handler(const Azimuth_target& target_data)
 {
     Log("navigation_data_handler - Found Targets in Angle [" + std::to_string(target_data.angle) + "] Target Count [" +
         std::to_string(target_data.targets.size()) + "]");

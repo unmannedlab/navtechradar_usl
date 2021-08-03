@@ -91,7 +91,7 @@ namespace Navtech {
         send_simple_network_message(Colossus_network_protocol::Message::Type::stop_nav_data);
     }
 
-    void Radar_client::set_navigation_threshold(const std::uint16_t& threshold)
+    void Radar_client::set_navigation_threshold(std::uint16_t threshold)
     {
         if (radar_client.get_connection_state() != Connection_state::connected) return;
 
@@ -105,7 +105,7 @@ namespace Navtech {
         radar_client.send(msg.relinquish());
     }
 
-    void Radar_client::set_navigation_gain_and_offset(const float& gain, const float& offset)
+    void Radar_client::set_navigation_gain_and_offset(float gain, float offset)
     {
         if (radar_client.get_connection_state() != Connection_state::connected) return;
 
