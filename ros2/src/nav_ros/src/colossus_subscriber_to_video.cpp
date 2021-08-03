@@ -73,7 +73,15 @@ private:
         bearing_count++;
 
         if (bearing_count >= 400) {
-            video_writer.write(radar_image);
+
+            Mat recovered_lin_polar_img;
+            Point2f center((float)radar_image.cols / 2, (float)radar_image.rows / 2);
+            double maxRadius = min(center.y, center.x);
+            cv::linearPolar(radar_image, recovered_lin_polar_img, center, maxRadius, INTER_LINEAR + WARP_FILL_OUTLIERS + WARP_INVERSE_MAP);
+            //RCLCPP_INFO(Node::get_logger(), "Rectified image shape: %i", recovered_lin_polar_img.cols);
+            //RCLCPP_INFO(Node::get_logger(), "Rectified image shape: %i", recovered_lin_polar_img.rows);
+
+            video_writer.write(recovered_lin_polar_img);
             bearing_count = 0;
         }
 
