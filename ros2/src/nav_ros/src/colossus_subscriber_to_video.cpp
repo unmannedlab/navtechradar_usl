@@ -59,9 +59,16 @@ private:
         }
 
         int bearing = ((double)msg->azimuth / (double)encoder_size) * (double)azimuth_samples;
+
+        //RCLCPP_INFO(Node::get_logger(), "Data 0: %u", static_cast<int>(msg->data[0]));
+        //RCLCPP_INFO(Node::get_logger(), "Data 1: %u", static_cast<int>(msg->data[1]));
+        //RCLCPP_INFO(Node::get_logger(), "Data 2: %u", static_cast<int>(msg->data[2]));
+        //RCLCPP_INFO(Node::get_logger(), "Data 3: %u", static_cast<int>(msg->data[3]));
+        //RCLCPP_INFO(Node::get_logger(), "Data 4: %u", static_cast<int>(msg->data[4]));
+
         for (int x = 0; x < msg->data_length; x++)
         {
-            image_ptr[x * 3 + bearing * radar_image.step + 1] = 255;
+            image_ptr[x * 3 + bearing * radar_image.step + 1] = static_cast<int>(msg->data[0]);
         }
         bearing_count++;
 
