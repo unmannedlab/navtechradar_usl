@@ -20,14 +20,14 @@ namespace Navtech {
         auto now       = std::chrono::system_clock::now();
         auto in_time_t = std::chrono::system_clock::to_time_t(now);
 
-        auto nowSeconds            = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
-        auto nowMilliseconds       = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+        auto nowSeconds      = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
+        auto nowMilliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
         auto millisecondsRemaining = nowMilliseconds - (nowSeconds * 1000);
 
-        constexpr auto bufsize        = 20;
-        constexpr auto logDateBufSize = 30;
-        char buf[bufsize];
-        char logDateBuf[logDateBufSize];
+        constexpr auto bufsize { 20 };
+        constexpr auto logDateBufSize { 30 };
+        char buf[bufsize] {};
+        char logDateBuf[logDateBufSize] {};
 
         std::strftime(buf, bufsize, "%Y%m%d", std::gmtime(&in_time_t));
         std::strftime(logDateBuf, logDateBufSize, "%Y-%m-%dT%H:%M:%S", std::gmtime(&in_time_t));
