@@ -16,11 +16,13 @@
 #include <unistd.h>
 #endif
 
+#include "../common.h"
 #include "tcp_socket.h"
-#include <common.h>
 
 namespace Navtech {
-    Tcp_socket::Tcp_socket(const std::string& destination, const std::uint16_t& port) : _sock { -1 }, _destination { destination } { }
+    Tcp_socket::Tcp_socket(const std::string& destination, const std::uint16_t& port) :
+        sock { -1 }, destination { destination }
+    { }
 
 
     Tcp_socket::~Tcp_socket()
@@ -29,18 +31,18 @@ namespace Navtech {
 #ifdef _WIN32
             closesocket(_sock);
 #else
-            ::close(_sock);
+            ::close(sock);
 #endif
         }
     }
 
 
-    const bool Tcp_socket::is_valid() const { return _sock != -1; }
+    const bool Tcp_socket::is_valid() const { return sock != -1; }
 
 
     bool Tcp_socket::create(std::uint32_t receive_timeout)
     {
-        _sock = socket(AF_INET, SOCK_STREAM, 0);
+        sock = socket(AF_INET, SOCK_STREAM, 0);
 
         if (!is_valid()) {
             Log("Failed to create socket");
@@ -48,16 +50,16 @@ namespace Navtech {
         }
 
         auto on = 1;
-        if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on)) == -1) {
-            Log("Failed to set SO_REUSEADDR socket option on socket [" + std::to_string(_sock) + "]");
+        if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on)) == -1) {
+            Log("Failed to set SO_REUSEADDR socket option on socket [" + std::to_string(sock) + "]");
             return false;
         }
 
         linger lingerVal;
         lingerVal.l_onoff  = 0;
         lingerVal.l_linger = 2;
-        if (setsockopt(_sock, SOL_SOCKET, SO_LINGER, (const char*)&lingerVal, sizeof(lingerVal)) == -1) {
-            Log("Failed to set SO_LINGER socket option on socket [" + std::to_string(_sock) + "]");
+        if (setsockopt(sock, SOL_SOCKET, SO_LINGER, (const char*)&lingerVal, sizeof(lingerVal)) == -1) {
+            Log("Failed to set SO_LINGER socket option on socket [" + std::to_string(sock) + "]");
             return false;
         }
 
@@ -65,10 +67,10 @@ namespace Navtech {
             struct timeval tv;
             tv.tv_sec  = receive_timeout;
             tv.tv_usec = 0; // Not initialising this can cause strange errors
-            setsockopt(_sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&tv, sizeof(struct timeval));
+            setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&tv, sizeof(struct timeval));
         }
 
-        Log("Created socket [" + std::to_string(_sock) + "]");
+        Log("Created socket [" + std::to_string(sock) + "]");
         return true;
     }
 
@@ -79,7 +81,7 @@ namespace Navtech {
             struct timeval tv;
             tv.tv_sec  = send_timeout;
             tv.tv_usec = 0; // Not initialising this can cause strange errors
-            setsockopt(_sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&tv, sizeof(struct timeval));
+            setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&tv, sizeof(struct timeval));
         }
     }
 
@@ -88,14 +90,14 @@ namespace Navtech {
     {
         if (!is_valid()) return false;
 
-        _addr.sin_family = AF_INET;
-        _addr.sin_port   = htons(_port);
-        auto status      = inet_pton(AF_INET, _destination.c_str(), &_addr.sin_addr);
-        status           = ::connect(_sock, (sockaddr*)&_addr, sizeof(_addr));
+        addr.sin_family = AF_INET;
+        addr.sin_port   = htons(port);
+        auto status     = inet_pton(AF_INET, destination.c_str(), &addr.sin_addr);
+        status          = ::connect(sock, (sockaddr*)&addr, sizeof(addr));
 
         if (status == 0) { return true; }
         else {
-            Log("Failed to connect socket [" + std::to_string(_sock) + "]");
+            Log("Failed to connect socket [" + std::to_string(sock) + "]");
             return false;
         }
     }
@@ -106,7 +108,7 @@ namespace Navtech {
 #ifdef _WIN32
         auto status = ::send(_sock, (char*)&data[0], data.size(), 0);
 #else
-        auto status = ::send(_sock, (char*)&data[0], data.size(), MSG_NOSIGNAL);
+        auto status = ::send(sock, (char*)&data[0], data.size(), MSG_NOSIGNAL);
 #endif
 
         if (status == -1) {
@@ -120,17 +122,36 @@ namespace Navtech {
     }
 
 
-    std::uint32_t Tcp_socket::receive(std::vector<std::uint8_t>& data, std::int32_t bytes_to_read, bool peek)
+    std::uint32_t Tcp_socket::send(std::vector<std::uint8_t>&& data)
+    {
+#ifdef _WIN32
+        auto status = ::send(_sock, (char*)&data[0], data.size(), 0);
+#else
+        auto status = ::send(sock, (char*)&data[0], data.size(), MSG_NOSIGNAL);
+#endif
+
+        if (status == -1) {
+            auto errorNumber = errno;
+            Log("Send error");
+            return errorNumber;
+        }
+        else {
+            return 0;
+        }
+    }
+
+
+    std::uint32_t Tcp_socket::receive(std::vector<std::uint8_t>& data, std::int32_t bytes_to_read, Receive_option peek)
     {
         std::int32_t bytesRead = 0;
         std::int32_t flags     = 0;
 
-        if (peek) { flags |= MSG_PEEK; }
+        if (peek == Receive_option::peek) { flags |= MSG_PEEK; }
 
         std::int32_t status;
         while (bytesRead < bytes_to_read) {
             std::vector<std::uint8_t> buf(bytes_to_read, 0);
-            status = ::recv(_sock, (char*)buf.data(), bytes_to_read - bytesRead, flags);
+            status = ::recv(sock, (char*)buf.data(), bytes_to_read - bytesRead, flags);
 
             if (status <= 0) { return 0; }
             else
@@ -151,24 +172,24 @@ namespace Navtech {
     }
 
 
-    bool Tcp_socket::close(bool shutdown)
+    bool Tcp_socket::close(Close_option opt)
     {
         if (!is_valid()) return false;
-        if (shutdown) ::shutdown(_sock, 2);
+        if (opt == Close_option::shutdown) ::shutdown(sock, 2);
 
 #ifdef _WIN32
         auto close_return = closesocket(_sock);
 #else
-        auto close_return = ::close(_sock);
+        auto close_return = ::close(sock);
 #endif
 
         if (close_return == -1) {
-            Log("Failed to close socket [" + std::to_string(_sock) + "]");
+            Log("Failed to close socket [" + std::to_string(sock) + "]");
             return false;
         }
 
-        Log("Closed socket [" + std::to_string(_sock) + "]");
-        _sock = -1;
+        Log("Closed socket [" + std::to_string(sock) + "]");
+        sock = -1;
         return true;
     }
 

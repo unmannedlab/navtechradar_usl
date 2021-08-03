@@ -19,12 +19,12 @@
 #include <configurationdata.pb.h>
 
 namespace Navtech {
-    constexpr std::uint32_t RANGE_MULTIPLIER       = 1000000;
-    constexpr float RANGE_MULTIPLIER_FLOAT         = 1000000.0f;
-    constexpr std::uint32_t NAV_DATA_RECORD_LENGTH = (sizeof(std::uint32_t) + sizeof(std::uint16_t));
+    constexpr std::uint32_t range_multiplier       = 1000000;
+    constexpr float range_multiplier_float         = 1000000.0f;
+    constexpr std::uint32_t nav_data_record_length = (sizeof(std::uint32_t) + sizeof(std::uint16_t));
 
-    class Fft_data {
-    public:
+    struct Fft_data
+    {
         using Pointer = Shared_owner<Fft_data>;
         double angle { 0.0 };
         std::uint16_t azimuth { 0 };
@@ -34,8 +34,8 @@ namespace Navtech {
         std::vector<std::uint8_t> data;
     };
 
-    class Navigation_data {
-    public:
+    struct Navigation_data
+    {
         using Pointer = Shared_owner<Navigation_data>;
         double angle { 0.0 };
         std::uint16_t azimuth { 0 };
@@ -44,8 +44,8 @@ namespace Navtech {
         std::vector<std::tuple<float, std::uint16_t>> peaks;
     };
 
-    class Configuration_data {
-    public:
+    struct Configuration_data
+    {
         using Pointer         = Shared_owner<Configuration_data>;
         using ProtobufPointer = Shared_owner<Colossus::Protobuf::ConfigurationData>;
         std::uint16_t azimuth_samples { 0 };
@@ -60,8 +60,10 @@ namespace Navtech {
     class Radar_client {
     public:
         explicit Radar_client(const std::string& radarAddress, const std::uint16_t& port = 6317);
-        explicit Radar_client(const Radar_client&) = delete;
+        Radar_client(const Radar_client&) = delete;
+        Radar_client(Radar_client&&)      = delete;
         Radar_client& operator=(const Radar_client&) = delete;
+        Radar_client& operator=(Radar_client&&) = delete;
 
         void start();
         void stop();
@@ -76,16 +78,18 @@ namespace Navtech {
         void set_fft_data_callback(std::function<void(const Fft_data::Pointer&)> fn = nullptr);
         void set_navigation_data_callback(std::function<void(const Navigation_data::Pointer&)> fn = nullptr);
         void set_configuration_data_callback(
-            std::function<void(const Configuration_data::Pointer&, const Configuration_data::ProtobufPointer&)> fn = nullptr);
+            std::function<void(const Configuration_data::Pointer&, const Configuration_data::ProtobufPointer&)> fn =
+                nullptr);
 
     private:
         Tcp_radar_client radar_client;
         std::atomic_bool running;
         std::atomic_bool send_radar_data;
-        std::mutex _callbackMutex;
-        std::function<void(const Fft_data::Pointer&)> fft_data_callback                                                                 = nullptr;
-        std::function<void(const Navigation_data::Pointer&)> navigation_data_callback                                                   = nullptr;
-        std::function<void(const Configuration_data::Pointer&, const Configuration_data::ProtobufPointer&)> configuration_data_callback = nullptr;
+        std::mutex callback_mutex;
+        std::function<void(const Fft_data::Pointer&)> fft_data_callback               = nullptr;
+        std::function<void(const Navigation_data::Pointer&)> navigation_data_callback = nullptr;
+        std::function<void(const Configuration_data::Pointer&, const Configuration_data::ProtobufPointer&)>
+            configuration_data_callback = nullptr;
 
         std::uint16_t encoder_size = 0;
         double bin_size            = 0;

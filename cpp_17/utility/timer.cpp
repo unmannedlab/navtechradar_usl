@@ -17,7 +17,7 @@ namespace Navtech {
 
     void Timer::set_callback(std::function<void()> fn)
     {
-        std::lock_guard<std::mutex> lock(callback_mutex);
+        std::lock_guard lock { callback_mutex };
         callback = std::move(fn);
     }
 
@@ -39,7 +39,7 @@ namespace Navtech {
             if (stop_requested) break;
         }
 
-        std::lock_guard<std::mutex> lock(callback_mutex);
+        std::lock_guard lock { callback_mutex };
         if (is_enabled && callback != nullptr) callback();
     }
 

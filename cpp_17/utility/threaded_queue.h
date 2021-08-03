@@ -26,7 +26,7 @@ namespace Navtech {
         void enqueue(T&& item, bool notify = true)
         {
             if (stopping || dequeue_callback == nullptr || !thread.joinable() || queue.size() > max_queue_depth) return;
-            std::lock_guard<std::mutex> lock(queue_mutex);
+            std::lock_guard lock { queue_mutex };
             queue.push(std::move(item));
             if (notify) condition.notify_all();
         }
@@ -34,7 +34,7 @@ namespace Navtech {
 
         void set_dequeue_callback(std::function<void(T&&)> fn = nullptr)
         {
-            std::lock_guard<std::mutex> lock(queue_mutex);
+            std::lock_guard lock { queue_mutex };
             dequeue_callback = std::move(fn);
         }
 
@@ -43,7 +43,7 @@ namespace Navtech {
     protected:
         void do_work()
         {
-            std::unique_lock<std::mutex> lock(queue_mutex);
+            std::unique_lock lock { queue_mutex };
 
             if (!queue.empty()) {
                 T item = queue.front();

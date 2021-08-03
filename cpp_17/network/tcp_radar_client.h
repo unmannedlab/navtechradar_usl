@@ -21,23 +21,25 @@
 #include "timer.h"
 
 namespace Navtech {
-    enum class Connection_state { Disconnected, Connecting, Connected };
+    enum class Connection_state { disconnected, connecting, connected };
 
     class Connection_info {
     public:
-        explicit Connection_info(const std::uint32_t unique_id, const Connection_state state) : state(state), unique_id(unique_id) { }
+        explicit Connection_info(const std::uint32_t unique_id, const Connection_state state) :
+            state(state), unique_id(unique_id)
+        { }
 
         explicit Connection_info(const Connection_info&) = delete;
         Connection_info& operator=(const Connection_info&) = delete;
-        Connection_state state                             = Connection_state::Disconnected;
+        Connection_state state                             = Connection_state::disconnected;
         std::uint32_t unique_id                            = 0;
     };
 
     typedef Shared_owner<Connection_info> ConnectionInfoPtr_t;
 
-    constexpr std::chrono::milliseconds connection_check_timeout = std::chrono::milliseconds(5000);
-    constexpr std::uint16_t read_timeout                         = 60;
-    constexpr std::uint16_t send_timeout                         = 10;
+    constexpr std::chrono::milliseconds connection_check_timeout { std::chrono::milliseconds(5000) };
+    constexpr std::uint16_t read_timeout { 60 };
+    constexpr std::uint16_t send_timeout { 10 };
 
     class Tcp_radar_client {
     public:
@@ -55,15 +57,15 @@ namespace Navtech {
         std::string ip_address { "192.168.0.1" };
         std::uint16_t port { 6317 };
         Tcp_socket socket;
-        Owner_of<std::thread> connect_thread;
-        Owner_of<std::thread> read_thread = nullptr;
+        Owner_of<std::thread> connect_thread { nullptr };
+        Owner_of<std::thread> read_thread { nullptr };
         Timer connection_check_timer;
-        Connection_state connection_state { Connection_state::Disconnected };
-        std::mutex connection_state_mutex;
-        std::condition_variable connect_condition;
-        std::mutex connect_mutex;
-        std::atomic_bool reading;
-        std::atomic_bool running;
+        Connection_state connection_state { Connection_state::disconnected };
+        std::mutex connection_state_mutex {};
+        std::condition_variable connect_condition {};
+        std::mutex connect_mutex {};
+        std::atomic_bool reading {};
+        std::atomic_bool running {};
 
         void set_connection_state(const Connection_state& state);
         void connection_check_handler();

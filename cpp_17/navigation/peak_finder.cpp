@@ -18,11 +18,11 @@ namespace Navtech {
 
         std::vector<double> buffered_data;
 
-        if (buffer_mode != BufferModes::Off) {
-            data_buffer.emplace_back(std::vector<double>(fft_data->data.begin(), fft_data->data.end()));
+        if (buffer_mode != BufferModes::off) {
+            data_buffer.emplace_back(fft_data->data.begin(), fft_data->data.end());
             if (data_buffer.size() < buffer_length) { return; }
             buffered_data.resize(configuration->range_in_bins);
-            if (buffer_mode == BufferModes::Average) {
+            if (buffer_mode == BufferModes::average) {
                 for (auto bin = 0; bin < configuration->range_in_bins; bin++) {
                     auto total = 0.0f;
                     for (std::uint32_t counter = 0; counter < data_buffer.size(); counter++) {
@@ -33,8 +33,8 @@ namespace Navtech {
                 }
             }
             else {
-                auto max = 0.0;
-                for (auto bin = 0; bin < configuration->range_in_bins; bin++) {
+                double max = 0.0;
+                for (std::int32_t bin = 0; bin < configuration->range_in_bins; bin++) {
                     for (std::uint32_t counter = 0; counter < data_buffer.size(); counter++) {
                         auto value = data_buffer[counter][bin] / 2.0f;
                         if (value > max) { max = value; }

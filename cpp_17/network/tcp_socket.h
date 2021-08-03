@@ -22,6 +22,9 @@
 namespace Navtech {
     class Tcp_socket {
     public:
+        enum Close_option { do_not_shutdown, shutdown };
+        enum Receive_option { consume, peek };
+
         explicit Tcp_socket(const std::string& destination, const std::uint16_t& port = 6317);
         ~Tcp_socket();
         Tcp_socket(const Tcp_socket&) = delete;
@@ -31,16 +34,19 @@ namespace Navtech {
 
         bool create(std::uint32_t receive_timeout = 0);
         bool connect();
-        bool close(bool shutdown = false);
+        bool close(Close_option opt = do_not_shutdown);
         std::uint32_t send(const std::vector<std::uint8_t>& data);
-        std::uint32_t receive(std::vector<std::uint8_t>& data, std::int32_t bytes_to_read, bool peek = false);
+        std::uint32_t send(std::vector<std::uint8_t>&& data);
+        std::uint32_t receive(std::vector<std::uint8_t>& data,
+                              std::int32_t bytes_to_read,
+                              Receive_option peek = consume);
         void set_send_timeout(std::uint32_t send_timeout);
 
     private:
-        std::atomic<std::int32_t> _sock { -1 };
-        std::string _destination { "192.168.0.1" };
-        std::uint16_t _port { 6317 };
-        sockaddr_in _addr {};
+        std::atomic<std::int32_t> sock { -1 };
+        std::string destination { "192.168.0.1" };
+        std::uint16_t port { 6317 };
+        sockaddr_in addr {};
     };
 
 } // namespace Navtech

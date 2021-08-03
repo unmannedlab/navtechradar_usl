@@ -27,20 +27,20 @@ namespace Navtech {
 
     void Radar_client::set_fft_data_callback(std::function<void(const Fft_data::Pointer&)> fn)
     {
-        std::lock_guard<std::mutex> lock(_callbackMutex);
+        std::lock_guard lock { callback_mutex };
         fft_data_callback = std::move(fn);
     }
 
     void Radar_client::set_navigation_data_callback(std::function<void(const Navigation_data::Pointer&)> fn)
     {
-        std::lock_guard<std::mutex> lock(_callbackMutex);
+        std::lock_guard lock { callback_mutex };
         navigation_data_callback = std::move(fn);
     }
 
     void Radar_client::set_configuration_data_callback(
         std::function<void(const Configuration_data::Pointer&, const Configuration_data::ProtobufPointer&)> fn)
     {
-        std::lock_guard<std::mutex> lock(_callbackMutex);
+        std::lock_guard lock { callback_mutex };
         configuration_data_callback = std::move(fn);
     }
 
@@ -93,7 +93,7 @@ namespace Navtech {
 
     void Radar_client::set_navigation_threshold(const std::uint16_t& threshold)
     {
-        if (radar_client.get_connection_state() != Connection_state::Connected) return;
+        if (radar_client.get_connection_state() != Connection_state::connected) return;
 
         std::vector<std::uint8_t> buffer(sizeof(threshold));
         auto network_threshold = ntohs(threshold);
@@ -107,11 +107,11 @@ namespace Navtech {
 
     void Radar_client::set_navigation_gain_and_offset(const float& gain, const float& offset)
     {
-        if (radar_client.get_connection_state() != Connection_state::Connected) return;
+        if (radar_client.get_connection_state() != Connection_state::connected) return;
 
         std::vector<std::uint8_t> buffer(sizeof(std::uint32_t) * 2);
-        std::uint32_t net_gain   = htonl(static_cast<std::uint32_t>(gain * RANGE_MULTIPLIER));
-        std::uint32_t net_offset = htonl(static_cast<std::uint32_t>(offset * RANGE_MULTIPLIER));
+        std::uint32_t net_gain   = htonl(static_cast<std::uint32_t>(gain * range_multiplier));
+        std::uint32_t net_offset = htonl(static_cast<std::uint32_t>(offset * range_multiplier));
         std::memcpy(buffer.data(), &net_gain, sizeof(net_gain));
         std::memcpy(&buffer[sizeof(net_gain)], &net_offset, sizeof(net_offset));
 
@@ -123,7 +123,7 @@ namespace Navtech {
 
     void Radar_client::send_simple_network_message(const Colossus_network_protocol::Message::Type& type)
     {
-        if (radar_client.get_connection_state() != Connection_state::Connected) return;
+        if (radar_client.get_connection_state() != Connection_state::connected) return;
 
         Colossus_network_protocol::Message msg {};
         msg.type(type);
@@ -132,7 +132,7 @@ namespace Navtech {
 
     void Radar_client::update_contour_map(const std::vector<std::uint8_t>& contour_data)
     {
-        if (radar_client.get_connection_state() != Connection_state::Connected) return;
+        if (radar_client.get_connection_state() != Connection_state::connected) return;
 
         auto contour = std::vector<std::uint8_t>();
         if (contour_data.size() == 720) {
@@ -180,9 +180,9 @@ namespace Navtech {
     {
         Log("Radar_client - Handle Configuration Message");
 
-        _callbackMutex.lock();
+        callback_mutex.lock();
         auto configuration_fn = configuration_data_callback;
-        _callbackMutex.unlock();
+        callback_mutex.unlock();
         if (configuration_fn == nullptr) return;
 
         auto config                 = msg.view_as<Colossus_network_protocol::Configuration>();
@@ -209,9 +209,9 @@ namespace Navtech {
 
     void Radar_client::handle_fft_data_message(Colossus_network_protocol::Message& msg)
     {
-        _callbackMutex.lock();
+        callback_mutex.lock();
         auto fft_data_fn = fft_data_callback;
-        _callbackMutex.unlock();
+        callback_mutex.unlock();
         if (fft_data_fn == nullptr) return;
 
         auto fft_data = msg.view_as<Colossus_network_protocol::Fft_data>();
@@ -229,9 +229,9 @@ namespace Navtech {
 
     void Radar_client::handle_navigation_data_message(Colossus_network_protocol::Message& msg)
     {
-        _callbackMutex.lock();
+        callback_mutex.lock();
         auto navigation_data_fn = navigation_data_callback;
-        _callbackMutex.unlock();
+        callback_mutex.unlock();
         if (navigation_data_fn == nullptr) return;
 
         auto nav_data = msg.view_as<Colossus_network_protocol::Navigation_data>();
@@ -243,13 +243,14 @@ namespace Navtech {
         navigation_data->ntp_split_seconds = nav_data->ntp_split_seconds();
         navigation_data->angle             = (nav_data->azimuth() * 360.0f) / encoder_size;
 
-        auto peaks_count = targets.size() / NAV_DATA_RECORD_LENGTH;
-        for (auto i = 0u; i < (10 + (peaks_count * NAV_DATA_RECORD_LENGTH)); i += NAV_DATA_RECORD_LENGTH) {
+        auto peaks_count = targets.size() / nav_data_record_length;
+        for (auto i = 0u; i < (10 + (peaks_count * nav_data_record_length)); i += nav_data_record_length) {
             std::uint32_t peak_resolve = 0;
             std::memcpy(&peak_resolve, &targets[i], sizeof(peak_resolve));
             std::uint16_t power = 0;
             std::memcpy(&power, &targets[i + sizeof(peak_resolve)], sizeof(power));
-            navigation_data->peaks.push_back(std::make_tuple<float, std::uint16_t>(htonl(peak_resolve) / RANGE_MULTIPLIER_FLOAT, htons(power)));
+            navigation_data->peaks.push_back(
+                std::make_tuple<float, std::uint16_t>(htonl(peak_resolve) / range_multiplier_float, htons(power)));
         }
 
         navigation_data_fn(navigation_data);

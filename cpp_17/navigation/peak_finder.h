@@ -13,17 +13,17 @@ namespace Navtech {
 
     // Buffer modes are really only useful with a staring radar
     //
-    enum class BufferModes { Off = 0, Average = 1, Max = 2 };
+    enum class BufferModes { off = 0, average = 1, max = 2 };
 
-    class Target {
-    public:
+    struct Target
+    {
         Target(double rng, double pow) : range { rng }, power { pow } { }
         double range;
         double power;
     };
 
-    class Azimuth_target {
-    public:
+    struct Azimuth_target
+    {
         Azimuth_target(std::uint16_t azi, double ang, std::uint32_t seconds, std::uint32_t split_seconds) :
             azimuth { azi }, angle { ang }, ntp_seconds(seconds), ntp_split_seconds(split_seconds)
         { }
@@ -36,7 +36,6 @@ namespace Navtech {
 
     class Peak_finder {
     public:
-        Peak_finder() = default;
         void set_target_callback(std::function<void(Azimuth_target&&)> fn = nullptr);
         void fft_data_handler(const Fft_data::Pointer& fft_data);
         void configure(const Configuration_data::Pointer& data,
@@ -49,13 +48,13 @@ namespace Navtech {
                        std::uint32_t max_peaks_per_azi);
 
     private:
-        double threshold;
-        std::uint8_t bins_to_operate_on;
-        std::uint16_t min_bin_to_operate_on;
-        bool awaiting_rise;
-        std::deque<std::vector<double>> data_buffer;
-        BufferModes buffer_mode;
-        std::size_t buffer_length;
+        double threshold { 0 };
+        std::uint8_t bins_to_operate_on { 4 };
+        std::uint16_t min_bin_to_operate_on { 50 };
+        bool awaiting_rise { false };
+        std::deque<std::vector<double>> data_buffer {};
+        BufferModes buffer_mode { BufferModes::off };
+        std::size_t buffer_length { 10 };
         std::uint32_t max_peaks_per_azimuth { 10 };
 
         Configuration_data::Pointer configuration;
@@ -63,7 +62,9 @@ namespace Navtech {
 
         std::function<void(Azimuth_target&&)> target_callback = nullptr;
 
-        double peak_resolve(const std::vector<double>& data, const std::uint16_t& peak_bin, const std::uint8_t& bins_to_operate_upon);
+        double peak_resolve(const std::vector<double>& data,
+                            const std::uint16_t& peak_bin,
+                            const std::uint8_t& bins_to_operate_upon);
         uint16_t find_peak_bin(const std::vector<double>& data,
                                const std::uint16_t& start_bin,
                                const std::uint16_t& end_bin,

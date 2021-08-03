@@ -14,9 +14,9 @@
 
 namespace Navtech {
     Tcp_radar_client::Tcp_radar_client(const std::string& ip_address, const std::uint16_t& port) :
-        receive_data_queue { Threaded_queue<std::vector<std::uint8_t>>() }, ip_address { ip_address }, port { port }, socket { ip_address, port },
-        read_thread { nullptr }, connection_check_timer { connection_check_timeout },
-        connection_state { Connection_state::Disconnected }, reading { false }, running { false }
+        receive_data_queue { Threaded_queue<std::vector<std::uint8_t>>() }, ip_address { ip_address }, port { port },
+        socket { ip_address, port }, read_thread { nullptr }, connection_check_timer { connection_check_timeout },
+        connection_state { Connection_state::disconnected }, reading { false }, running { false }
     { }
 
 
@@ -28,7 +28,7 @@ namespace Navtech {
 
     Connection_state Tcp_radar_client::get_connection_state()
     {
-        if (!running) return Connection_state::Disconnected;
+        if (!running) return Connection_state::disconnected;
 
         connection_state_mutex.lock();
         auto state = connection_state;
@@ -61,7 +61,7 @@ namespace Navtech {
         connection_check_timer.set_callback(nullptr);
 
         running = false;
-        socket.close(true);
+        socket.close(Tcp_socket::Close_option::shutdown);
         connect_condition.notify_all();
         if (connect_thread != nullptr) {
             connect_thread->join();
@@ -80,24 +80,25 @@ namespace Navtech {
     {
         if (!running) return;
 
-        std::lock_guard<std::mutex> lock(connection_state_mutex);
+        std::lock_guard lock { connection_state_mutex };
         if (connection_state == state) { return; }
         connection_state = state;
 
-        std::string stateString;
+        std::string state_string;
         switch (state) {
-            case Connection_state::Connected:
-                stateString = "Connected";
+            case Connection_state::connected:
+                state_string = "Connected";
                 break;
-            case Connection_state::Connecting:
-                stateString = "Connecting";
+            case Connection_state::connecting:
+                state_string = "Connecting";
                 break;
-            case Connection_state::Disconnected:
-                stateString = "Disconnected";
+            case Connection_state::disconnected:
+                state_string = "Disconnected";
                 break;
         }
 
-        Log("Tcp_radar_client - Connection State Changed [" + stateString + "] for [" + ip_address + ":" + std::to_string(port) + "]");
+        Log("Tcp_radar_client - Connection State Changed [" + state_string + "] for [" + ip_address + ":" +
+            std::to_string(port) + "]");
     }
 
 
@@ -118,7 +119,7 @@ namespace Navtech {
 
     void Tcp_radar_client::connection_check_handler()
     {
-        if (get_connection_state() != Connection_state::Disconnected) return;
+        if (get_connection_state() != Connection_state::disconnected) return;
         Log("Tcp_radar_client - Connection error try again");
         connect_condition.notify_one();
     }
@@ -126,9 +127,9 @@ namespace Navtech {
 
     void Tcp_radar_client::connect()
     {
-        if (get_connection_state() == Connection_state::Connected) return;
+        if (get_connection_state() == Connection_state::connected) return;
 
-        set_connection_state(Connection_state::Connecting);
+        set_connection_state(Connection_state::connecting);
 
         socket.close();
         socket.create(read_timeout);
@@ -139,12 +140,12 @@ namespace Navtech {
                 read_thread->join();
                 read_thread = nullptr;
             }
-            set_connection_state(Connection_state::Connected);
+            set_connection_state(Connection_state::connected);
             reading     = true;
             read_thread = allocate_owned<std::thread>(std::bind(&Tcp_radar_client::read_thread_handler, this));
         }
         else {
-            set_connection_state(Connection_state::Disconnected);
+            set_connection_state(Connection_state::disconnected);
         }
     }
 
@@ -159,22 +160,28 @@ namespace Navtech {
 
         while (reading && running) {
             std::vector<std::uint8_t> signature;
-            std::int32_t bytes_read = socket.receive(signature, Colossus_network_protocol::signature_sz, true);
+            std::int32_t bytes_read =
+                socket.receive(signature, Colossus_network_protocol::signature_sz, Tcp_socket::Receive_option::peek);
 
             if (bytes_read == 0) continue;
 
             if (bytes_read < 0 || !reading || !running) {
-                set_connection_state(Connection_state::Disconnected);
+                set_connection_state(Connection_state::disconnected);
                 break;
             }
 
-            auto result =
-                memcmp(Colossus_network_protocol::valid_signature.begin(), signature.data(), Colossus_network_protocol::valid_signature.size()) == 0;
+            using std::begin;
+            using std::end;
+            using std::equal;
+
+            auto result = equal(begin(Colossus_network_protocol::valid_signature),
+                                end(Colossus_network_protocol::valid_signature),
+                                begin(signature));
 
             if (!result) {
                 bytes_read = socket.receive(signature, 1);
                 if (bytes_read <= 0 || !reading || !running) {
-                    set_connection_state(Connection_state::Disconnected);
+                    set_connection_state(Connection_state::disconnected);
                     Log("Tcp_radar_client - Read Failed Signature");
                     break;
                 }
@@ -182,7 +189,7 @@ namespace Navtech {
             }
 
             if (!handle_data() || !reading || !running) {
-                set_connection_state(Connection_state::Disconnected);
+                set_connection_state(Connection_state::disconnected);
                 Log("Tcp_radar_client - Failed Handle_data");
                 break;
             }
@@ -194,10 +201,10 @@ namespace Navtech {
 
     void Tcp_radar_client::send(const std::vector<std::uint8_t> data)
     {
-        if (get_connection_state() != Connection_state::Connected) return;
+        if (get_connection_state() != Connection_state::connected) return;
 
         if (socket.send(data) != 0) {
-            set_connection_state(Connection_state::Disconnected);
+            set_connection_state(Connection_state::disconnected);
             Log("Tcp_radar_client - Send Failed");
         }
     }
@@ -211,7 +218,7 @@ namespace Navtech {
         std::int32_t bytes_read = socket.receive(data, msg.header_size());
 
         if (bytes_read <= 0 || !reading || !running) {
-            set_connection_state(Connection_state::Disconnected);
+            set_connection_state(Connection_state::disconnected);
             Log("Tcp_radar_client - Failed to read header");
             return false;
         }
@@ -221,7 +228,7 @@ namespace Navtech {
             std::vector<std::uint8_t> payload_data;
             std::int32_t bytes_transferred = socket.receive(payload_data, msg.payload_size());
             if (bytes_transferred <= 0 || !reading || !running) {
-                set_connection_state(Connection_state::Disconnected);
+                set_connection_state(Connection_state::disconnected);
                 Log("Tcp_radar_client - Failed to read payload");
                 return false;
             }

@@ -21,7 +21,7 @@
 
 using namespace Navtech;
 
-Radar_client radar_client { "10.77.2.211" };
+Radar_client radar_client { "10.77.2.210" };
 Peak_finder peak_finder {};
 bool running { true };
 
@@ -64,10 +64,10 @@ void navigation_data_handler(Azimuth_target&& target_data)
 void configuration_data_handler(const Configuration_data::Pointer& configuration,
                                 const Configuration_data::ProtobufPointer& protobuf_configuration)
 {
-    double threshold                    = 140.0;            // Threshold in dB
+    double threshold                    = 80.0;             // Threshold in dB
     std::uint8_t bins_to_operate_on     = 4;                // Radar bins window size to search for peaks in
     std::uint16_t start_bin             = 50;               // Start Bin
-    BufferModes buffer_mode             = BufferModes::Off; // Buffer mode should only be used with a staring radar
+    BufferModes buffer_mode             = BufferModes::off; // Buffer mode should only be used with a staring radar
     std::size_t buffer_length           = 10;               // Buffer Length
     std::uint32_t max_peaks_per_azimuth = 2;                // Maximum number of peaks to find in a single azimuth
 

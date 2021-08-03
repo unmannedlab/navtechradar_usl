@@ -9,7 +9,8 @@ using ::testing::AnyNumber;
 using ::testing::NiceMock;
 using ::testing::Return;
 
-constexpr std::array<std::uint8_t, 32> no_peak { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+constexpr std::array<std::uint8_t, 32> no_peak { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 constexpr std::array<std::uint8_t, 32> single_peak { 0, 0, 0, 0, 0, 0, 80, 100, 120, 100, 80, 0, 0, 0, 0, 0,
                                                      0, 0, 0, 0, 0, 0, 0,  0,   0,   0,   0,  0, 0, 0, 0, 0 };
@@ -47,12 +48,19 @@ TEST_F(given_a_peak_finder, WhenCallingFindPeakBinWithNoDataAboveThresholdShould
     auto threshold             = 90.0;             // Threshold in dB
     auto bins_to_operate_on    = 4;                // Radar bins window size to search for peaks in
     auto start_bin             = 1;                // Start Bin
-    auto buffer_mode           = BufferModes::Off; // Buffer mode should only be used with a staring radar
+    auto buffer_mode           = BufferModes::off; // Buffer mode should only be used with a staring radar
     auto buffer_length         = 10;               // Buffer Length
     auto max_peaks_per_azimuth = 2;                // Maximum number of peaks to find in a single azimuth
 
     pf.set_target_callback(lambda);
-    pf.configure(configuration, protobuf_configuration, threshold, bins_to_operate_on, start_bin, buffer_mode, buffer_length, max_peaks_per_azimuth);
+    pf.configure(configuration,
+                 protobuf_configuration,
+                 threshold,
+                 bins_to_operate_on,
+                 start_bin,
+                 buffer_mode,
+                 buffer_length,
+                 max_peaks_per_azimuth);
 
     Fft_data::Pointer fft_data  = allocate_shared<Fft_data>();
     fft_data->angle             = 50.4;
@@ -83,12 +91,19 @@ TEST_F(given_a_peak_finder, WhenCallingFindPeakBinWithASinglePeakAboveThresholdS
     auto threshold             = 90.0;             // Threshold in dB
     auto bins_to_operate_on    = 4;                // Radar bins window size to search for peaks in
     auto start_bin             = 1;                // Start Bin
-    auto buffer_mode           = BufferModes::Off; // Buffer mode should only be used with a staring radar
+    auto buffer_mode           = BufferModes::off; // Buffer mode should only be used with a staring radar
     auto buffer_length         = 10;               // Buffer Length
     auto max_peaks_per_azimuth = 2;                // Maximum number of peaks to find in a single azimuth
 
     pf.set_target_callback(lambda);
-    pf.configure(configuration, protobuf_configuration, threshold, bins_to_operate_on, start_bin, buffer_mode, buffer_length, max_peaks_per_azimuth);
+    pf.configure(configuration,
+                 protobuf_configuration,
+                 threshold,
+                 bins_to_operate_on,
+                 start_bin,
+                 buffer_mode,
+                 buffer_length,
+                 max_peaks_per_azimuth);
 
     Fft_data::Pointer fft_data  = allocate_shared<Fft_data>();
     fft_data->angle             = 50.4;
@@ -121,12 +136,19 @@ TEST_F(given_a_peak_finder, WhenCallingFindPeakBinWithATwinPeaksAboveThresholdSh
     auto threshold             = 90.0;             // Threshold in dB
     auto bins_to_operate_on    = 4;                // Radar bins window size to search for peaks in
     auto start_bin             = 1;                // Start Bin
-    auto buffer_mode           = BufferModes::Off; // Buffer mode should only be used with a staring radar
+    auto buffer_mode           = BufferModes::off; // Buffer mode should only be used with a staring radar
     auto buffer_length         = 10;               // Buffer Length
     auto max_peaks_per_azimuth = 2;                // Maximum number of peaks to find in a single azimuth
 
     pf.set_target_callback(lambda);
-    pf.configure(configuration, protobuf_configuration, threshold, bins_to_operate_on, start_bin, buffer_mode, buffer_length, max_peaks_per_azimuth);
+    pf.configure(configuration,
+                 protobuf_configuration,
+                 threshold,
+                 bins_to_operate_on,
+                 start_bin,
+                 buffer_mode,
+                 buffer_length,
+                 max_peaks_per_azimuth);
 
     Fft_data::Pointer fft_data  = allocate_shared<Fft_data>();
     fft_data->angle             = 50.4;

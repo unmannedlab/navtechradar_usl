@@ -14,19 +14,20 @@ namespace Navtech {
 
     class Signal_handler {
     public:
-        explicit Signal_handler()             = default;
+        Signal_handler()                      = default;
         Signal_handler(const Signal_handler&) = delete;
         Signal_handler& operator=(const Signal_handler&) = delete;
 
-        void RegisterHandler(std::int32_t signal, std::function<void(std::int32_t signal, std::int32_t info)> callback = nullptr)
+        void RegisterHandler(std::int32_t signal,
+                             std::function<void(std::int32_t signal, std::int32_t info)> callback = nullptr)
         {
             if (callback == nullptr) return;
 
             _signalCallbacks[signal] = std::move(callback);
 
             struct sigaction new_action = { { 0 } };
-            myCb                        = std::bind(&Signal_handler::Handler, this, std::placeholders::_1, std::placeholders::_2);
-            new_action.sa_sigaction     = CallCb;
+            myCb = std::bind(&Signal_handler::Handler, this, std::placeholders::_1, std::placeholders::_2);
+            new_action.sa_sigaction = CallCb;
             sigemptyset(&new_action.sa_mask);
             new_action.sa_flags = SA_SIGINFO | SA_RESTART;
 

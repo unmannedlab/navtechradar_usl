@@ -6,8 +6,8 @@
 
 namespace Navtech {
 
-    class Vector_maths {
-    public:
+    namespace Vector_maths {
+
         template<class T>
         static inline void scalar_sum(std::vector<T>& data, std::size_t length, T& result)
         {
@@ -77,7 +77,7 @@ namespace Navtech {
             for (auto index = 0u; index < length; index++)
                 result[index] += data1[index] * data2[index];
         }
-    };
+    } // namespace Vector_maths
 
 } // namespace Navtech
 
