@@ -45,6 +45,7 @@ public:
         message.ntp_seconds = data->NTPSeconds;
         message.ntp_split_seconds = data->NTPSplitSeconds;
         message.data = data->Data;
+        message.data_length = data->Data.size();
 
         fft_data_publisher->publish(message);
     }

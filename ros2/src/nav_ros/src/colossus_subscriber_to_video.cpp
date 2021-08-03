@@ -17,6 +17,9 @@ int video_width;
 int video_height;
 int bearing_count = 0;
 
+Mat radar_image(Size(2856, 400), CV_8UC3, Scalar(0, 0, 0));
+uint8_t* image_ptr = (uint8_t*)radar_image.data;
+
 class Colossus_subscriber_to_video : public rclcpp::Node
 {
 public:
@@ -56,12 +59,13 @@ private:
         }
 
         int bearing = ((double)msg->azimuth / (double)encoder_size) * (double)azimuth_samples;
-
+        for (int x = 0; x < msg->data_length; x++)
+        {
+            image_ptr[x * 3 + bearing * radar_image.step + 1] = 255;
+        }
         bearing_count++;
 
         if (bearing_count >= 400) {
-            Mat radar_image(Size(video_width, video_height), CV_8UC3, Scalar(0, 0, 0));
-            auto image_data = new byte[video_width * video_height];
             video_writer.write(radar_image);
             bearing_count = 0;
         }
