@@ -30,7 +30,7 @@ namespace Navtech::Colossus_network_protocol {
             configuration_request          = 20,
             start_fft_data                 = 21,
             stop_fft_data                  = 22,
-            starthealthmsgs                = 23,
+            start_health_msgs              = 23,
             stop_health_msgs               = 24,
             recalibrate_rf_health          = 25,
             start_tracks                   = 26,

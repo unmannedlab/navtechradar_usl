@@ -44,6 +44,12 @@ namespace Navtech {
         configuration_data_callback = std::move(fn);
     }
 
+    void Radar_client::set_health_data_callback(std::function<void(const Shared_owner<Colossus::Protobuf::Health>&)> fn)
+    {
+        std::lock_guard lock { callback_mutex };
+        health_data_callback = std::move(fn);
+    }
+
     void Radar_client::start()
     {
         if (running) return;
@@ -77,6 +83,18 @@ namespace Navtech {
         Log("Radar_client - Stop FFT Data");
         send_simple_network_message(Colossus_network_protocol::Message::Type::stop_fft_data);
         send_radar_data = false;
+    }
+
+    void Radar_client::start_health_data()
+    {
+        Log("Radar_client - Start Health Data");
+        send_simple_network_message(Colossus_network_protocol::Message::Type::start_health_msgs);
+    }
+
+    void Radar_client::stop_health_data()
+    {
+        Log("Radar_client - Stop Health Data");
+        send_simple_network_message(Colossus_network_protocol::Message::Type::stop_health_msgs);
     }
 
     void Radar_client::Start_navigation_data()
@@ -205,7 +223,19 @@ namespace Navtech {
         configuration_fn(configuration_data, protobuf_configuration);
     }
 
-    void Radar_client::handle_health_message(Colossus_network_protocol::Message& msg) { }
+    void Radar_client::handle_health_message(Colossus_network_protocol::Message& msg)
+    {
+        callback_mutex.lock();
+        auto health_data_fn = health_data_callback;
+        callback_mutex.unlock();
+        if (health_data_fn == nullptr) return;
+
+        auto health          = msg.view_as<Colossus_network_protocol::Health>();
+        auto protobuf_health = allocate_shared<Colossus::Protobuf::Health>();
+        protobuf_health->ParseFromString(health->to_string());
+
+        health_data_fn(protobuf_health);
+    }
 
     void Radar_client::handle_fft_data_message(Colossus_network_protocol::Message& msg)
     {

@@ -69,7 +69,7 @@ void configuration_data_handler(const Configuration_data::Pointer& configuration
     std::uint16_t start_bin             = 50;               // Start Bin
     BufferModes buffer_mode             = BufferModes::off; // Buffer mode should only be used with a staring radar
     std::size_t buffer_length           = 10;               // Buffer Length
-    std::uint32_t max_peaks_per_azimuth = 2;                // Maximum number of peaks to find in a single azimuth
+    std::uint32_t max_peaks_per_azimuth = 10;               // Maximum number of peaks to find in a single azimuth
 
     peak_finder.configure(configuration,
                           protobuf_configuration,
@@ -81,6 +81,13 @@ void configuration_data_handler(const Configuration_data::Pointer& configuration
                           max_peaks_per_azimuth);
 
     radar_client.start_fft_data();
+    // radar_client.start_health_data(); //Uncomment to receive health messages
+}
+
+
+void health_data_handler(const Shared_owner<Colossus::Protobuf::Health>& health)
+{
+    Log("Health Received Module MAC Address: [" + health->macaddress() + "]");
 }
 
 
@@ -98,7 +105,7 @@ int main(int argc, char** argv)
     WSADATA wsaData;
     auto err = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (err != 0) {
-        Log("Tracker - WSAStartup failed with error [" + std::to_string(err) + "]");
+        Log("WSAStartup failed with error [" + std::to_string(err) + "]");
         return EXIT_FAILURE;
     }
 #endif
@@ -109,6 +116,7 @@ int main(int argc, char** argv)
     radar_client.set_fft_data_callback(std::bind(&fft_data_handler, std::placeholders::_1));
     radar_client.set_configuration_data_callback(
         std::bind(&configuration_data_handler, std::placeholders::_1, std::placeholders::_2));
+    radar_client.set_health_data_callback(std::bind(&health_data_handler, std::placeholders::_1));
     radar_client.start();
 
     while (running) {

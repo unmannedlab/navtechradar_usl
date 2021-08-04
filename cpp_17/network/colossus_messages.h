@@ -116,7 +116,10 @@ namespace Navtech::Colossus_network_protocol {
         std::uint32_t ntp_split_seconds() const { return ntohl(split_seconds); }
         void ntp_split_seconds(std::uint32_t val) { split_seconds = htonl(val); }
 
-        std::vector<std::uint8_t> fft_data() const { return std::vector<std::uint8_t>(payload_begin() + fft_data_offset(), payload_end()); }
+        std::vector<std::uint8_t> fft_data() const
+        {
+            return std::vector<std::uint8_t>(payload_begin() + fft_data_offset(), payload_end());
+        }
 
         // If your message has a header you MUST provide this function
         //
@@ -165,6 +168,13 @@ namespace Navtech::Colossus_network_protocol {
         std::uint32_t split_seconds;
     };
 #pragma pack()
+
+#pragma pack(1)
+    class Health : public Message_base::Protocol_buffer<Health> {
+    public:
+    };
+#pragma pack()
+
 
 } // namespace Navtech::Colossus_network_protocol
 

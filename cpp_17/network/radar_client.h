@@ -17,6 +17,7 @@
 #include "colossus_network_message.h"
 #include "tcp_radar_client.h"
 #include <configurationdata.pb.h>
+#include <health.pb.h>
 
 namespace Navtech {
     constexpr std::uint32_t range_multiplier       = 1000000;
@@ -71,6 +72,8 @@ namespace Navtech {
         void update_contour_map(const std::vector<std::uint8_t>& contourData);
         void start_fft_data();
         void stop_fft_data();
+        void start_health_data();
+        void stop_health_data();
         void Start_navigation_data();
         void stop_navigation_data();
         void set_navigation_threshold(std::uint16_t threshold);
@@ -80,6 +83,8 @@ namespace Navtech {
         void set_configuration_data_callback(
             std::function<void(const Configuration_data::Pointer&, const Configuration_data::ProtobufPointer&)> fn =
                 nullptr);
+        void set_health_data_callback(
+            std::function<void(const Shared_owner<Colossus::Protobuf::Health>&)> fn = nullptr);
 
     private:
         Tcp_radar_client radar_client;
@@ -89,7 +94,8 @@ namespace Navtech {
         std::function<void(const Fft_data::Pointer&)> fft_data_callback               = nullptr;
         std::function<void(const Navigation_data::Pointer&)> navigation_data_callback = nullptr;
         std::function<void(const Configuration_data::Pointer&, const Configuration_data::ProtobufPointer&)>
-            configuration_data_callback = nullptr;
+            configuration_data_callback                                                           = nullptr;
+        std::function<void(const Shared_owner<Colossus::Protobuf::Health>&)> health_data_callback = nullptr;
 
         std::uint16_t encoder_size = 0;
         double bin_size            = 0;
