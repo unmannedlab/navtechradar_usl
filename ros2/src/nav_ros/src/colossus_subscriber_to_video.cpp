@@ -17,7 +17,7 @@ int video_width;
 int video_height;
 int bearing_count = 0;
 
-Mat radar_image(Size(2856, 400), CV_8UC3, Scalar(0, 0, 0));
+Mat radar_image(Size(400, 400), CV_8UC3, Scalar(0, 0, 0));
 uint8_t* image_ptr = (uint8_t*)radar_image.data;
 
 class Colossus_subscriber_to_video : public rclcpp::Node
@@ -47,7 +47,7 @@ private:
 
         video_width = msg->range_in_bins;
         video_height = msg->azimuth_samples;
-        video_writer.open("output_videos/radar_output.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), msg->expected_rotation_rate, Size(video_width, video_height), true);
+        video_writer.open("output_videos/radar_output.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), msg->expected_rotation_rate, Size(400, 400), true);
         config_data_received = true;
     }
     void fft_data_callback(const interfaces::msg::FftDataMessage::SharedPtr msg) const
@@ -68,7 +68,7 @@ private:
 
         for (int x = 0; x < msg->data_length; x++)
         {
-            image_ptr[x * 3 + bearing * radar_image.step + 1] = static_cast<int>(msg->data[0]);
+            image_ptr[x * 3 + bearing * radar_image.step + 1] = static_cast<int>(msg->data[x]);
         }
         bearing_count++;
 
@@ -76,12 +76,16 @@ private:
 
             Mat recovered_lin_polar_img;
             Point2f center((float)radar_image.cols / 2, (float)radar_image.rows / 2);
-            double maxRadius = min(center.y, center.x);
-            cv::linearPolar(radar_image, recovered_lin_polar_img, center, maxRadius, INTER_LINEAR + WARP_FILL_OUTLIERS + WARP_INVERSE_MAP);
+            double max_radius = min(center.y, center.x);
+            linearPolar(radar_image, recovered_lin_polar_img, center, max_radius, INTER_LINEAR + WARP_FILL_OUTLIERS + WARP_INVERSE_MAP);
             //RCLCPP_INFO(Node::get_logger(), "Rectified image shape: %i", recovered_lin_polar_img.cols);
             //RCLCPP_INFO(Node::get_logger(), "Rectified image shape: %i", recovered_lin_polar_img.rows);
 
-            video_writer.write(recovered_lin_polar_img);
+            Mat cropped_image = recovered_lin_polar_img(Rect(0, 0, 400, 400));
+            Mat normalised_image(Size(400, 400), CV_8UC3, Scalar(0, 0, 0));
+            normalize(cropped_image, normalised_image, 0, 255, NORM_MINMAX);
+
+            video_writer.write(normalised_image);
             bearing_count = 0;
         }
 
