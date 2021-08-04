@@ -197,10 +197,10 @@ namespace Navtech::Colossus_network_protocol {
         //
         Buffer temp { move(protocol_buffer) };
 
-        data.reserve(data.size() + protocol_buffer.size());
-        copy(begin(protocol_buffer), end(protocol_buffer), back_inserter(data));
+        data.reserve(data.size() + temp.size());
+        copy(begin(temp), end(temp), back_inserter(data));
 
-        payload_size(payload_size() + protocol_buffer.size());
+        payload_size(payload_size() + temp.size());
         has_protobuf = true;
         return *this;
     }
@@ -234,10 +234,10 @@ namespace Navtech::Colossus_network_protocol {
         //
         std::string temp { move(protocol_buffer) };
 
-        data.reserve(data.size() + protocol_buffer.size());
-        copy(begin(protocol_buffer), end(protocol_buffer), back_inserter(data));
+        data.reserve(data.size() + temp.size());
+        copy(begin(temp), end(temp), back_inserter(data));
 
-        payload_size(payload_size() + protocol_buffer.size());
+        payload_size(payload_size() + temp.size());
         has_protobuf = true;
         return *this;
     }
