@@ -31,4 +31,4 @@ target_link_libraries(testclient iasdk_network iasdk_utility iasdk_protobuf)
 add_executable(navigationclient navigation_main.cpp)
 target_link_libraries(navigationclient iasdk_network iasdk_utility iasdk_protobuf iasdk_navigation)
 
-add_subdirectory(unittests)
+#add_subdirectory(unittests)

@@ -76,6 +76,12 @@ namespace Navtech {
     }
 
 
+    void Peak_finder::set_threshold(double thresh)
+    {
+        threshold = thresh;
+    }
+
+
     void Peak_finder::find_peaks(std::uint16_t azimuth,
                                  double angle,
                                  std::uint32_t ntp_seconds,

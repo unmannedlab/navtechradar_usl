@@ -46,6 +46,7 @@ namespace Navtech {
                        BufferModes mode,
                        std::size_t buf_length,
                        std::uint32_t max_peaks_per_azi);
+        void set_threshold(double thresh);
 
     private:
         double threshold { 0 };
