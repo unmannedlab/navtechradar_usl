@@ -1,9 +1,10 @@
 #include <functional>
 #include <memory>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
+#include <opencv2/opencv.hpp>
+
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "interfaces/msg/fft_data_message.hpp"
-#include "opencv2/opencv.hpp"
 #include "colossus_subscriber_to_video.h"
 
 using namespace std;
