@@ -4,3 +4,4 @@ uint16 sweep_counter
 uint32 ntp_seconds
 uint32 ntp_split_seconds
 uint8[] data
+uint16 data_length

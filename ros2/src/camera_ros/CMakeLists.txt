@@ -32,14 +32,20 @@ target_link_libraries(camera_publisher)
 ament_target_dependencies(camera_publisher rclcpp std_msgs interfaces OpenCV)
 
 ## Build executable for Camera subscriber
-add_executable(camera_subscriber src/camera_subscriber.cpp)
+add_executable(camera_subscriber src/camera_subscriber_main.cpp src/camera_subscriber.cpp)
 target_link_libraries(camera_subscriber)
 ament_target_dependencies(camera_subscriber rclcpp std_msgs interfaces OpenCV)
+
+## Build executable for Camera subscriber to video
+add_executable(camera_subscriber_to_video src/camera_subscriber_to_video_main.cpp src/camera_subscriber_to_video.cpp)
+target_link_libraries(camera_subscriber_to_video)
+ament_target_dependencies(camera_subscriber_to_video rclcpp std_msgs interfaces OpenCV)
 
 ## Install the built executables
 install(TARGETS
   camera_publisher
   camera_subscriber
+  camera_subscriber_to_video
   DESTINATION lib/${PROJECT_NAME})
 
 ## Install the package
