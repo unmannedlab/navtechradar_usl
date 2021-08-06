@@ -15,12 +15,12 @@ using namespace rclcpp;
 using namespace cv;
 using namespace chrono;
 
-Publisher<interfaces::msg::CameraImageMessage>::SharedPtr camera_image_publisher;
+namespace {
+    Publisher<interfaces::msg::CameraImageMessage>::SharedPtr camera_image_publisher;
+    string camera_url;
+}
 
-string camera_url;
-
-Camera_publisher::Camera_publisher():rclcpp::Node{ "camera_publisher" }
-{
+Camera_publisher::Camera_publisher():rclcpp::Node{ "camera_publisher" }{
     declare_parameter("camera_url", "");
 
     camera_url = get_parameter("camera_url").as_string();
@@ -31,8 +31,7 @@ Camera_publisher::Camera_publisher():rclcpp::Node{ "camera_publisher" }
             100);
 }
 
-void Camera_publisher::camera_image_handler(Mat image, int fps)
-{
+void Camera_publisher::camera_image_handler(Mat image, int fps){
     //RCLCPP_INFO(Node::get_logger(), "Publishing Camera Image Data");
     //RCLCPP_INFO(Node::get_logger(), "Mat rows: %i", image.rows);
     //RCLCPP_INFO(Node::get_logger(), "Mat columns: %i", image.cols);
@@ -64,8 +63,7 @@ void Camera_publisher::camera_image_handler(Mat image, int fps)
 
 std::shared_ptr<Camera_publisher> node;
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]){
     init(argc, argv);
     node = std::make_shared<Camera_publisher>();
 

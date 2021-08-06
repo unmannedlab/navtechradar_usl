@@ -14,15 +14,15 @@ using namespace std;
 using namespace Navtech;
 using namespace rclcpp;
 
-Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher;
-Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher;
+namespace {
+    Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher;
+    Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher;
+    Owner_of<RadarClient> radar_client{ };
+    string radar_ip;
+    uint16_t radar_port;
+}
 
-Owner_of<RadarClient> radar_client{ };
-string radar_ip;
-uint16_t radar_port;
-
-Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }
-{
+Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }{
     declare_parameter("radar_ip", "");
     declare_parameter("radar_port", 0);
 
@@ -39,8 +39,7 @@ Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }
             1600);
 }
 
-void Colossus_publisher::fft_data_handler(const FFTDataPtr_t& data)
-{
+void Colossus_publisher::fft_data_handler(const FFTDataPtr_t& data){
     //RCLCPP_INFO(Node::get_logger(), "Publishing FFT Data");
 
     auto message = interfaces::msg::FftDataMessage();
@@ -61,8 +60,7 @@ void Colossus_publisher::fft_data_handler(const FFTDataPtr_t& data)
     fft_data_publisher->publish(message);
 }
 
-void Colossus_publisher::configuration_data_handler(const ConfigurationDataPtr_t& data)
-{
+void Colossus_publisher::configuration_data_handler(const ConfigurationDataPtr_t& data){
     RCLCPP_INFO(Node::get_logger(), "Configuration Data Received");
     RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", data->AzimuthSamples);
     RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", data->EncoderSize);
@@ -84,8 +82,7 @@ void Colossus_publisher::configuration_data_handler(const ConfigurationDataPtr_t
 
 std::shared_ptr<Colossus_publisher> node;
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]){
     init(argc, argv);
     node = std::make_shared<Colossus_publisher>();
 

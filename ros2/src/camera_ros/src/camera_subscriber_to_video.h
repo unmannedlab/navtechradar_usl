@@ -1,7 +1,5 @@
 #include <rclcpp/rclcpp.hpp>
 
-using namespace rclcpp;
-
 class Camera_subscriber_to_video : public ::rclcpp::Node {
 public:
     Camera_subscriber_to_video();

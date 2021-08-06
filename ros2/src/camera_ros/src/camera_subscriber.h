@@ -1,6 +1,9 @@
+#include <functional>
+#include <memory>
 #include <rclcpp/rclcpp.hpp>
 
-using namespace rclcpp;
+#include "interfaces/msg/camera_image_message.hpp"
+#include "opencv2/opencv.hpp"
 
 class Camera_subscriber : public ::rclcpp::Node {
 public:

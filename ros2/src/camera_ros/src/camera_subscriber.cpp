@@ -10,8 +10,7 @@ using namespace std;
 using namespace rclcpp;
 using namespace cv;
 
-Camera_subscriber::Camera_subscriber():rclcpp::Node{ "camera_subscriber" }
-{
+Camera_subscriber::Camera_subscriber():rclcpp::Node{ "camera_subscriber" }{
     using std::placeholders::_1;
 
     camera_data_subscriber =
@@ -21,8 +20,7 @@ Camera_subscriber::Camera_subscriber():rclcpp::Node{ "camera_subscriber" }
             std::bind(&Camera_subscriber::camera_image_callback, this, _1));
 }
 
-void Camera_subscriber::camera_image_callback(const interfaces::msg::CameraImageMessage::SharedPtr data) const
-{
+void Camera_subscriber::camera_image_callback(const interfaces::msg::CameraImageMessage::SharedPtr data) const{
     RCLCPP_INFO(Node::get_logger(), "Camera Data received");
     RCLCPP_INFO(Node::get_logger(), "Image Rows: %i", data->image_rows);
     RCLCPP_INFO(Node::get_logger(), "Image Cols: %i", data->image_cols);
@@ -36,12 +34,4 @@ void Camera_subscriber::camera_image_callback(const interfaces::msg::CameraImage
     }
     Mat test_image = Mat(data->image_rows, data->image_cols, dataType, data->image_data.data()).clone();
     //imwrite("test.jpg", test_image);
-}
-
-int main(int argc, char* argv[])
-{
-    rclcpp::init(argc, argv);
-    auto node = std::make_shared<Camera_subscriber>();
-    rclcpp::spin(node);
-    rclcpp::shutdown();
 }

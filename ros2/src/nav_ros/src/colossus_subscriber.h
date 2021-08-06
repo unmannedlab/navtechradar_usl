@@ -1,7 +1,5 @@
 #include <rclcpp/rclcpp.hpp>
 
-using namespace rclcpp;
-
 class Colossus_subscriber : public ::rclcpp::Node {
 public:
     Colossus_subscriber();

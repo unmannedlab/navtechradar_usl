@@ -10,12 +10,13 @@ using namespace std;
 using namespace rclcpp;
 using namespace cv;
 
-auto first_frame = true;
-VideoWriter video_writer;
+namespace {
+    auto first_frame{ true };
+    VideoWriter video_writer;
+}
 
 Camera_subscriber_to_video::Camera_subscriber_to_video() :
-    rclcpp::Node{ "camera_subscriber_to_video" }
-{
+    rclcpp::Node{ "camera_subscriber_to_video" }{
 
     using std::placeholders::_1;
 
@@ -26,8 +27,7 @@ Camera_subscriber_to_video::Camera_subscriber_to_video() :
             std::bind(&Camera_subscriber_to_video::camera_image_callback, this, _1));
 }
 
-void Camera_subscriber_to_video::camera_image_callback(const interfaces::msg::CameraImageMessage::SharedPtr data) const
-{
+void Camera_subscriber_to_video::camera_image_callback(const interfaces::msg::CameraImageMessage::SharedPtr data) const{
     if (first_frame) {
         RCLCPP_INFO(Node::get_logger(), "Camera Data received");
         RCLCPP_INFO(Node::get_logger(), "Image Rows: %i", data->image_rows);
@@ -46,12 +46,4 @@ void Camera_subscriber_to_video::camera_image_callback(const interfaces::msg::Ca
     }
     Mat camera_image = Mat(data->image_rows, data->image_cols, dataType, data->image_data.data()).clone();
     video_writer.write(camera_image);
-}
-
-int main(int argc, char* argv[])
-{
-    rclcpp::init(argc, argv);
-    auto node = std::make_shared<Camera_subscriber_to_video>();
-    rclcpp::spin(node);
-    rclcpp::shutdown();
 }

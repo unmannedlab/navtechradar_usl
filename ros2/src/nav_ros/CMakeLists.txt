@@ -36,12 +36,12 @@ target_link_libraries(colossus_publisher iasdk_static)
 ament_target_dependencies(colossus_publisher rclcpp std_msgs interfaces)
 
 ## Build executable for Colossus subscriber
-add_executable(colossus_subscriber src/colossus_subscriber.cpp)
+add_executable(colossus_subscriber src/colossus_subscriber_main.cpp src/colossus_subscriber.cpp)
 target_link_libraries(colossus_subscriber iasdk_static)
 ament_target_dependencies(colossus_subscriber rclcpp std_msgs interfaces)
 
 ## Build executable for Colossus subscriber to video
-add_executable(colossus_subscriber_to_video src/colossus_subscriber_to_video.cpp)
+add_executable(colossus_subscriber_to_video src/colossus_subscriber_to_video_main.cpp src/colossus_subscriber_to_video.cpp)
 target_link_libraries(colossus_subscriber_to_video iasdk_static)
 ament_target_dependencies(colossus_subscriber_to_video rclcpp std_msgs interfaces OpenCV)
 
