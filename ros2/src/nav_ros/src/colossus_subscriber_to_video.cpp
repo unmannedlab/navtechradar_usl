@@ -61,33 +61,7 @@ private:
             return;
         }
 
-        //auto missed_azimuths = 0;
-        //if (!first_frame) {
-        //    previous_bearing = current_bearing;
-        //}
-
         current_bearing = ((double)msg->azimuth / (double)encoder_size) * (double)azimuth_samples;
-
-        //if (!first_frame) {
-        //    if (previous_bearing == azimuth_samples - 1) {
-        //        missed_azimuths = current_bearing;
-        //    }
-        //    else {
-        //        missed_azimuths = (current_bearing + 1) - (previous_bearing + 1);
-        //    }
-        //}
-
-        //first_frame = false;
-
-        //if (missed_azimuths > 0) {
-        //    bearing_count += missed_azimuths;
-        //}
-
-        //RCLCPP_INFO(Node::get_logger(), "Data 0: %u", static_cast<int>(msg->data[0]));
-        //RCLCPP_INFO(Node::get_logger(), "Data 1: %u", static_cast<int>(msg->data[1]));
-        //RCLCPP_INFO(Node::get_logger(), "Data 2: %u", static_cast<int>(msg->data[2]));
-        //RCLCPP_INFO(Node::get_logger(), "Data 3: %u", static_cast<int>(msg->data[3]));
-        //RCLCPP_INFO(Node::get_logger(), "Data 4: %u", static_cast<int>(msg->data[4]));
 
         for (int x = 0; x < msg->data_length; x++)
         {
@@ -101,8 +75,6 @@ private:
             Point2f center((float)radar_image.cols / 2, (float)radar_image.rows / 2);
             double max_radius = min(center.y, center.x);
             linearPolar(radar_image, recovered_lin_polar_img, center, max_radius, INTER_LINEAR + WARP_FILL_OUTLIERS + WARP_INVERSE_MAP);
-            
-            //RCLCPP_INFO(Node::get_logger(), "%i, %i", previous_bearing, current_bearing);
 
             Mat cropped_image = recovered_lin_polar_img(Rect(0, 0, azimuth_samples, azimuth_samples));
             Mat normalised_image(Size(azimuth_samples, azimuth_samples), CV_8UC3, Scalar(0, 0, 0));
@@ -111,7 +83,6 @@ private:
             rotate(normalised_image, rotated_image, ROTATE_90_COUNTERCLOCKWISE);
             video_writer.write(rotated_image);
             bearing_count = 0;
-            bearing_count += (bearing_count - azimuth_samples);
         }
 
         //RCLCPP_INFO(Node::get_logger(), "FFT Data Received");
@@ -123,9 +94,6 @@ private:
         //RCLCPP_INFO(Node::get_logger(), "Sweep Counter: %i", msg->sweep_counter);
         //RCLCPP_INFO(Node::get_logger(), "NTP Seconds: : %i", msg->ntp_seconds);
         //RCLCPP_INFO(Node::get_logger(), "NTP Split Seconds: %i", msg->ntp_split_seconds);
-
-        //radar_image = Mat::zeros(video_width, video_height, CV_8UC3);
-        //Mat radar_image(Size(video_width, video_height), CV_8UC3, Scalar(0, 0, 0));
     }
 
     rclcpp::Subscription<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_subscriber;
