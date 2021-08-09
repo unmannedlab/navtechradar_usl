@@ -37,7 +37,7 @@ namespace Navtech {
     }
 
 
-    const bool Tcp_socket::is_valid() const { return sock != -1; }
+    bool Tcp_socket::is_valid() const { return sock != -1; }
 
 
     bool Tcp_socket::create(std::uint32_t receive_timeout)

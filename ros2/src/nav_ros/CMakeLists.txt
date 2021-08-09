@@ -36,7 +36,7 @@ include_directories(
 )
 
 ## Add additional CPP libs
-add_library(iasdk_static STATIC ../../../cpp_17/network/radar_client.cpp ../../../cpp_17/network/tcp_radar_client.cpp ../../../cpp_17/network/tcp_socket.cpp ../../../cpp_17/utility/timer.cpp ../../../cpp_17/utility/threaded_class.cpp)
+add_library(iasdk_static STATIC ../../../cpp_17/network/radar_client.cpp ../../../cpp_17/network/tcp_radar_client.cpp ../../../cpp_17/network/tcp_socket.cpp ../../../cpp_17/utility/timer.cpp ../../../cpp_17/utility/threaded_class.cpp ../../../cpp_17/network/colossus_network_message.cpp ../../../cpp_17/network/IP_address.cpp)
 
 ## Build executable for Colossus publisher
 add_executable(colossus_publisher src/colossus_publisher.cpp)
