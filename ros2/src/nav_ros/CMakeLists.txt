@@ -12,23 +12,31 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+set (Protobuf_USE_STATIC_LIBS ON)
+
 ## Find required packages for build
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(interfaces REQUIRED) 
 find_package(std_msgs REQUIRED)
 find_package(OpenCV 4.5.3 REQUIRED)
+find_package(Protobuf REQUIRED)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
 # include
   ${OpenCV_INCLUDE_DIRS}
-  ../../../cpp
+  ../../../cpp_17
+  ../../../cpp_17/protobuf
+  ../../../cpp_17/utility
+  ../../../cpp_17/network
+  ../../../cpp_17/navigation
+  ../../../cpp_17/build/iasdk/protobuf
 )
 
 ## Add additional CPP libs
-add_library(iasdk_static STATIC ../../../cpp/radarclient.cpp ../../../cpp/tcpradarclient.cpp ../../../cpp/tcpsocket.cpp ../../../cpp/timer.cpp ../../../cpp/threadedclass.cpp)
+add_library(iasdk_static STATIC ../../../cpp_17/network/radar_client.cpp ../../../cpp_17/network/tcp_radar_client.cpp ../../../cpp_17/network/tcp_socket.cpp ../../../cpp_17/utility/timer.cpp ../../../cpp_17/utility/threaded_class.cpp)
 
 ## Build executable for Colossus publisher
 add_executable(colossus_publisher src/colossus_publisher.cpp)
