@@ -27,7 +27,7 @@ include_directories(
 )
 
 ## Build executable for Camera publisher
-add_executable(camera_publisher src/camera_publisher.cpp)
+add_executable(camera_publisher src/camera_publisher_main.cpp src/camera_publisher.cpp)
 target_link_libraries(camera_publisher)
 ament_target_dependencies(camera_publisher rclcpp std_msgs interfaces OpenCV)
 

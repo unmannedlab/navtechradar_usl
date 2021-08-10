@@ -14,13 +14,12 @@ using namespace std;
 using namespace Navtech;
 using namespace rclcpp;
 
-namespace {
-    Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher;
-    Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher;
-    Owner_of<Radar_client> radar_client{ };
-    string radar_ip;
-    uint16_t radar_port;
-}
+Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher;
+Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher;
+std::shared_ptr<Radar_client> radar_client;
+string radar_ip;
+uint16_t radar_port;
+std::shared_ptr<Colossus_publisher> node;
 
 Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }{
     declare_parameter("radar_ip", "");
@@ -78,29 +77,4 @@ void Colossus_publisher::configuration_data_handler(const Configuration_data::Po
     configuration_data_publisher->publish(message);
 
     radar_client->start_fft_data();
-}
-
-std::shared_ptr<Colossus_publisher> node;
-
-int main(int argc, char* argv[]){
-    init(argc, argv);
-    node = std::make_shared<Colossus_publisher>();
-
-    RCLCPP_INFO(node->get_logger(), "Starting radar client");
-    radar_client = allocate_owned<Radar_client>(radar_ip, radar_port);
-    radar_client->set_fft_data_callback(std::bind(&Colossus_publisher::fft_data_handler, node.get(), std::placeholders::_1));
-    radar_client->set_configuration_data_callback(std::bind(&Colossus_publisher::configuration_data_handler, node.get(), std::placeholders::_1));
-
-    radar_client->start();
-
-    while (ok()) {
-        spin(node);
-    }
-
-    radar_client->stop_fft_data();
-    radar_client->set_configuration_data_callback();
-    radar_client->set_fft_data_callback();
-    radar_client->stop();
-    shutdown();
-    RCLCPP_INFO(node->get_logger(), "Stopped radar client");
 }

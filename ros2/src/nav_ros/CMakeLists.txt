@@ -19,6 +19,7 @@ find_package(interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(OpenCV 4.5.3 REQUIRED)
 find_package(Protobuf REQUIRED)
+
 include_directories(${PROTOBUF_INCLUDE_DIR})
 if(PROTOBUF_FOUND)
     message ("Protobuf found")
@@ -49,7 +50,7 @@ add_library(iasdk_protobuf ${PROTO_SRCS} ${PROTO_HDRS})
 target_link_libraries(iasdk_protobuf ${PROTOBUF_LIBRARY})
 
 ## Build executable for Colossus publisher
-add_executable(colossus_publisher src/colossus_publisher.cpp)
+add_executable(colossus_publisher src/colossus_publisher_main.cpp src/colossus_publisher.cpp)
 target_link_libraries(colossus_publisher iasdk_static iasdk_protobuf)
 ament_target_dependencies(colossus_publisher rclcpp std_msgs interfaces)
 
