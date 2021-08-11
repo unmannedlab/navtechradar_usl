@@ -44,6 +44,6 @@ void Camera_subscriber_to_video::camera_image_callback(const interfaces::msg::Ca
     if (data->image_channels == 1) {
         dataType = CV_8UC1;
     }
-    Mat camera_image = Mat(data->image_rows, data->image_cols, dataType, data->image_data.data()).clone();
+    Mat camera_image = Mat{ data->image_rows, data->image_cols, dataType, data->image_data.data() }.clone();
     video_writer.write(camera_image);
 }

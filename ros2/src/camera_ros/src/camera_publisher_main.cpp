@@ -15,16 +15,16 @@ using namespace rclcpp;
 using namespace cv;
 using namespace chrono;
 
-extern string camera_url;
-extern std::shared_ptr<Camera_publisher> node;
+string camera_url;
+std::shared_ptr<Camera_publisher> node;
 
-int main(int argc, char* argv[]){
+int main(int argc, char* argv[]) {
     init(argc, argv);
     node = std::make_shared<Camera_publisher>();
 
     RCLCPP_INFO(node->get_logger(), "Starting camera publisher");
 
-    VideoCapture capture(camera_url);
+    VideoCapture capture{camera_url};
 
     if (!capture.isOpened()) {
         RCLCPP_INFO(node->get_logger(), "Unable to connect to camera");
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]){
         RCLCPP_INFO(node->get_logger(), "FPS: %f", capture.get(CAP_PROP_FPS));
     }
 
-    Mat image;
+    Mat image { };
     while (ok()) {
         capture >> image;
         node->camera_image_handler(image, capture.get(CAP_PROP_FPS));

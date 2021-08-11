@@ -7,17 +7,16 @@
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "interfaces/msg/fft_data_message.hpp"
 #include "radar_client.h"
-#include "Pointer_types.h"
 #include "colossus_publisher.h"
 
 using namespace std;
 using namespace Navtech;
 using namespace rclcpp;
 
-extern std::shared_ptr<Radar_client> radar_client;
-extern string radar_ip;
-extern uint16_t radar_port;
-extern std::shared_ptr<Colossus_publisher> node;
+std::shared_ptr<Radar_client> radar_client;
+string radar_ip;
+uint16_t radar_port;
+std::shared_ptr<Colossus_publisher> node;
 
 int main(int argc, char* argv[]){
     init(argc, argv);

@@ -15,8 +15,8 @@ using namespace rclcpp;
 using namespace cv;
 using namespace chrono;
 
+extern string camera_url;
 Publisher<interfaces::msg::CameraImageMessage>::SharedPtr camera_image_publisher;
-string camera_url;
 
 Camera_publisher::Camera_publisher():rclcpp::Node{ "camera_publisher" }{
     declare_parameter("camera_url", "");
@@ -37,10 +37,7 @@ void Camera_publisher::camera_image_handler(Mat image, int fps){
     //RCLCPP_INFO(Node::get_logger(), "Mat type: %i", image.type());
 
     auto buffer_length = image.cols * image.rows * sizeof(uint8_t) * 3;
-    auto image_buffer = new uint8_t[buffer_length];
-    memcpy(image_buffer, image.ptr(0), image.cols * image.rows * sizeof(uint8_t) * 3);
-    const unsigned char* charBuffer = (unsigned char*)image_buffer;
-    vector<unsigned char> vectorBuffer(charBuffer, charBuffer + buffer_length);
+    vector<unsigned char> vectorBuffer(image.ptr(0), image.ptr(0) + buffer_length);
 
     auto millisec_since_epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     auto sec_since_epoch = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
@@ -58,5 +55,3 @@ void Camera_publisher::camera_image_handler(Mat image, int fps){
 
     camera_image_publisher->publish(message);
 }
-
-std::shared_ptr<Camera_publisher> node;

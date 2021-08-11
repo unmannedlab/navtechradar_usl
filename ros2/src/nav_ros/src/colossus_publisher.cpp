@@ -7,7 +7,6 @@
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "interfaces/msg/fft_data_message.hpp"
 #include "radar_client.h"
-#include "Pointer_types.h"
 #include "colossus_publisher.h"
 
 using namespace std;
@@ -16,10 +15,10 @@ using namespace rclcpp;
 
 Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher;
 Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher;
-std::shared_ptr<Radar_client> radar_client;
-string radar_ip;
-uint16_t radar_port;
-std::shared_ptr<Colossus_publisher> node;
+extern std::shared_ptr<Radar_client> radar_client;
+extern string radar_ip;
+extern uint16_t radar_port;
+extern std::shared_ptr<Colossus_publisher> node;
 
 Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }{
     declare_parameter("radar_ip", "");
