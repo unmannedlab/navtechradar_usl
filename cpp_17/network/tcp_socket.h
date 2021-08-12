@@ -30,7 +30,7 @@ namespace Navtech {
         Tcp_socket(const Tcp_socket&) = delete;
         Tcp_socket& operator=(const Tcp_socket&) = delete;
 
-        const bool is_valid() const;
+        bool is_valid() const;
 
         bool create(std::uint32_t receive_timeout = 0);
         bool connect();

@@ -7,3 +7,7 @@ public:
 
     void camera_image_handler(cv::Mat image, int fps);
 };
+
+extern std::string camera_url;
+extern rclcpp::Publisher<interfaces::msg::CameraImageMessage>::SharedPtr camera_image_publisher;
+extern std::shared_ptr<Camera_publisher> node;

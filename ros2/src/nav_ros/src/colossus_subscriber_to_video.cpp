@@ -11,20 +11,16 @@ using namespace std;
 using namespace rclcpp;
 using namespace cv;
 
-namespace {
-    auto config_data_received{ false };
-    VideoWriter video_writer;
-    int encoder_size;
-    int azimuth_samples;
-    int video_width;
-    int video_height;
-    int bearing_count{ 0 };
-    int current_bearing{ 0 };
-    int previous_bearing{ 0 };
-    bool first_frame{ true };
-    Mat radar_image(Size(400, 400), CV_8UC3, Scalar(0, 0, 0));
-    uint8_t* image_ptr = (uint8_t*)radar_image.data;
-}
+auto config_data_received{ false };
+VideoWriter video_writer {};
+int encoder_size { 0 };
+int azimuth_samples { 0 };
+int video_width { 0 };
+int video_height { 0 };
+int bearing_count{ 0 };
+int current_bearing{ 0 };
+Mat radar_image {Size(400, 400), CV_8UC3, Scalar(0, 0, 0)};
+uint8_t* image_ptr = { (uint8_t*)radar_image.data };
 
 Colossus_subscriber_to_video::Colossus_subscriber_to_video():Node{ "colossus_subscriber_to_video" }{
     using std::placeholders::_1;

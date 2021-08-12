@@ -6,21 +6,19 @@
 
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "interfaces/msg/fft_data_message.hpp"
-#include "radarclient.h"
-#include "Pointer_types.h"
+#include "radar_client.h"
 #include "colossus_publisher.h"
 
 using namespace std;
 using namespace Navtech;
 using namespace rclcpp;
 
-namespace {
-    Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher;
-    Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher;
-    Owner_of<RadarClient> radar_client{ };
-    string radar_ip;
-    uint16_t radar_port;
-}
+std::shared_ptr<Colossus_publisher> node {};
+Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher{};
+Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher{};
+std::shared_ptr<Radar_client> radar_client{};
+string radar_ip {""};
+uint16_t radar_port { 0 };
 
 Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }{
     declare_parameter("radar_ip", "");
@@ -39,17 +37,17 @@ Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }{
             1600);
 }
 
-void Colossus_publisher::fft_data_handler(const FFTDataPtr_t& data){
+void Colossus_publisher::fft_data_handler(const Fft_data::Pointer& data){
     //RCLCPP_INFO(Node::get_logger(), "Publishing FFT Data");
 
     auto message = interfaces::msg::FftDataMessage();
-    message.angle = data->Angle;
-    message.azimuth = data->Azimuth;
-    message.sweep_counter = data->SweepCounter;
-    message.ntp_seconds = data->NTPSeconds;
-    message.ntp_split_seconds = data->NTPSplitSeconds;
-    message.data = data->Data;
-    message.data_length = data->Data.size();
+    message.angle = data->angle;
+    message.azimuth = data->azimuth;
+    message.sweep_counter = data->sweep_counter;
+    message.ntp_seconds = data->ntp_seconds;
+    message.ntp_split_seconds = data->ntp_split_seconds;
+    message.data = data->data;
+    message.data_length = data->data.size();
 
     //RCLCPP_INFO(Node::get_logger(), "Data 0: %u", static_cast<int>(data->Data[0]));
     //RCLCPP_INFO(Node::get_logger(), "Data 1: %u", static_cast<int>(data->Data[1]));
@@ -60,47 +58,22 @@ void Colossus_publisher::fft_data_handler(const FFTDataPtr_t& data){
     fft_data_publisher->publish(message);
 }
 
-void Colossus_publisher::configuration_data_handler(const ConfigurationDataPtr_t& data){
+void Colossus_publisher::configuration_data_handler(const Configuration_data::Pointer& data){
     RCLCPP_INFO(Node::get_logger(), "Configuration Data Received");
-    RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", data->AzimuthSamples);
-    RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", data->EncoderSize);
-    RCLCPP_INFO(Node::get_logger(), "Bin Size: %i", data->BinSize);
-    RCLCPP_INFO(Node::get_logger(), "Range In Bins: : %i", data->RangeInBins);
-    RCLCPP_INFO(Node::get_logger(), "Expected Rotation Rate: %i", data->ExpectedRotationRate);
+    RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", data->azimuth_samples);
+    RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", data->encoder_size);
+    RCLCPP_INFO(Node::get_logger(), "Bin Size: %f", data->bin_size);
+    RCLCPP_INFO(Node::get_logger(), "Range In Bins: : %i", data->range_in_bins);
+    RCLCPP_INFO(Node::get_logger(), "Expected Rotation Rate: %i", data->expected_rotation_rate);
     RCLCPP_INFO(Node::get_logger(), "Publishing Configuration Data");
 
     auto message = interfaces::msg::ConfigurationDataMessage();
-    message.azimuth_samples = data->AzimuthSamples;
-    message.encoder_size = data->EncoderSize;
-    message.bin_size = data->BinSize;
-    message.range_in_bins = data->RangeInBins;
-    message.expected_rotation_rate = data->ExpectedRotationRate;
+    message.azimuth_samples = data->azimuth_samples;
+    message.encoder_size = data->encoder_size;
+    message.bin_size = data->bin_size;
+    message.range_in_bins = data->range_in_bins;
+    message.expected_rotation_rate = data->expected_rotation_rate;
     configuration_data_publisher->publish(message);
 
-    radar_client->StartFFTData();
-}
-
-std::shared_ptr<Colossus_publisher> node;
-
-int main(int argc, char* argv[]){
-    init(argc, argv);
-    node = std::make_shared<Colossus_publisher>();
-
-    RCLCPP_INFO(node->get_logger(), "Starting radar client");
-    radar_client = allocate_owned<RadarClient>(radar_ip, radar_port);
-    radar_client->SetFFTDataCallback(std::bind(&Colossus_publisher::fft_data_handler, node.get(), std::placeholders::_1));
-    radar_client->SetConfigurationDataCallback(std::bind(&Colossus_publisher::configuration_data_handler, node.get(), std::placeholders::_1));
-
-    radar_client->Start();
-
-    while (ok()) {
-        spin(node);
-    }
-
-    radar_client->StopFFTData();
-    radar_client->SetConfigurationDataCallback();
-    radar_client->SetFFTDataCallback();
-    radar_client->Stop();
-    shutdown();
-    RCLCPP_INFO(node->get_logger(), "Stopped radar client");
+    radar_client->start_fft_data();
 }
