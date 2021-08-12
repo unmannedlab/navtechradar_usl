@@ -15,9 +15,6 @@ using namespace rclcpp;
 using namespace cv;
 using namespace chrono;
 
-string camera_url;
-std::shared_ptr<Camera_publisher> node;
-
 int main(int argc, char* argv[]) {
     init(argc, argv);
     node = std::make_shared<Camera_publisher>();

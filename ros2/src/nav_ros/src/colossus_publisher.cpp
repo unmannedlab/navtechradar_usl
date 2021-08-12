@@ -13,12 +13,12 @@ using namespace std;
 using namespace Navtech;
 using namespace rclcpp;
 
+std::shared_ptr<Colossus_publisher> node;
 Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher;
 Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher;
-extern std::shared_ptr<Radar_client> radar_client;
-extern string radar_ip;
-extern uint16_t radar_port;
-extern std::shared_ptr<Colossus_publisher> node;
+std::shared_ptr<Radar_client> radar_client;
+string radar_ip;
+uint16_t radar_port;
 
 Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }{
     declare_parameter("radar_ip", "");

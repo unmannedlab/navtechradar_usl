@@ -10,10 +10,8 @@ using namespace std;
 using namespace rclcpp;
 using namespace cv;
 
-namespace {
-    auto first_frame{ true };
-    VideoWriter video_writer;
-}
+auto first_frame{ true };
+VideoWriter video_writer;
 
 Camera_subscriber_to_video::Camera_subscriber_to_video() :
     rclcpp::Node{ "camera_subscriber_to_video" }{

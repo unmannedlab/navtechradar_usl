@@ -15,8 +15,9 @@ using namespace rclcpp;
 using namespace cv;
 using namespace chrono;
 
-extern string camera_url;
 Publisher<interfaces::msg::CameraImageMessage>::SharedPtr camera_image_publisher;
+std::string camera_url;
+std::shared_ptr<Camera_publisher> node;
 
 Camera_publisher::Camera_publisher():rclcpp::Node{ "camera_publisher" }{
     declare_parameter("camera_url", "");
