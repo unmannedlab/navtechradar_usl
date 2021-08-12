@@ -25,6 +25,9 @@ string radar_ip {""};
 uint16_t radar_port { 0 };
 std::string camera_url = {""};
 Publisher<interfaces::msg::CameraImageMessage>::SharedPtr camera_image_publisher;
+interfaces::msg::CameraImageMessage camera_message = interfaces::msg::CameraImageMessage();
+int bearing_count { 0 };
+int azimuth_samples { 0 };
 
 Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_and_camera_publisher" }{
     declare_parameter("radar_ip", "");
@@ -67,6 +70,11 @@ void Colossus_and_camera_publisher::fft_data_handler(const Fft_data::Pointer& da
     //RCLCPP_INFO(Node::get_logger(), "Data 3: %u", static_cast<int>(data->Data[3]));
     //RCLCPP_INFO(Node::get_logger(), "Data 4: %u", static_cast<int>(data->Data[4]));
 
+    bearing_count++;
+    if (bearing_count >= azimuth_samples) {
+        camera_image_publisher->publish(camera_message);
+        bearing_count = 0;
+    }
     fft_data_publisher->publish(message);
 }
 
@@ -80,6 +88,7 @@ void Colossus_and_camera_publisher::configuration_data_handler(const Configurati
     RCLCPP_INFO(Node::get_logger(), "Publishing Configuration Data");
 
     auto message = interfaces::msg::ConfigurationDataMessage();
+    azimuth_samples = data->azimuth_samples;
     message.azimuth_samples = data->azimuth_samples;
     message.encoder_size = data->encoder_size;
     message.bin_size = data->bin_size;
@@ -105,16 +114,13 @@ void Colossus_and_camera_publisher::camera_image_handler(Mat image, int fps) {
 
     //RCLCPP_INFO(Node::get_logger(), "Image buffer size: %li", buffer_length);
 
-    auto message = interfaces::msg::CameraImageMessage();
-    message.image_data = vectorBuffer;
-    message.image_rows = image.rows;
-    message.image_cols = image.cols;
-    message.image_channels = image.channels();
-    message.image_fps = fps;
-    message.ntp_seconds = sec_since_epoch;
-    message.ntp_split_seconds = millisec_since_epoch - (sec_since_epoch * 1000);
-
-    camera_image_publisher->publish(message);
+    camera_message.image_data = vectorBuffer;
+    camera_message.image_rows = image.rows;
+    camera_message.image_cols = image.cols;
+    camera_message.image_channels = image.channels();
+    camera_message.image_fps = fps;
+    camera_message.ntp_seconds = sec_since_epoch;
+    camera_message.ntp_split_seconds = millisec_since_epoch - (sec_since_epoch * 1000);
 }
 
 void Colossus_and_camera_publisher::cleanup_and_shutdown(){
