@@ -1,6 +1,6 @@
 ## Define CMake minimum required version
 cmake_minimum_required(VERSION 3.5)
-project(nav_ros)
+project(oxb_ros)
 
 ## Define C++ standard as C++ 17
 if(NOT CMAKE_CXX_STANDARD)
@@ -19,6 +19,13 @@ find_package(interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(OpenCV 4.5.3 REQUIRED)
 find_package(Protobuf REQUIRED)
+
+if(OPENCV_FOUND)
+    message ("OpenCV found")
+else()
+    message (FATAL_ERROR "Cannot find OpenCV")
+endif()
+
 
 include_directories(${PROTOBUF_INCLUDE_DIR})
 if(PROTOBUF_FOUND)
@@ -49,26 +56,20 @@ add_library(iasdk_protobuf STATIC ${PROTO_SRCS} ${PROTO_HDRS})
 
 target_link_libraries(iasdk_protobuf ${PROTOBUF_LIBRARY})
 
-## Build executable for Colossus publisher
-add_executable(colossus_publisher src/colossus_publisher_main.cpp src/colossus_publisher.cpp)
-target_link_libraries(colossus_publisher iasdk_static iasdk_protobuf)
-ament_target_dependencies(colossus_publisher rclcpp std_msgs interfaces)
+## Build executable for Colossus and camera publisher
+add_executable(colossus_and_camera_publisher src/colossus_and_camera_publisher_main.cpp src/colossus_and_camera_publisher.cpp)
+target_link_libraries(colossus_and_camera_publisher iasdk_static iasdk_protobuf)
+ament_target_dependencies(colossus_and_camera_publisher rclcpp std_msgs interfaces OpenCV)
 
-## Build executable for Colossus subscriber
-add_executable(colossus_subscriber src/colossus_subscriber_main.cpp src/colossus_subscriber.cpp)
-target_link_libraries(colossus_subscriber iasdk_static)
-ament_target_dependencies(colossus_subscriber rclcpp std_msgs interfaces)
-
-## Build executable for Colossus subscriber to video
-add_executable(colossus_subscriber_to_video src/colossus_subscriber_to_video_main.cpp src/colossus_subscriber_to_video.cpp)
-target_link_libraries(colossus_subscriber_to_video iasdk_static)
-ament_target_dependencies(colossus_subscriber_to_video rclcpp std_msgs interfaces OpenCV)
+## Build executable for Colossus and camera subscriber to video
+add_executable(colossus_and_camera_subscriber_to_video src/colossus_and_camera_subscriber_to_video_main.cpp src/colossus_and_camera_subscriber_to_video.cpp)
+target_link_libraries(colossus_and_camera_subscriber_to_video iasdk_static iasdk_protobuf)
+ament_target_dependencies(colossus_and_camera_subscriber_to_video rclcpp std_msgs interfaces OpenCV)
 
 ## Install the built executables
 install(TARGETS
-  colossus_publisher
-  colossus_subscriber
-  colossus_subscriber_to_video
+  colossus_and_camera_publisher
+  colossus_and_camera_subscriber_to_video
   DESTINATION lib/${PROJECT_NAME})
 
 ## Install the package
