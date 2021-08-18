@@ -31,18 +31,18 @@ Colossus_and_camera_subscriber_to_video::Colossus_and_camera_subscriber_to_video
     configuration_data_subscriber =
         Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
         "radar_data/configuration_data",
-            5,
+            1,
             std::bind(&Colossus_and_camera_subscriber_to_video::configuration_data_callback, this, _1));
     fft_data_subscriber =
         Node::create_subscription<interfaces::msg::FftDataMessage>(
         "radar_data/fft_data",
-            1600,
+            10,
             std::bind(&Colossus_and_camera_subscriber_to_video::fft_data_callback, this, _1));
 
     camera_data_subscriber =
         Node::create_subscription<interfaces::msg::CameraImageMessage>(
             "camera_data/image_data",
-            100,
+            4,
             std::bind(&Colossus_and_camera_subscriber_to_video::camera_image_callback, this, _1));
 }
 

@@ -26,6 +26,11 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
 )
 
+## Build executable for Video capture manager test
+add_executable(video_capture_manager_test src/video_capture_manager.cpp src/video_capture_manager_main.cpp)
+target_link_libraries(video_capture_manager_test)
+ament_target_dependencies(video_capture_manager_test rclcpp std_msgs interfaces OpenCV)
+
 ## Build executable for Camera publisher
 add_executable(camera_publisher src/camera_publisher_main.cpp src/camera_publisher.cpp)
 target_link_libraries(camera_publisher)
@@ -43,6 +48,7 @@ ament_target_dependencies(camera_subscriber_to_video rclcpp std_msgs interfaces 
 
 ## Install the built executables
 install(TARGETS
+  video_capture_manager_test
   camera_publisher
   camera_subscriber
   camera_subscriber_to_video

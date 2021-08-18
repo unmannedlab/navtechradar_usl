@@ -57,7 +57,7 @@ add_library(iasdk_protobuf STATIC ${PROTO_SRCS} ${PROTO_HDRS})
 target_link_libraries(iasdk_protobuf ${PROTOBUF_LIBRARY})
 
 ## Build executable for Colossus and camera publisher
-add_executable(colossus_and_camera_publisher src/colossus_and_camera_publisher_main.cpp src/colossus_and_camera_publisher.cpp)
+add_executable(colossus_and_camera_publisher src/colossus_and_camera_publisher_main.cpp src/colossus_and_camera_publisher.cpp ../camera_ros/src/video_capture_manager.cpp)
 target_link_libraries(colossus_and_camera_publisher iasdk_static iasdk_protobuf)
 ament_target_dependencies(colossus_and_camera_publisher rclcpp std_msgs interfaces OpenCV)
 

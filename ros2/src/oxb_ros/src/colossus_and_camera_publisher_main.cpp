@@ -9,6 +9,7 @@
 #include "interfaces/msg/camera_image_message.hpp"
 #include "radar_client.h"
 #include "colossus_and_camera_publisher.h"
+#include "../../camera_ros/src/video_capture_manager.h"
 
 using namespace std;
 using namespace Navtech;
@@ -29,26 +30,24 @@ int main(int argc, char* argv[]){
 
     RCLCPP_INFO(node->get_logger(), "Starting camera publisher");
     RCLCPP_INFO(node->get_logger(), "URL: %s", camera_url.c_str());
-    VideoCapture capture{ camera_url };
-	
-    if (!capture.isOpened()) {
-        RCLCPP_INFO(node->get_logger(), "Unable to connect to camera");
-        node->cleanup_and_shutdown();
-    }
-    else {
-        RCLCPP_INFO(node->get_logger(), "Camera connected");
-        RCLCPP_INFO(node->get_logger(), "Width: %f", capture.get(CAP_PROP_FRAME_WIDTH));
-        RCLCPP_INFO(node->get_logger(), "Height: %f", capture.get(CAP_PROP_FRAME_HEIGHT));
-        RCLCPP_INFO(node->get_logger(), "FPS: %f", capture.get(CAP_PROP_FPS));
-    }
 
-    Mat image{ };
-    while (ok()) {
-        capture >> image;
-        node->camera_image_handler(image, capture.get(CAP_PROP_FPS));
-        spin_some(node);
+    std::shared_ptr<Video_capture_manager> vid_cap_manager = std::make_shared<Video_capture_manager>();
+
+    auto ret = vid_cap_manager->connect_to_camera(camera_url);
+
+    if (ret) {
+
+        Mat image{ };
+
+        while (ok()) {
+
+            image = vid_cap_manager->get_latest_frame();
+            node->camera_image_handler(image, vid_cap_manager->capture.get(CAP_PROP_FPS));
+            spin_some(node);
+        }
     }
 
     RCLCPP_INFO(node->get_logger(), "Shutting down");
+    vid_cap_manager->disconnect_from_camera();
     node->cleanup_and_shutdown();
 }

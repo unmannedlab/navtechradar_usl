@@ -41,15 +41,15 @@ Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_a
     configuration_data_publisher =
         Node::create_publisher<interfaces::msg::ConfigurationDataMessage>(
             "radar_data/configuration_data",
-            5);
+            1);
     fft_data_publisher =
         Node::create_publisher<interfaces::msg::FftDataMessage>(
             "radar_data/fft_data",
-            1600);
+            10);
     camera_image_publisher =
         Node::create_publisher<interfaces::msg::CameraImageMessage>(
             "camera_data/image_data",
-            100);
+            4);
 }
 
 void Colossus_and_camera_publisher::fft_data_handler(const Fft_data::Pointer& data){
