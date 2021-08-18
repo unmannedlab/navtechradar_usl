@@ -49,5 +49,6 @@ int main(int argc, char* argv[]){
         spin_some(node);
     }
 
+    RCLCPP_INFO(node->get_logger(), "Shutting down");
     node->cleanup_and_shutdown();
 }

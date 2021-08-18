@@ -70,6 +70,11 @@ void Colossus_and_camera_publisher::fft_data_handler(const Fft_data::Pointer& da
     //RCLCPP_INFO(Node::get_logger(), "Data 3: %u", static_cast<int>(data->Data[3]));
     //RCLCPP_INFO(Node::get_logger(), "Data 4: %u", static_cast<int>(data->Data[4]));
 
+	if (camera_message.image_rows <= 0 || camera_message.image_cols <= 0 || camera_message.image_channels <= 0 || camera_message.image_fps <= 0)
+	{
+        return;
+	}
+
     bearing_count++;
     if (bearing_count >= azimuth_samples) {
         camera_image_publisher->publish(camera_message);

@@ -52,7 +52,7 @@ void Colossus_and_camera_subscriber_to_video::configuration_data_callback(const 
     azimuth_samples = msg->azimuth_samples;
     RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", msg->encoder_size);
     encoder_size = msg->encoder_size;
-    RCLCPP_INFO(Node::get_logger(), "Bin Size: %i", msg->bin_size);
+    RCLCPP_INFO(Node::get_logger(), "Bin Size: %f", msg->bin_size);
     RCLCPP_INFO(Node::get_logger(), "Range In Bins: %i", msg->range_in_bins);
     RCLCPP_INFO(Node::get_logger(), "Expected Rotation Rate: %i", msg->expected_rotation_rate);
 

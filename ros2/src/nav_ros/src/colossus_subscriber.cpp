@@ -25,7 +25,7 @@ void Colossus_subscriber::configuration_data_callback(const interfaces::msg::Con
     RCLCPP_INFO(Node::get_logger(), "Configuration Data recieved");
     RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", msg->azimuth_samples);
     RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", msg->encoder_size);
-    RCLCPP_INFO(Node::get_logger(), "Bin Size: %i", msg->bin_size);
+    RCLCPP_INFO(Node::get_logger(), "Bin Size: %f", msg->bin_size);
     RCLCPP_INFO(Node::get_logger(), "Range In Bins: %i", msg->range_in_bins);
     RCLCPP_INFO(Node::get_logger(), "Expected Rotation Rate: %i", msg->expected_rotation_rate);
 }
