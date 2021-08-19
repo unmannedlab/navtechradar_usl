@@ -16,7 +16,6 @@ std::shared_ptr<Video_capture_manager> vid_cap_manager{};
 std::thread video_capture_thread;
 
 Video_capture_manager::Video_capture_manager(){
-	Mat latest_image{ };
 	VideoCapture capture;
 }
 
@@ -39,6 +38,7 @@ int Video_capture_manager::connect_to_camera(std::string camera_url){
 }
 
 Mat Video_capture_manager::get_latest_frame() {
+	Mat latest_image{ };
 	auto start = std::chrono::high_resolution_clock::now();
 	auto finish = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;

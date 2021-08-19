@@ -70,12 +70,15 @@ void Colossus_and_camera_subscriber_to_video::fft_data_callback(const interfaces
     current_bearing = ((double)msg->azimuth / (double)encoder_size) * (double)azimuth_samples;
 
     for (int i = 0; i < msg->data_length; i++){
-        image_ptr[i * 3 + current_bearing * radar_image.step + 1] = static_cast<int>(msg->data[i]);
+        auto index = i * 3 + current_bearing * radar_image.step + 1;
+    	// Reduces data for now
+    	if (index < radar_image.total() * radar_image.elemSize()){
+    		image_ptr[index] = static_cast<int>(msg->data[i]);
+    	}
     }
     bearing_count++;
 
     if (bearing_count >= azimuth_samples) {
-
         Mat recovered_lin_polar_img;
         Point2f center((float)radar_image.cols / 2, (float)radar_image.rows / 2);
         double max_radius = min(center.y, center.x);

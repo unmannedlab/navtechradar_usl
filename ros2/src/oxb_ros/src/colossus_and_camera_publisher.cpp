@@ -28,6 +28,8 @@ Publisher<interfaces::msg::CameraImageMessage>::SharedPtr camera_image_publisher
 interfaces::msg::CameraImageMessage camera_message = interfaces::msg::CameraImageMessage();
 int bearing_count { 0 };
 int azimuth_samples { 0 };
+int last_azimuth{ 0 };
+bool rotated_once{ false };
 
 Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_and_camera_publisher" }{
     declare_parameter("radar_ip", "");
@@ -75,12 +77,18 @@ void Colossus_and_camera_publisher::fft_data_handler(const Fft_data::Pointer& da
         return;
 	}
 
-    bearing_count++;
-    if (bearing_count >= azimuth_samples) {
+    if (data->azimuth < last_azimuth) {
+        rotated_once = true;
         camera_image_publisher->publish(camera_message);
-        bearing_count = 0;
     }
+    last_azimuth = data->azimuth;
+
+    if (!rotated_once) {
+        return;
+    }
+	
     fft_data_publisher->publish(message);
+    //RCLCPP_INFO(Node::get_logger(), "Azimuth: %i", data->azimuth);
 }
 
 void Colossus_and_camera_publisher::configuration_data_handler(const Configuration_data::Pointer& data){
