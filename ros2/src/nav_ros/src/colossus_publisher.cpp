@@ -19,6 +19,9 @@ Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher{};
 std::shared_ptr<Radar_client> radar_client{};
 string radar_ip {""};
 uint16_t radar_port { 0 };
+int azimuth_samples{ 0 };
+int last_azimuth{ 0 };
+bool rotated_once{ false };
 
 Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }{
     declare_parameter("radar_ip", "");
@@ -55,6 +58,15 @@ void Colossus_publisher::fft_data_handler(const Fft_data::Pointer& data){
     //RCLCPP_INFO(Node::get_logger(), "Data 3: %u", static_cast<int>(data->Data[3]));
     //RCLCPP_INFO(Node::get_logger(), "Data 4: %u", static_cast<int>(data->Data[4]));
 
+    if (data->azimuth < last_azimuth) {
+        rotated_once = true;
+    }
+    last_azimuth = data->azimuth;
+
+    if (!rotated_once) {
+        return;
+    }
+
     fft_data_publisher->publish(message);
 }
 
@@ -68,6 +80,7 @@ void Colossus_publisher::configuration_data_handler(const Configuration_data::Po
     RCLCPP_INFO(Node::get_logger(), "Publishing Configuration Data");
 
     auto message = interfaces::msg::ConfigurationDataMessage();
+    azimuth_samples = data->azimuth_samples;
     message.azimuth_samples = data->azimuth_samples;
     message.encoder_size = data->encoder_size;
     message.bin_size = data->bin_size;

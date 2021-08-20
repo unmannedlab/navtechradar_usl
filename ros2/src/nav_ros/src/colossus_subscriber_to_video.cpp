@@ -61,7 +61,10 @@ void Colossus_subscriber_to_video::fft_data_callback(const interfaces::msg::FftD
     current_bearing = ((double)msg->azimuth / (double)encoder_size) * (double)azimuth_samples;
 
     for (int i = 0; i < msg->data_length; i++){
-        image_ptr[i * 3 + current_bearing * radar_image.step + 1] = static_cast<int>(msg->data[i]);
+        int index = i * 3 + current_bearing * radar_image.step + 1;
+    	if (index < radar_image.rows * radar_image.cols * radar_image.channels()){
+            image_ptr[index] = static_cast<int>(msg->data[i]);
+    	}
     }
     bearing_count++;
 
