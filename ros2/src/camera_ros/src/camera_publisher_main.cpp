@@ -33,10 +33,18 @@ int main(int argc, char* argv[]) {
         RCLCPP_INFO(node->get_logger(), "FPS: %f", capture.get(CAP_PROP_FPS));
     }
 
-    Mat image { };
     while (ok()) {
-        capture >> image;
-        node->camera_image_handler(image, capture.get(CAP_PROP_FPS));
+        Mat latest_image{ };
+        auto start = std::chrono::high_resolution_clock::now();
+        auto finish = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = finish - start;
+        while (elapsed.count() < 1 / (capture.get(CAP_PROP_FPS) + 1)) {
+            start = std::chrono::high_resolution_clock::now();
+            capture >> latest_image;
+            finish = std::chrono::high_resolution_clock::now();
+            elapsed = finish - start;
+        }
+        node->camera_image_handler(latest_image, capture.get(CAP_PROP_FPS));
         spin_some(node);
     }
 
