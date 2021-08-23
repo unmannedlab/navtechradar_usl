@@ -82,7 +82,7 @@ void Colossus_subscriber_to_video::fft_data_callback(const interfaces::msg::FftD
         Mat channels[3] = { blank_image, rotated_image, blank_image };
         Mat merged_data;
         merge(channels, 3, merged_data);
-        video_writer_colossus.write(merged_data);
+        video_writer.write(merged_data);
     }
     last_azimuth = msg->azimuth;
 
