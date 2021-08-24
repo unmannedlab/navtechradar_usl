@@ -61,6 +61,11 @@ add_executable(colossus_and_camera_publisher src/colossus_and_camera_publisher_m
 target_link_libraries(colossus_and_camera_publisher iasdk_static iasdk_protobuf)
 ament_target_dependencies(colossus_and_camera_publisher rclcpp std_msgs interfaces OpenCV)
 
+## Build executable for Colossus and dual camera publisher
+add_executable(colossus_and_dual_camera_publisher src/colossus_and_dual_camera_publisher_main.cpp src/colossus_and_dual_camera_publisher.cpp ../camera_ros/src/video_capture_manager.cpp)
+target_link_libraries(colossus_and_dual_camera_publisher iasdk_static iasdk_protobuf)
+ament_target_dependencies(colossus_and_dual_camera_publisher rclcpp std_msgs interfaces OpenCV)
+
 ## Build executable for Colossus and camera subscriber to video
 add_executable(colossus_and_camera_subscriber_to_video src/colossus_and_camera_subscriber_to_video_main.cpp src/colossus_and_camera_subscriber_to_video.cpp)
 target_link_libraries(colossus_and_camera_subscriber_to_video iasdk_static iasdk_protobuf)
@@ -69,6 +74,7 @@ ament_target_dependencies(colossus_and_camera_subscriber_to_video rclcpp std_msg
 ## Install the built executables
 install(TARGETS
   colossus_and_camera_publisher
+  colossus_and_dual_camera_publisher
   colossus_and_camera_subscriber_to_video
   DESTINATION lib/${PROJECT_NAME})
 
