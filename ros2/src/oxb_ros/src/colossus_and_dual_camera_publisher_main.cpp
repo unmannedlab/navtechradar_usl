@@ -36,15 +36,13 @@ int main(int argc, char* argv[]){
     std::shared_ptr<Video_capture_manager> vid_cap_manager_right = std::make_shared<Video_capture_manager>();
 
     auto ret_left = vid_cap_manager_left->connect_to_camera(camera_left_url);
-    auto ret_right = vid_cap_manager_left->connect_to_camera(camera_right_url);
+    auto ret_right = vid_cap_manager_right->connect_to_camera(camera_right_url);
 
     if (ret_left && ret_right) {
-
         Mat image_left{ };
         Mat image_right{ };
 
         while (ok()) {
-
             image_left = vid_cap_manager_left->get_latest_frame();
             image_right = vid_cap_manager_right->get_latest_frame();
             node->camera_image_handler(image_left, image_right, vid_cap_manager_left->capture.get(CAP_PROP_FPS), vid_cap_manager_right->capture.get(CAP_PROP_FPS));
