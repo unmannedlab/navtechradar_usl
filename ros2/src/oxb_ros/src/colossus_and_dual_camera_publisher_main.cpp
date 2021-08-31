@@ -17,26 +17,29 @@ using namespace rclcpp;
 using namespace cv;
 using namespace chrono;
 
-int main(int argc, char* argv[]){
+std::shared_ptr<Colossus_and_dual_camera_publisher> node{};
+
+int main(int argc, char* argv[])
+{
     init(argc, argv);
     node = std::make_shared<Colossus_and_dual_camera_publisher>();
 
     RCLCPP_INFO(node->get_logger(), "Starting radar client");
-    radar_client = allocate_owned<Radar_client>(radar_ip, radar_port);
-    radar_client->set_fft_data_callback(std::bind(&Colossus_and_dual_camera_publisher::fft_data_handler, node.get(), std::placeholders::_1));
-    radar_client->set_configuration_data_callback(std::bind(&Colossus_and_dual_camera_publisher::configuration_data_handler, node.get(), std::placeholders::_1));
-    radar_client->start();
+    node->radar_client = allocate_owned<Radar_client>(node->radar_ip, node->radar_port);
+    node->radar_client->set_fft_data_callback(std::bind(&Colossus_and_dual_camera_publisher::fft_data_handler, node.get(), std::placeholders::_1));
+    node->radar_client->set_configuration_data_callback(std::bind(&Colossus_and_dual_camera_publisher::configuration_data_handler, node.get(), std::placeholders::_1));
+    node->radar_client->start();
     RCLCPP_INFO(node->get_logger(), "Radar client started");
 
     RCLCPP_INFO(node->get_logger(), "Starting camera publisher");
-    RCLCPP_INFO(node->get_logger(), "URL left: %s", camera_left_url.c_str());
-    RCLCPP_INFO(node->get_logger(), "URL right: %s", camera_right_url.c_str());
+    RCLCPP_INFO(node->get_logger(), "URL left: %s", node->camera_left_url.c_str());
+    RCLCPP_INFO(node->get_logger(), "URL right: %s", node->camera_right_url.c_str());
 
     std::shared_ptr<Video_capture_manager> vid_cap_manager_left = std::make_shared<Video_capture_manager>();
     std::shared_ptr<Video_capture_manager> vid_cap_manager_right = std::make_shared<Video_capture_manager>();
 
-    auto ret_left = vid_cap_manager_left->connect_to_camera(camera_left_url);
-    auto ret_right = vid_cap_manager_right->connect_to_camera(camera_right_url);
+    bool ret_left = vid_cap_manager_left->connect_to_camera(node->camera_left_url);
+    bool ret_right = vid_cap_manager_right->connect_to_camera(node->camera_right_url);
 
     if (ret_left && ret_right) {
         Mat image_left{ };

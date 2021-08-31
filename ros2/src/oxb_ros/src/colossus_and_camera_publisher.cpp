@@ -17,21 +17,8 @@ using namespace rclcpp;
 using namespace cv;
 using namespace chrono;
 
-std::shared_ptr<Colossus_and_camera_publisher> node {};
-Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher{};
-Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher{};
-std::shared_ptr<Radar_client> radar_client{};
-string radar_ip {""};
-uint16_t radar_port { 0 };
-std::string camera_url = {""};
-Publisher<interfaces::msg::CameraImageMessage>::SharedPtr camera_image_publisher;
-interfaces::msg::CameraImageMessage camera_message = interfaces::msg::CameraImageMessage();
-int bearing_count { 0 };
-int azimuth_samples { 0 };
-int last_azimuth{ 0 };
-bool rotated_once{ false };
-
-Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_and_camera_publisher" }{
+Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_and_camera_publisher" }
+{
     declare_parameter("radar_ip", "");
     declare_parameter("radar_port", 0);
     declare_parameter("camera_url", "");
@@ -41,20 +28,23 @@ Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_a
     camera_url = get_parameter("camera_url").as_string();
 
     configuration_data_publisher =
-        Node::create_publisher<interfaces::msg::ConfigurationDataMessage>(
-            "radar_data/configuration_data",
-            1);
+    Node::create_publisher<interfaces::msg::ConfigurationDataMessage>(
+    "radar_data/configuration_data",
+    1);
+
     fft_data_publisher =
-        Node::create_publisher<interfaces::msg::FftDataMessage>(
-            "radar_data/fft_data",
-            10);
+    Node::create_publisher<interfaces::msg::FftDataMessage>(
+    "radar_data/fft_data",
+     10);
+
     camera_image_publisher =
-        Node::create_publisher<interfaces::msg::CameraImageMessage>(
-            "camera_data/image_data",
-            4);
+    Node::create_publisher<interfaces::msg::CameraImageMessage>(
+    "camera_data/image_data",
+    4);
 }
 
-void Colossus_and_camera_publisher::fft_data_handler(const Fft_data::Pointer& data){
+void Colossus_and_camera_publisher::fft_data_handler(const Fft_data::Pointer& data)
+{
     //RCLCPP_INFO(Node::get_logger(), "Publishing FFT Data");
 
     auto message = interfaces::msg::FftDataMessage();
@@ -91,7 +81,8 @@ void Colossus_and_camera_publisher::fft_data_handler(const Fft_data::Pointer& da
     //RCLCPP_INFO(Node::get_logger(), "Azimuth: %i", data->azimuth);
 }
 
-void Colossus_and_camera_publisher::configuration_data_handler(const Configuration_data::Pointer& data){
+void Colossus_and_camera_publisher::configuration_data_handler(const Configuration_data::Pointer& data)
+{
     RCLCPP_INFO(Node::get_logger(), "Configuration Data Received");
     RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", data->azimuth_samples);
     RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", data->encoder_size);
@@ -112,7 +103,8 @@ void Colossus_and_camera_publisher::configuration_data_handler(const Configurati
     radar_client->start_fft_data();
 }
 
-void Colossus_and_camera_publisher::camera_image_handler(Mat image, int fps) {
+void Colossus_and_camera_publisher::camera_image_handler(Mat image, int fps)
+{
     //RCLCPP_INFO(Node::get_logger(), "Publishing Camera Image Data");
     //RCLCPP_INFO(Node::get_logger(), "Mat rows: %i", image.rows);
     //RCLCPP_INFO(Node::get_logger(), "Mat columns: %i", image.cols);
@@ -120,7 +112,7 @@ void Colossus_and_camera_publisher::camera_image_handler(Mat image, int fps) {
     //RCLCPP_INFO(Node::get_logger(), "Mat type: %i", image.type());
 
     auto buffer_length = image.cols * image.rows * sizeof(uint8_t) * 3;
-    vector<unsigned char> vectorBuffer(image.ptr(0), image.ptr(0) + buffer_length);
+    vector<uint8_t> vectorBuffer(image.ptr(0), image.ptr(0) + buffer_length);
 
     auto millisec_since_epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     auto sec_since_epoch = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
@@ -136,12 +128,13 @@ void Colossus_and_camera_publisher::camera_image_handler(Mat image, int fps) {
     camera_message.ntp_split_seconds = millisec_since_epoch - (sec_since_epoch * 1000);
 }
 
-void Colossus_and_camera_publisher::cleanup_and_shutdown(){
+void Colossus_and_camera_publisher::cleanup_and_shutdown()
+{
     radar_client->stop_fft_data();
     radar_client->set_configuration_data_callback();
     radar_client->set_fft_data_callback();
     radar_client->stop();
     shutdown();
-    RCLCPP_INFO(node->get_logger(), "Stopped radar client");
-    RCLCPP_INFO(node->get_logger(), "Stopped camera publisher");
+    RCLCPP_INFO(Node::get_logger(), "Stopped radar client");
+    RCLCPP_INFO(Node::get_logger(), "Stopped camera publisher");
 }

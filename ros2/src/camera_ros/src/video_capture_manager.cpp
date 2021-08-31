@@ -12,14 +12,11 @@
 using namespace std;
 using namespace cv;
 
-std::shared_ptr<Video_capture_manager> vid_cap_manager{};
-std::thread video_capture_thread;
-
 Video_capture_manager::Video_capture_manager(){
-	VideoCapture capture;
 }
 
-int Video_capture_manager::connect_to_camera(std::string camera_url){
+int Video_capture_manager::connect_to_camera(std::string camera_url)
+{
 	cout << "Connecting to camera..." << endl;
 
 	capture = VideoCapture{camera_url};
@@ -37,7 +34,8 @@ int Video_capture_manager::connect_to_camera(std::string camera_url){
 	
 }
 
-Mat Video_capture_manager::get_latest_frame() {
+Mat Video_capture_manager::get_latest_frame()
+{
 	Mat latest_image{ };
 	auto start = std::chrono::high_resolution_clock::now();
 	auto finish = std::chrono::high_resolution_clock::now();
@@ -51,7 +49,8 @@ Mat Video_capture_manager::get_latest_frame() {
 	return latest_image;
 }
 
-void Video_capture_manager::test_framerate(int num_captures){
+void Video_capture_manager::test_framerate(int num_captures)
+{
 	
 	// Flush the capture buffer
 	auto start = std::chrono::high_resolution_clock::now();
@@ -71,7 +70,7 @@ void Video_capture_manager::test_framerate(int num_captures){
 	start = std::chrono::high_resolution_clock::now();
 
 	Mat captured_image{ };
-	for (auto f = 0; f < num_captures; f++){
+	for (int f = 0; f < num_captures; f++){
 		capture >> captured_image;
 	}
 	
@@ -82,7 +81,8 @@ void Video_capture_manager::test_framerate(int num_captures){
 	std::cout << "FPS: " << fps << endl;
 }
 
-void Video_capture_manager::disconnect_from_camera(){
+void Video_capture_manager::disconnect_from_camera()
+{
 	cout << "Disconnecting from camera..." << endl;
 	capture.release();
 }

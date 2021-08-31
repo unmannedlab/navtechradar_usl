@@ -14,7 +14,7 @@ using namespace chrono;
 
 int main(int argc, char* argv[]) {
 
-    vid_cap_manager = std::make_shared<Video_capture_manager>();
+    std::shared_ptr<Video_capture_manager> vid_cap_manager = std::make_shared<Video_capture_manager>();
 
     auto ret = vid_cap_manager->connect_to_camera("rtsp://admin:Navtech Radar.1@10.77.3.103:554/cam/realmonitor?channel=1&subtype=1&unicast=true&proto=Onvif");
 

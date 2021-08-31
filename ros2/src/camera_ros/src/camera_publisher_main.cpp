@@ -15,13 +15,15 @@ using namespace rclcpp;
 using namespace cv;
 using namespace chrono;
 
+std::shared_ptr<Camera_publisher> node{};
+
 int main(int argc, char* argv[]) {
     init(argc, argv);
     node = std::make_shared<Camera_publisher>();
 
     RCLCPP_INFO(node->get_logger(), "Starting camera publisher");
 
-    VideoCapture capture{camera_url};
+    VideoCapture capture{node->camera_url};
 
     if (!capture.isOpened()) {
         RCLCPP_INFO(node->get_logger(), "Unable to connect to camera");
