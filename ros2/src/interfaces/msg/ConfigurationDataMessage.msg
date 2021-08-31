@@ -1,5 +1,5 @@
 uint16 azimuth_samples
 uint16 encoder_size
-uint16 bin_size
+float64 bin_size
 uint16 range_in_bins
 uint16 expected_rotation_rate

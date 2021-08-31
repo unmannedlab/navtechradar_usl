@@ -15,13 +15,15 @@ using namespace rclcpp;
 using namespace cv;
 using namespace chrono;
 
+std::shared_ptr<Camera_publisher> node{};
+
 int main(int argc, char* argv[]) {
     init(argc, argv);
     node = std::make_shared<Camera_publisher>();
 
     RCLCPP_INFO(node->get_logger(), "Starting camera publisher");
 
-    VideoCapture capture{camera_url};
+    VideoCapture capture{node->camera_url};
 
     if (!capture.isOpened()) {
         RCLCPP_INFO(node->get_logger(), "Unable to connect to camera");
@@ -33,10 +35,18 @@ int main(int argc, char* argv[]) {
         RCLCPP_INFO(node->get_logger(), "FPS: %f", capture.get(CAP_PROP_FPS));
     }
 
-    Mat image { };
     while (ok()) {
-        capture >> image;
-        node->camera_image_handler(image, capture.get(CAP_PROP_FPS));
+        Mat latest_image{ };
+        auto start = std::chrono::steady_clock::now();
+        auto finish = std::chrono::steady_clock::now();
+        std::chrono::duration<double> elapsed = finish - start;
+        while (elapsed.count() < 1 / (capture.get(CAP_PROP_FPS) + 1)) {
+            start = std::chrono::steady_clock::now();
+            capture >> latest_image;
+            finish = std::chrono::steady_clock::now();
+            elapsed = finish - start;
+        }
+        node->camera_image_handler(latest_image, capture.get(CAP_PROP_FPS));
         spin_some(node);
     }
 
