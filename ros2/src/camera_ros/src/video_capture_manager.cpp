@@ -37,13 +37,13 @@ int Video_capture_manager::connect_to_camera(std::string camera_url)
 Mat Video_capture_manager::get_latest_frame()
 {
 	Mat latest_image{ };
-	auto start = std::chrono::high_resolution_clock::now();
-	auto finish = std::chrono::high_resolution_clock::now();
+	auto start = std::chrono::steady_clock::now();
+	auto finish = std::chrono::steady_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;
 	while (elapsed.count() < 1 / (capture.get(CAP_PROP_FPS) + 1)) {
-		start = std::chrono::high_resolution_clock::now();
+		start = std::chrono::steady_clock::now();
 		capture >> latest_image;
-		finish = std::chrono::high_resolution_clock::now();
+		finish = std::chrono::steady_clock::now();
 		elapsed = finish - start;
 	}
 	return latest_image;
@@ -53,13 +53,13 @@ void Video_capture_manager::test_framerate(int num_captures)
 {
 	
 	// Flush the capture buffer
-	auto start = std::chrono::high_resolution_clock::now();
-	auto finish = std::chrono::high_resolution_clock::now();
+	auto start = std::chrono::steady_clock::now();
+	auto finish = std::chrono::steady_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;
 	while (elapsed.count() < 1 / (capture.get(CAP_PROP_FPS) + 1)){
-		start = std::chrono::high_resolution_clock::now();
+		start = std::chrono::steady_clock::now();
 		capture.grab();
-		finish = std::chrono::high_resolution_clock::now();
+		finish = std::chrono::steady_clock::now();
 		elapsed = finish - start;
 		//std::cout << "Buffer not empty" << endl;
 	}
@@ -67,14 +67,14 @@ void Video_capture_manager::test_framerate(int num_captures)
 
 	cout << "Capturing " << num_captures << " frames..." << endl;
 	
-	start = std::chrono::high_resolution_clock::now();
+	start = std::chrono::steady_clock::now();
 
 	Mat captured_image{ };
 	for (int f = 0; f < num_captures; f++){
 		capture >> captured_image;
 	}
 	
-	finish = std::chrono::high_resolution_clock::now();
+	finish = std::chrono::steady_clock::now();
 	elapsed = finish - start;
 	std::cout << "Elapsed time: " << elapsed.count() << endl;
 	auto fps = num_captures / elapsed.count();

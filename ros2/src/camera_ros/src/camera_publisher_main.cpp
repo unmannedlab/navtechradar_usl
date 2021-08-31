@@ -37,13 +37,13 @@ int main(int argc, char* argv[]) {
 
     while (ok()) {
         Mat latest_image{ };
-        auto start = std::chrono::high_resolution_clock::now();
-        auto finish = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::steady_clock::now();
+        auto finish = std::chrono::steady_clock::now();
         std::chrono::duration<double> elapsed = finish - start;
         while (elapsed.count() < 1 / (capture.get(CAP_PROP_FPS) + 1)) {
-            start = std::chrono::high_resolution_clock::now();
+            start = std::chrono::steady_clock::now();
             capture >> latest_image;
-            finish = std::chrono::high_resolution_clock::now();
+            finish = std::chrono::steady_clock::now();
             elapsed = finish - start;
         }
         node->camera_image_handler(latest_image, capture.get(CAP_PROP_FPS));

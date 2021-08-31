@@ -67,6 +67,7 @@ void Colossus_and_camera_publisher::fft_data_handler(const Fft_data::Pointer& da
         return;
 	}
 
+    // On every radar rotation, send out the latest camera frame
     if (data->azimuth < last_azimuth) {
         rotated_once = true;
         camera_image_publisher->publish(camera_message);
@@ -114,18 +115,18 @@ void Colossus_and_camera_publisher::camera_image_handler(Mat image, int fps)
     auto buffer_length = image.cols * image.rows * sizeof(uint8_t) * 3;
     vector<uint8_t> vectorBuffer(image.ptr(0), image.ptr(0) + buffer_length);
 
-    auto millisec_since_epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    auto sec_since_epoch = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+    auto nanosec_since_epoch = duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count();
+    auto sec_since_epoch = duration_cast<seconds>(steady_clock::now().time_since_epoch()).count();
 
     //RCLCPP_INFO(Node::get_logger(), "Image buffer size: %li", buffer_length);
 
-    camera_message.image_data = vectorBuffer;
+    camera_message.image_data = std::move(vectorBuffer);
     camera_message.image_rows = image.rows;
     camera_message.image_cols = image.cols;
     camera_message.image_channels = image.channels();
     camera_message.image_fps = fps;
     camera_message.ntp_seconds = sec_since_epoch;
-    camera_message.ntp_split_seconds = millisec_since_epoch - (sec_since_epoch * 1000);
+    camera_message.ntp_split_seconds = nanosec_since_epoch - (sec_since_epoch * 1000000000);
 }
 
 void Colossus_and_camera_publisher::cleanup_and_shutdown()

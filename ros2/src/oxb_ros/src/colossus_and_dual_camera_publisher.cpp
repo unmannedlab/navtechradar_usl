@@ -121,31 +121,31 @@ void Colossus_and_dual_camera_publisher::camera_image_handler(Mat image_left, Ma
     //RCLCPP_INFO(Node::get_logger(), "Mat type: %i", image.type());
 
     auto buffer_length_left = image_left.cols * image_left.rows * sizeof(uint8_t) * 3;
-    vector<unsigned char> vector_buffer_left(image_left.ptr(0), image_left.ptr(0) + buffer_length_left);
+    vector<uint8_t> vector_buffer_left(image_left.ptr(0), image_left.ptr(0) + buffer_length_left);
 
     auto buffer_length_right = image_right.cols * image_right.rows * sizeof(uint8_t) * 3;
-    vector<unsigned char> vector_buffer_right(image_right.ptr(0), image_right.ptr(0) + buffer_length_right);
+    vector<uint8_t> vector_buffer_right(image_right.ptr(0), image_right.ptr(0) + buffer_length_right);
 
-    auto millisec_since_epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    auto sec_since_epoch = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+    auto nanosec_since_epoch = duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count();
+    auto sec_since_epoch = duration_cast<seconds>(steady_clock::now().time_since_epoch()).count();
 
     //RCLCPP_INFO(Node::get_logger(), "Image buffer size: %li", buffer_length);
 
-    camera_left_message.image_data = vector_buffer_left;
+    camera_left_message.image_data = std::move(vector_buffer_left);
     camera_left_message.image_rows = image_left.rows;
     camera_left_message.image_cols = image_left.cols;
     camera_left_message.image_channels = image_left.channels();
     camera_left_message.image_fps = fps_left;
     camera_left_message.ntp_seconds = sec_since_epoch;
-    camera_left_message.ntp_split_seconds = millisec_since_epoch - (sec_since_epoch * 1000);
+    camera_left_message.ntp_split_seconds = nanosec_since_epoch - (sec_since_epoch * 1000000000);
 
-    camera_right_message.image_data = vector_buffer_right;
+    camera_right_message.image_data = std::move(vector_buffer_right);
     camera_right_message.image_rows = image_right.rows;
     camera_right_message.image_cols = image_right.cols;
     camera_right_message.image_channels = image_right.channels();
     camera_right_message.image_fps = fps_right;
     camera_right_message.ntp_seconds = sec_since_epoch;
-    camera_right_message.ntp_split_seconds = millisec_since_epoch - (sec_since_epoch * 1000);
+    camera_right_message.ntp_split_seconds = nanosec_since_epoch - (sec_since_epoch * 1000000000);
 }
 
 void Colossus_and_dual_camera_publisher::cleanup_and_shutdown()

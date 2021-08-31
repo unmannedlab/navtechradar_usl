@@ -13,12 +13,10 @@ using namespace std;
 using namespace Navtech;
 using namespace rclcpp;
 
-std::shared_ptr<Colossus_publisher> node{};
-
 int main(int argc, char* argv[])
 {
     init(argc, argv);
-    node = std::make_shared<Colossus_publisher>();
+    auto node = std::make_shared<Colossus_publisher>();
 
     RCLCPP_INFO(node->get_logger(), "Starting radar client");
     node->radar_client = allocate_owned<Navtech::Radar_client>(node->radar_ip, node->radar_port);
