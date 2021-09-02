@@ -9,7 +9,7 @@ using namespace rclcpp;
 
 int main(int argc, char* argv[]){
     rclcpp::init(argc, argv);
-    std::shared_ptr<Colossus_subscriber_to_video> node = std::make_shared<Colossus_subscriber_to_video>();
+    node = std::make_shared<Colossus_subscriber_to_video>();
     rclcpp::spin(node);
     rclcpp::shutdown();
 }

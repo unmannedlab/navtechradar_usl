@@ -36,3 +36,5 @@ private:
 
     rclcpp::Subscription<interfaces::msg::FftDataMessage>::SharedPtr fft_data_subscriber;
 };
+
+extern std::shared_ptr<Colossus_subscriber_to_video> node;

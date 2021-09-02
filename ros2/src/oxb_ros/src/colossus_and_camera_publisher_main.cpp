@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
         while (ok()) {
 
             image = vid_cap_manager->get_latest_frame();
-            node->camera_image_handler(image, vid_cap_manager->capture.get(CAP_PROP_FPS));
+            node->camera_image_handler(image);
             spin_some(node);
         }
     }
