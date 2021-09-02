@@ -7,6 +7,7 @@ from rosidl_runtime_py.utilities import get_message
 from rclpy.serialization import deserialize_message
 #from interfaces.msg import FftDataMessage
 from datetime import timezone
+import math
 
 # Globals
 bagFilePath = '/mnt/d/ros_recordings/school_road_1/school_road_1_0.db3'
@@ -28,15 +29,17 @@ for topic_data in topics_data:
 print()
 
 csv_file = open("output_data/timestamp_data.csv", "w")
-csv_file.write("Timestamp,Time Offset\n")
+csv_file.write("Sweep Counter,Timestamp,Time Offset\n")
 biggest_time_offset = float('-inf')
 smallest_time_offset = float('inf')
+last_sweep_counter = 0
 
 print("Messages info")
 messages_data = cursor.execute("SELECT id, topic_id, timestamp, data FROM messages WHERE topic_id = 1;").fetchall()
 for message_data in messages_data:
 
     #print('Message Length: {}'.format(len(message_data[3])))
+    sweep_counter =  struct.unpack("<H", message_data[3][10:12])[0]
     ntp_seconds = message_data[3][12:16]
     ntp_split_seconds = message_data[3][16:20]
 
@@ -53,10 +56,14 @@ for message_data in messages_data:
             smallest_time_offset = total_offset_seconds
         if (total_offset_seconds > biggest_time_offset):
             biggest_time_offset = total_offset_seconds
-        csv_file.write(str(date_time)+","+str(total_offset_seconds))
+        if (abs(last_sweep_counter - sweep_counter) != 1):
+            if (last_sweep_counter != 65535 and sweep_counter != 0):
+                print('Messages in wrong order: {} {}'.format(last_sweep_counter, sweep_counter))
+        csv_file.write(str(sweep_counter)+","+str(date_time)+","+str(total_offset_seconds))
         csv_file.write("\n")
     firstTimestamp = False
     previousTimestamp = date_time
+    last_sweep_counter = sweep_counter
     #print()
 
 print('smallest_time_offset: {}'.format(smallest_time_offset))
