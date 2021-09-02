@@ -99,12 +99,13 @@ void Colossus_and_camera_publisher::configuration_data_handler(const Configurati
     message.bin_size = data->bin_size;
     message.range_in_bins = data->range_in_bins;
     message.expected_rotation_rate = data->expected_rotation_rate;
+    fps = data->expected_rotation_rate;
     configuration_data_publisher->publish(message);
 
     radar_client->start_fft_data();
 }
 
-void Colossus_and_camera_publisher::camera_image_handler(Mat image, int fps)
+void Colossus_and_camera_publisher::camera_image_handler(Mat image)
 {
     //RCLCPP_INFO(Node::get_logger(), "Publishing Camera Image Data");
     //RCLCPP_INFO(Node::get_logger(), "Mat rows: %i", image.rows);

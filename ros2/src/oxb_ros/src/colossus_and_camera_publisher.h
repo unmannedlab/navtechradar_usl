@@ -19,14 +19,16 @@ public:
 
     void configuration_data_handler(const Navtech::Configuration_data::Pointer& data);
 
-    void camera_image_handler(cv::Mat image, int fps);
+    void camera_image_handler(cv::Mat image);
 
     void cleanup_and_shutdown();
 
 private:
-    int bearing_count{ 0 };
+    int bearing_count { 0 };
 
-    int azimuth_samples{ 0 };
+    int azimuth_samples { 0 };
+
+    int fps{ 0 };
 
     int last_azimuth{ 0 };
 
