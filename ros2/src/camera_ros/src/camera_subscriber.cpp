@@ -22,7 +22,7 @@ Camera_subscriber::Camera_subscriber():rclcpp::Node{ "camera_subscriber" }{
 
     camera_data_subscriber =
     Node::create_subscription<sensor_msgs::msg::Image>(
-    "camera_data/image_data",
+    "camera_data/camera_image_data",
     100,
     std::bind(&Camera_subscriber::camera_image_callback, this, _1));
 }
@@ -44,8 +44,9 @@ void Camera_subscriber::camera_image_callback(const sensor_msgs::msg::Image::Sha
     RCLCPP_INFO(Node::get_logger(), "Image Encoding: %s", data->encoding.c_str());
     RCLCPP_INFO(Node::get_logger(), "Is Bigendian: %s", data->is_bigendian ? "true" : "false");
     RCLCPP_INFO(Node::get_logger(), "Image step: %i", data->step);
+    RCLCPP_INFO(Node::get_logger(), "Image timestamp secs: %i", data->header.stamp.sec);
+    RCLCPP_INFO(Node::get_logger(), "Image timestamp nsecs: %i", data->header.stamp.nanosec);
 
-
-    Mat test_image = Mat(data->height, data->width, CV_8UC3, data->data.data()).clone();
-    imwrite("test.jpg", test_image);
+    //Mat test_image = Mat(data->height, data->width, CV_8UC3, data->data.data()).clone();
+    //imwrite("test.jpg", test_image);
 }

@@ -9,6 +9,7 @@
 
 #include "interfaces/msg/camera_configuration_message.hpp"
 #include "sensor_msgs/msg/image.hpp"
+#include "std_msgs/msg/header.hpp"
 #include "camera_publisher.h"
 
 using namespace std;
@@ -28,7 +29,7 @@ Camera_publisher::Camera_publisher():rclcpp::Node{ "camera_publisher" }
 
     camera_image_publisher =
     Node::create_publisher<sensor_msgs::msg::Image>(
-    "camera_data/image_data",
+    "camera_data/camera_image_data",
     100);
 }
 
@@ -43,9 +44,6 @@ void Camera_publisher::camera_image_handler(Mat image, int fps)
     auto buffer_length = image.cols * image.rows * sizeof(uint8_t) * 3;
     vector<uint8_t> vector_buffer(image.ptr(0), image.ptr(0) + buffer_length);
 
-    auto nanosec_since_epoch = duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count();
-    auto sec_since_epoch = duration_cast<seconds>(steady_clock::now().time_since_epoch()).count();
-
     //RCLCPP_INFO(Node::get_logger(), "Image buffer size: %li", buffer_length);
 
     if (!configuration_sent) {
@@ -59,6 +57,9 @@ void Camera_publisher::camera_image_handler(Mat image, int fps)
     }
 
     auto message = sensor_msgs::msg::Image();
+    message.header = std_msgs::msg::Header();
+    message.header.stamp = node->get_clock()->now();
+
     message.height = image.rows;
     message.width = image.cols;
     message.encoding = "8UC3";

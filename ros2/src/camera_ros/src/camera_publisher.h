@@ -19,3 +19,5 @@ private:
 
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr camera_image_publisher{};
 };
+
+extern std::shared_ptr<Camera_publisher> node;
