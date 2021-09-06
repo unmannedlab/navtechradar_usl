@@ -1,6 +1,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <opencv2/opencv.hpp>
 
+#include "sensor_msgs/msg/image.hpp"
+
 class Camera_publisher : public ::rclcpp::Node {
 public:
     Camera_publisher();
@@ -11,5 +13,9 @@ public:
 
 private:
 
-    rclcpp::Publisher<interfaces::msg::CameraImageMessage>::SharedPtr camera_image_publisher{};
+    bool configuration_sent{ false };
+
+    rclcpp::Publisher<interfaces::msg::CameraConfigurationMessage>::SharedPtr camera_configuration_publisher{};
+
+    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr camera_image_publisher{};
 };
