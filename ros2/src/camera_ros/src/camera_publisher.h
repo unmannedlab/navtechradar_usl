@@ -12,11 +12,9 @@ public:
     void camera_image_handler(cv::Mat image, int fps);
 
 private:
-
     bool configuration_sent{ false };
 
     rclcpp::Publisher<interfaces::msg::CameraConfigurationMessage>::SharedPtr camera_configuration_publisher{};
-
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr camera_image_publisher{};
 };
 
