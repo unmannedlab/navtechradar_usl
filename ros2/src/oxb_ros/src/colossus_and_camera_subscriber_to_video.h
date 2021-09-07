@@ -1,6 +1,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <opencv2/opencv.hpp>
 
+#include "interfaces/msg/camera_configuration_message.hpp"
+#include "sensor_msgs/msg/image.hpp"
+
 class Colossus_and_camera_subscriber_to_video : public ::rclcpp::Node {
 public:
     Colossus_and_camera_subscriber_to_video();
@@ -8,6 +11,8 @@ public:
 private:
 
     bool config_data_received{ false };
+
+    bool camera_config_data_received{ false };
 
     cv::VideoWriter video_writer_colossus{};
 
@@ -37,11 +42,17 @@ private:
 
     void fft_data_callback(const interfaces::msg::FftDataMessage::SharedPtr msg) const;
 
-    void camera_image_callback(const interfaces::msg::CameraImageMessage::SharedPtr data) const;
+    void camera_configuration_data_callback(const interfaces::msg::CameraConfigurationMessage::SharedPtr data) const;
+
+    void camera_image_callback(const sensor_msgs::msg::Image::SharedPtr data) const;
+
+    rclcpp::Subscription<interfaces::msg::CameraConfigurationMessage>::SharedPtr camera_configuration_subscriber;
+
+    rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr camera_data_subscriber;
 
     rclcpp::Subscription<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_subscriber;
 
     rclcpp::Subscription<interfaces::msg::FftDataMessage>::SharedPtr fft_data_subscriber;
-
-    rclcpp::Subscription<interfaces::msg::CameraImageMessage>::SharedPtr camera_data_subscriber;
 };
+
+extern std::shared_ptr<Colossus_and_camera_subscriber_to_video> node;

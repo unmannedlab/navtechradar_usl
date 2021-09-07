@@ -2,6 +2,9 @@
 #include <opencv2/opencv.hpp>
 #include "radar_client.h"
 
+#include "interfaces/msg/camera_configuration_message.hpp"
+#include "sensor_msgs/msg/image.hpp"
+
 class Colossus_and_camera_publisher : public ::rclcpp::Node
 {
 public:
@@ -34,11 +37,17 @@ private:
 
     bool rotated_once{ false };
 
-    rclcpp::Publisher<interfaces::msg::CameraImageMessage>::SharedPtr camera_image_publisher;
+    bool configuration_sent{ false };
 
-    interfaces::msg::CameraImageMessage camera_message = interfaces::msg::CameraImageMessage();
+    rclcpp::Publisher<interfaces::msg::CameraConfigurationMessage>::SharedPtr camera_configuration_publisher{};
+
+    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr camera_image_publisher{};
+
+    sensor_msgs::msg::Image camera_message = sensor_msgs::msg::Image();
 
     rclcpp::Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher{};
 
     rclcpp::Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher{};
 };
+
+extern std::shared_ptr<Colossus_and_camera_publisher> node;

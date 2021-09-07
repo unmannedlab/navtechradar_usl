@@ -27,13 +27,19 @@ Colossus_and_camera_subscriber_to_video::Colossus_and_camera_subscriber_to_video
     fft_data_subscriber =
     Node::create_subscription<interfaces::msg::FftDataMessage>(
     "radar_data/fft_data",
-     10,
-     std::bind(&Colossus_and_camera_subscriber_to_video::fft_data_callback, this, _1));
+    10,
+    std::bind(&Colossus_and_camera_subscriber_to_video::fft_data_callback, this, _1));
+
+    camera_configuration_subscriber =
+    Node::create_subscription<interfaces::msg::CameraConfigurationMessage>(
+    "camera_data/camera_configuration_data",
+    1,
+    std::bind(&Colossus_and_camera_subscriber_to_video::camera_configuration_data_callback, this, _1));
 
     camera_data_subscriber =
-    Node::create_subscription<interfaces::msg::CameraImageMessage>(
-    "camera_data/image_data",
-    4,
+    Node::create_subscription<sensor_msgs::msg::Image>(
+    "camera_data/camera_image_data",
+    100,
     std::bind(&Colossus_and_camera_subscriber_to_video::camera_image_callback, this, _1));
 }
 
@@ -99,23 +105,25 @@ void Colossus_and_camera_subscriber_to_video::fft_data_callback(const interfaces
 	//RCLCPP_INFO(Node::get_logger(), "NTP Split Seconds: %i", msg->ntp_split_seconds);
 }
 
-void Colossus_and_camera_subscriber_to_video::camera_image_callback(const interfaces::msg::CameraImageMessage::SharedPtr data) const
+void Colossus_and_camera_subscriber_to_video::camera_configuration_data_callback(const interfaces::msg::CameraConfigurationMessage::SharedPtr data) const
 {
-    if (first_frame) {
-        RCLCPP_INFO(Node::get_logger(), "Camera Data received");
-        RCLCPP_INFO(Node::get_logger(), "Image Rows: %i", data->image_rows);
-        RCLCPP_INFO(Node::get_logger(), "Image Cols: %i", data->image_cols);
-        RCLCPP_INFO(Node::get_logger(), "Image Channels: %i", data->image_channels);
-        RCLCPP_INFO(Node::get_logger(), "Image FPS: %i", data->image_fps);
+    RCLCPP_INFO(Node::get_logger(), "Camera Configuration received");
+    RCLCPP_INFO(Node::get_logger(), "Image Width: %i", data->width);
+    RCLCPP_INFO(Node::get_logger(), "Image Height: %i", data->height);
+    RCLCPP_INFO(Node::get_logger(), "Image Channels: %i", data->channels);
+    RCLCPP_INFO(Node::get_logger(), "Video FPS: %i", data->fps);
 
-        node->video_writer_camera.open("output_videos/camera_output.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), data->image_fps, Size(data->image_cols, data->image_rows), true);
-        node->first_frame = false;
+    node->video_writer_camera.open("output_videos/camera_output.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), data->fps, Size(data->width, data->height), true);
+    node->camera_config_data_received = true;
+}
+
+void Colossus_and_camera_subscriber_to_video::camera_image_callback(const sensor_msgs::msg::Image::SharedPtr data) const
+{
+    if (!node->camera_config_data_received) {
+        RCLCPP_INFO(Node::get_logger(), "No Camera Configuration received");
+        return;
     }
 
-    auto dataType = CV_8UC3;
-    if (data->image_channels == 1) {
-        dataType = CV_8UC1;
-    }
-    Mat camera_image = Mat{ data->image_rows, data->image_cols, dataType, data->image_data.data() }.clone();
+    Mat camera_image = Mat{ data->height, data->width, CV_8UC3, data->data.data() }.clone();
     node->video_writer_camera.write(camera_image);
 }
