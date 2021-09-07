@@ -6,7 +6,7 @@
 
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "interfaces/msg/fft_data_message.hpp"
-#include "interfaces/msg/camera_image_message.hpp"
+#include "interfaces/msg/camera_configuration_message.hpp"
 #include "radar_client.h"
 #include "colossus_and_camera_publisher.h"
 #include "../../camera_ros/src/video_capture_manager.h"

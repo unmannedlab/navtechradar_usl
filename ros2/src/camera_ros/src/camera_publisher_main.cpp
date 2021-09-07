@@ -7,7 +7,7 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 
-#include "interfaces/msg/camera_image_message.hpp"
+#include "interfaces/msg/camera_configuration_message.hpp"
 #include "camera_publisher.h"
 
 using namespace std;

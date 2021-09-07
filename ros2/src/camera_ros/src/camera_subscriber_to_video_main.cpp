@@ -1,6 +1,6 @@
 #include <rclcpp/rclcpp.hpp>
 
-#include "interfaces/msg/camera_image_message.hpp"
+#include "interfaces/msg/camera_configuration_message.hpp"
 #include "camera_subscriber_to_video.h"
 
 using namespace std;
