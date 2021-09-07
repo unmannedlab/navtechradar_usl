@@ -28,25 +28,37 @@ Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_a
     radar_port = get_parameter("radar_port").as_int();
     camera_url = get_parameter("camera_url").as_string();
 
+    rclcpp::QoS qos_radar_configuration_publisher(1);
+    qos_radar_configuration_publisher.reliable();
+
     configuration_data_publisher =
     Node::create_publisher<interfaces::msg::ConfigurationDataMessage>(
     "radar_data/configuration_data",
-    1);
+    qos_radar_configuration_publisher);
+
+    rclcpp::QoS qos_radar_fft_publisher(400);
+    qos_radar_fft_publisher.reliable();
 
     fft_data_publisher =
     Node::create_publisher<interfaces::msg::FftDataMessage>(
     "radar_data/fft_data",
-     10);
+    qos_radar_fft_publisher);
+
+    rclcpp::QoS qos_camera_configuration_publisher(1);
+    qos_camera_configuration_publisher.reliable();
 
     camera_configuration_publisher =
     Node::create_publisher<interfaces::msg::CameraConfigurationMessage>(
     "camera_data/camera_configuration_data",
-    1);
+    qos_camera_configuration_publisher);
+
+    rclcpp::QoS qos_camera_image_publisher(25);
+    qos_camera_image_publisher.reliable();
 
     camera_image_publisher =
     Node::create_publisher<sensor_msgs::msg::Image>(
     "camera_data/camera_image_data",
-    100);
+    qos_camera_image_publisher);
 }
 
 void Colossus_and_camera_publisher::fft_data_handler(const Fft_data::Pointer& data)

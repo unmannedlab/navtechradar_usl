@@ -1,6 +1,7 @@
 #include <functional>
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/qos.hpp>
 
 #include "interfaces/msg/camera_configuration_message.hpp"
 #include "sensor_msgs/msg/image.hpp"
@@ -14,16 +15,22 @@ using namespace cv;
 Camera_subscriber::Camera_subscriber():rclcpp::Node{ "camera_subscriber" }{
     using std::placeholders::_1;
 
+    rclcpp::QoS qos_camera_configuration_subscriber(1);
+    qos_camera_configuration_subscriber.reliable();
+
     camera_configuration_subscriber =
     Node::create_subscription<interfaces::msg::CameraConfigurationMessage>(
     "camera_data/camera_configuration_data",
-     1,
-     std::bind(&Camera_subscriber::configuration_data_callback, this, _1));
+    qos_camera_configuration_subscriber,
+    std::bind(&Camera_subscriber::configuration_data_callback, this, _1));
+
+    rclcpp::QoS qos_camera_image_subscriber(25);
+    qos_camera_image_subscriber.reliable();
 
     camera_data_subscriber =
     Node::create_subscription<sensor_msgs::msg::Image>(
     "camera_data/camera_image_data",
-    100,
+    qos_camera_image_subscriber,
     std::bind(&Camera_subscriber::camera_image_callback, this, _1));
 }
 

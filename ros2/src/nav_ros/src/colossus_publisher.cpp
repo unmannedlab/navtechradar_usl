@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/qos.hpp>
 
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "interfaces/msg/fft_data_message.hpp"
@@ -21,15 +22,21 @@ Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }
     radar_ip = get_parameter("radar_ip").as_string();
     radar_port = get_parameter("radar_port").as_int();
 
+    rclcpp::QoS qos_radar_configuration_publisher(1);
+    qos_radar_configuration_publisher.reliable();
+
     configuration_data_publisher =
     Node::create_publisher<interfaces::msg::ConfigurationDataMessage>(
     "radar_data/configuration_data",
-    5);
+    qos_radar_configuration_publisher);
+
+    rclcpp::QoS qos_radar_fft_publisher(400);
+    qos_radar_fft_publisher.reliable();
 
     fft_data_publisher =
     Node::create_publisher<interfaces::msg::FftDataMessage>(
     "radar_data/fft_data",
-    1600);
+    qos_radar_fft_publisher);
 }
 
 void Colossus_publisher::fft_data_handler(const Fft_data::Pointer& data)

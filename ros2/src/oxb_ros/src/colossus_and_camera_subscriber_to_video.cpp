@@ -18,28 +18,40 @@ Colossus_and_camera_subscriber_to_video::Colossus_and_camera_subscriber_to_video
 {
     using std::placeholders::_1;
 
+    rclcpp::QoS qos_radar_configuration_subscriber(1);
+    qos_radar_configuration_subscriber.reliable();
+
     configuration_data_subscriber =
     Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
     "radar_data/configuration_data",
-     1,
+    qos_radar_configuration_subscriber,
     std::bind(&Colossus_and_camera_subscriber_to_video::configuration_data_callback, this, _1));
+
+    rclcpp::QoS qos_radar_fft_subscriber(400);
+    qos_radar_fft_subscriber.reliable();
 
     fft_data_subscriber =
     Node::create_subscription<interfaces::msg::FftDataMessage>(
     "radar_data/fft_data",
-    10,
+    qos_radar_fft_subscriber,
     std::bind(&Colossus_and_camera_subscriber_to_video::fft_data_callback, this, _1));
+
+    rclcpp::QoS qos_camera_configuration_publisher(1);
+    qos_camera_configuration_publisher.reliable();
 
     camera_configuration_subscriber =
     Node::create_subscription<interfaces::msg::CameraConfigurationMessage>(
     "camera_data/camera_configuration_data",
-    1,
+    qos_camera_configuration_publisher,
     std::bind(&Colossus_and_camera_subscriber_to_video::camera_configuration_data_callback, this, _1));
+
+    rclcpp::QoS qos_camera_image_subscriber(25);
+    qos_camera_image_subscriber.reliable();
 
     camera_data_subscriber =
     Node::create_subscription<sensor_msgs::msg::Image>(
     "camera_data/camera_image_data",
-    100,
+    qos_camera_image_subscriber,
     std::bind(&Colossus_and_camera_subscriber_to_video::camera_image_callback, this, _1));
 }
 

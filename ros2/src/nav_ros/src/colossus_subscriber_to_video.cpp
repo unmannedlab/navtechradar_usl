@@ -17,16 +17,22 @@ Colossus_subscriber_to_video::Colossus_subscriber_to_video() :Node{ "colossus_su
 {
     using std::placeholders::_1;
 
+    rclcpp::QoS qos_radar_configuration_subscriber(1);
+    qos_radar_configuration_subscriber.reliable();
+
     configuration_data_subscriber =
     Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
     "radar_data/configuration_data",
-    5,
+    qos_radar_configuration_subscriber,
     std::bind(&Colossus_subscriber_to_video::configuration_data_callback, this, _1));
+
+    rclcpp::QoS qos_radar_fft_subscriber(400);
+    qos_radar_fft_subscriber.reliable();
 
     fft_data_subscriber =
     Node::create_subscription<interfaces::msg::FftDataMessage>(
     "radar_data/fft_data",
-    1600,
+    qos_radar_fft_subscriber,
     std::bind(&Colossus_subscriber_to_video::fft_data_callback, this, _1));
 }
 
