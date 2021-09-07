@@ -7,7 +7,8 @@
 
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "interfaces/msg/fft_data_message.hpp"
-#include "interfaces/msg/camera_image_message.hpp"
+#include "interfaces/msg/camera_configuration_message.hpp"
+#include "sensor_msgs/msg/image.hpp"
 #include "radar_client.h"
 #include "colossus_and_camera_publisher.h"
 
@@ -37,10 +38,15 @@ Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_a
     "radar_data/fft_data",
      10);
 
+    camera_configuration_publisher =
+    Node::create_publisher<interfaces::msg::CameraConfigurationMessage>(
+    "camera_data/camera_configuration_data",
+    1);
+
     camera_image_publisher =
-    Node::create_publisher<interfaces::msg::CameraImageMessage>(
-    "camera_data/image_data",
-    4);
+    Node::create_publisher<sensor_msgs::msg::Image>(
+    "camera_data/camera_image_data",
+    100);
 }
 
 void Colossus_and_camera_publisher::fft_data_handler(const Fft_data::Pointer& data)
@@ -62,7 +68,7 @@ void Colossus_and_camera_publisher::fft_data_handler(const Fft_data::Pointer& da
     //RCLCPP_INFO(Node::get_logger(), "Data 3: %u", static_cast<int>(data->Data[3]));
     //RCLCPP_INFO(Node::get_logger(), "Data 4: %u", static_cast<int>(data->Data[4]));
 
-	if (camera_message.image_rows <= 0 || camera_message.image_cols <= 0 || camera_message.image_channels <= 0 || camera_message.image_fps <= 0)
+	if (camera_message.height <= 0 || camera_message.width <= 0)
 	{
         return;
 	}
@@ -114,20 +120,29 @@ void Colossus_and_camera_publisher::camera_image_handler(Mat image)
     //RCLCPP_INFO(Node::get_logger(), "Mat type: %i", image.type());
 
     auto buffer_length = image.cols * image.rows * sizeof(uint8_t) * 3;
-    vector<uint8_t> vectorBuffer(image.ptr(0), image.ptr(0) + buffer_length);
-
-    auto nanosec_since_epoch = duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count();
-    auto sec_since_epoch = duration_cast<seconds>(steady_clock::now().time_since_epoch()).count();
+    vector<uint8_t> vector_buffer(image.ptr(0), image.ptr(0) + buffer_length);
 
     //RCLCPP_INFO(Node::get_logger(), "Image buffer size: %li", buffer_length);
 
-    camera_message.image_data = std::move(vectorBuffer);
-    camera_message.image_rows = image.rows;
-    camera_message.image_cols = image.cols;
-    camera_message.image_channels = image.channels();
-    camera_message.image_fps = fps;
-    camera_message.ntp_seconds = sec_since_epoch;
-    camera_message.ntp_split_seconds = nanosec_since_epoch - (sec_since_epoch * 1000000000);
+    if (!configuration_sent) {
+        auto config_message = interfaces::msg::CameraConfigurationMessage();
+        config_message.width = image.cols;
+        config_message.height = image.rows;
+        config_message.channels = image.channels();
+        config_message.fps = fps;
+        camera_configuration_publisher->publish(config_message);
+        configuration_sent = true;
+    }
+
+    camera_message.header = std_msgs::msg::Header();
+    camera_message.header.stamp = node->get_clock()->now();
+
+    camera_message.height = image.rows;
+    camera_message.width = image.cols;
+    camera_message.encoding = "8UC3";
+    camera_message.is_bigendian = true;
+    camera_message.step = image.step;
+    camera_message.data = std::move(vector_buffer);
 }
 
 void Colossus_and_camera_publisher::cleanup_and_shutdown()
