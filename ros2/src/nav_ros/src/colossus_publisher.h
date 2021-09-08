@@ -14,6 +14,9 @@ public:
     void configuration_data_handler(const Navtech::Configuration_data::Pointer& data);
 
 private:
+    constexpr static int radar_configuration_queue_size{ 1 };
+    constexpr static int radar_fft_queue_size{ 400 };
+
     int azimuth_samples{ 0 };
     int last_azimuth{ 0 };
     bool rotated_once{ false };

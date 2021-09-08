@@ -10,16 +10,22 @@ Colossus_subscriber::Colossus_subscriber() : Node{ "colossus_subscriber" }
 {
     using std::placeholders::_1;
 
+    rclcpp::QoS qos_radar_configuration_subscriber(radar_configuration_queue_size);
+    qos_radar_configuration_subscriber.reliable();
+
     configuration_data_subscriber = 
     Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
     "radar_data/configuration_data",
-    5,
+    qos_radar_configuration_subscriber,
     std::bind(&Colossus_subscriber::configuration_data_callback, this, _1));
+
+    rclcpp::QoS qos_radar_fft_subscriber(radar_fft_queue_size);
+    qos_radar_fft_subscriber.reliable();
 
     fft_data_subscriber =
     Node::create_subscription<interfaces::msg::FftDataMessage>(
     "radar_data/fft_data",
-    1600,
+    qos_radar_fft_subscriber,
     std::bind(&Colossus_subscriber::fft_data_callback, this, _1));
 }
 

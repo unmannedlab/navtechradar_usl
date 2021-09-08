@@ -6,6 +6,9 @@ public:
     Colossus_subscriber_to_video();
 
 private:
+    constexpr static int radar_configuration_queue_size{ 1 };
+    constexpr static int radar_fft_queue_size{ 400 };
+
     bool config_data_received{ false };
     cv::VideoWriter video_writer{};
     int encoder_size{ 0 };

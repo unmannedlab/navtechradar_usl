@@ -4,6 +4,7 @@
 #include <string>
 #include <ctime>
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/qos.hpp>
 #include <opencv2/opencv.hpp>
 #include <iostream>
 
@@ -22,15 +23,21 @@ Camera_publisher::Camera_publisher():rclcpp::Node{ "camera_publisher" }
     declare_parameter("camera_url", "");
     camera_url = get_parameter("camera_url").as_string();
 
+    rclcpp::QoS qos_camera_configuration_publisher(camera_configuration_queue_size);
+    qos_camera_configuration_publisher.reliable();
+
     camera_configuration_publisher =
     Node::create_publisher<interfaces::msg::CameraConfigurationMessage>(
     "camera_data/camera_configuration_data",
-    1);
+    qos_camera_configuration_publisher);
+
+    rclcpp::QoS qos_camera_image_publisher(camera_image_queue_size);
+    qos_camera_image_publisher.reliable();
 
     camera_image_publisher =
     Node::create_publisher<sensor_msgs::msg::Image>(
     "camera_data/camera_image_data",
-    100);
+    qos_camera_image_publisher);
 }
 
 void Camera_publisher::camera_image_handler(Mat image, int fps)

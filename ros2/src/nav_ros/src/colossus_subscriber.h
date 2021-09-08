@@ -10,4 +10,8 @@ public:
 
     rclcpp::Subscription<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_subscriber;
     rclcpp::Subscription<interfaces::msg::FftDataMessage>::SharedPtr fft_data_subscriber;
+
+private:
+    constexpr static int radar_configuration_queue_size{ 1 };
+    constexpr static int radar_fft_queue_size{ 400 };
 };

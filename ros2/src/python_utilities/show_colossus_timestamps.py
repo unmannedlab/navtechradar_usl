@@ -10,7 +10,7 @@ from datetime import timezone
 import math
 
 # Globals
-bagFilePath = '/mnt/d/ros_recordings/school_road_1/school_road_1_0.db3'
+bagFilePath = '/mnt/d/ros_recordings/new_message_test/new_message_test_0.db3'
 previousTimestamp = datetime.datetime(1970, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc)
 firstTimestamp = True
 
