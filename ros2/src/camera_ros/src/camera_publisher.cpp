@@ -23,7 +23,7 @@ Camera_publisher::Camera_publisher():rclcpp::Node{ "camera_publisher" }
     declare_parameter("camera_url", "");
     camera_url = get_parameter("camera_url").as_string();
 
-    rclcpp::QoS qos_camera_configuration_publisher(1);
+    rclcpp::QoS qos_camera_configuration_publisher(camera_configuration_queue_size);
     qos_camera_configuration_publisher.reliable();
 
     camera_configuration_publisher =
@@ -31,7 +31,7 @@ Camera_publisher::Camera_publisher():rclcpp::Node{ "camera_publisher" }
     "camera_data/camera_configuration_data",
     qos_camera_configuration_publisher);
 
-    rclcpp::QoS qos_camera_image_publisher(25);
+    rclcpp::QoS qos_camera_image_publisher(camera_image_queue_size);
     qos_camera_image_publisher.reliable();
 
     camera_image_publisher =

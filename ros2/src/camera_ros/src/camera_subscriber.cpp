@@ -15,7 +15,7 @@ using namespace cv;
 Camera_subscriber::Camera_subscriber():rclcpp::Node{ "camera_subscriber" }{
     using std::placeholders::_1;
 
-    rclcpp::QoS qos_camera_configuration_subscriber(1);
+    rclcpp::QoS qos_camera_configuration_subscriber(camera_configuration_queue_size);
     qos_camera_configuration_subscriber.reliable();
 
     camera_configuration_subscriber =
@@ -24,7 +24,7 @@ Camera_subscriber::Camera_subscriber():rclcpp::Node{ "camera_subscriber" }{
     qos_camera_configuration_subscriber,
     std::bind(&Camera_subscriber::configuration_data_callback, this, _1));
 
-    rclcpp::QoS qos_camera_image_subscriber(25);
+    rclcpp::QoS qos_camera_image_subscriber(camera_image_queue_size);
     qos_camera_image_subscriber.reliable();
 
     camera_data_subscriber =

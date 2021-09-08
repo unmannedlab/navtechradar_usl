@@ -21,6 +21,11 @@ public:
     void cleanup_and_shutdown();
 
 private:
+    constexpr static int camera_configuration_queue_size{ 1 };
+    constexpr static int camera_image_queue_size{ 25 };
+    constexpr static int radar_configuration_queue_size{ 1 };
+    constexpr static int radar_fft_queue_size{ 400 };
+
     int bearing_count { 0 };
     int azimuth_samples { 0 };
     int fps{ 0 };

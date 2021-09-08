@@ -21,7 +21,7 @@ rclcpp::Node{ "camera_subscriber_to_video" }
 {
     using std::placeholders::_1;
 
-    rclcpp::QoS qos_camera_configuration_subscriber(1);
+    rclcpp::QoS qos_camera_configuration_subscriber(camera_configuration_queue_size);
     qos_camera_configuration_subscriber.reliable();
 
     camera_configuration_subscriber =
@@ -30,7 +30,7 @@ rclcpp::Node{ "camera_subscriber_to_video" }
     qos_camera_configuration_subscriber,
     std::bind(&Camera_subscriber_to_video::configuration_data_callback, this, _1));
 
-    rclcpp::QoS qos_camera_image_subscriber(25);
+    rclcpp::QoS qos_camera_image_subscriber(camera_image_queue_size);
     qos_camera_image_subscriber.reliable();
 
     camera_data_subscriber =

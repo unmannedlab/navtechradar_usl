@@ -28,7 +28,7 @@ Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_a
     radar_port = get_parameter("radar_port").as_int();
     camera_url = get_parameter("camera_url").as_string();
 
-    rclcpp::QoS qos_radar_configuration_publisher(1);
+    rclcpp::QoS qos_radar_configuration_publisher(radar_configuration_queue_size);
     qos_radar_configuration_publisher.reliable();
 
     configuration_data_publisher =
@@ -36,7 +36,7 @@ Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_a
     "radar_data/configuration_data",
     qos_radar_configuration_publisher);
 
-    rclcpp::QoS qos_radar_fft_publisher(400);
+    rclcpp::QoS qos_radar_fft_publisher(radar_fft_queue_size);
     qos_radar_fft_publisher.reliable();
 
     fft_data_publisher =
@@ -44,7 +44,7 @@ Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_a
     "radar_data/fft_data",
     qos_radar_fft_publisher);
 
-    rclcpp::QoS qos_camera_configuration_publisher(1);
+    rclcpp::QoS qos_camera_configuration_publisher(camera_configuration_queue_size);
     qos_camera_configuration_publisher.reliable();
 
     camera_configuration_publisher =
@@ -52,7 +52,7 @@ Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_a
     "camera_data/camera_configuration_data",
     qos_camera_configuration_publisher);
 
-    rclcpp::QoS qos_camera_image_publisher(25);
+    rclcpp::QoS qos_camera_image_publisher(camera_image_queue_size);
     qos_camera_image_publisher.reliable();
 
     camera_image_publisher =

@@ -12,6 +12,9 @@ public:
     void camera_image_handler(cv::Mat image, int fps);
 
 private:
+    constexpr static int camera_configuration_queue_size{ 1 };
+    constexpr static int camera_image_queue_size{ 25 };
+
     bool configuration_sent{ false };
 
     rclcpp::Publisher<interfaces::msg::CameraConfigurationMessage>::SharedPtr camera_configuration_publisher{};

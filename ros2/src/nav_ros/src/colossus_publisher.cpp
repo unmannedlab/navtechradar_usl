@@ -22,7 +22,7 @@ Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }
     radar_ip = get_parameter("radar_ip").as_string();
     radar_port = get_parameter("radar_port").as_int();
 
-    rclcpp::QoS qos_radar_configuration_publisher(1);
+    rclcpp::QoS qos_radar_configuration_publisher(radar_configuration_queue_size);
     qos_radar_configuration_publisher.reliable();
 
     configuration_data_publisher =
@@ -30,7 +30,7 @@ Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }
     "radar_data/configuration_data",
     qos_radar_configuration_publisher);
 
-    rclcpp::QoS qos_radar_fft_publisher(400);
+    rclcpp::QoS qos_radar_fft_publisher(radar_fft_queue_size);
     qos_radar_fft_publisher.reliable();
 
     fft_data_publisher =

@@ -17,7 +17,7 @@ Colossus_subscriber_to_video::Colossus_subscriber_to_video() :Node{ "colossus_su
 {
     using std::placeholders::_1;
 
-    rclcpp::QoS qos_radar_configuration_subscriber(1);
+    rclcpp::QoS qos_radar_configuration_subscriber(radar_configuration_queue_size);
     qos_radar_configuration_subscriber.reliable();
 
     configuration_data_subscriber =
@@ -26,7 +26,7 @@ Colossus_subscriber_to_video::Colossus_subscriber_to_video() :Node{ "colossus_su
     qos_radar_configuration_subscriber,
     std::bind(&Colossus_subscriber_to_video::configuration_data_callback, this, _1));
 
-    rclcpp::QoS qos_radar_fft_subscriber(400);
+    rclcpp::QoS qos_radar_fft_subscriber(radar_fft_queue_size);
     qos_radar_fft_subscriber.reliable();
 
     fft_data_subscriber =
