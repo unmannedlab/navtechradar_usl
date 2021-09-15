@@ -110,10 +110,10 @@ namespace Navtech::Colossus_network_protocol {
         std::uint16_t azimuth() const { return ntohs(azi); }
         void azimuth(std::uint16_t val) { azi = htons(val); }
 
-        std::uint32_t ntp_seconds() const { return ntohl(seconds); }
+        std::uint32_t ntp_seconds() const { return seconds; }
         void ntp_seconds(std::uint32_t val) { seconds = htonl(val); }
 
-        std::uint32_t ntp_split_seconds() const { return ntohl(split_seconds); }
+        std::uint32_t ntp_split_seconds() const { return split_seconds; }
         void ntp_split_seconds(std::uint32_t val) { split_seconds = htonl(val); }
 
         std::vector<std::uint8_t> fft_data() const
