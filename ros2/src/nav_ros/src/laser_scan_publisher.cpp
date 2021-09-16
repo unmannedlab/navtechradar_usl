@@ -50,7 +50,7 @@ Laser_scan_publisher::Laser_scan_publisher():Node{ "laser_scan_publisher" }
     qos_laser_scan_publisher);
 }
 
-void Laser_scan_publisher::fft_data_handler(const Fft_data::Pointer& data)
+void Laser_scan_publisher::publish_laser_scan()
 {
     auto message = sensor_msgs::msg::LaserScan();
     message.header = std_msgs::msg::Header();
@@ -63,18 +63,32 @@ void Laser_scan_publisher::fft_data_handler(const Fft_data::Pointer& data)
     message.range_min = 0;
     message.range_max = 0;
     message.ranges.resize(azimuth_samples);
+    //message.ranges = range_values;
     message.intensities.resize(azimuth_samples);
+    //message.intensities = intensity_values;
+    laser_scan_publisher->publish(message);
+}
+
+void Laser_scan_publisher::fft_data_handler(const Fft_data::Pointer& data)
+{
+    auto itr = std::find(data->data.begin(), data->data.end(), power_threshold);
+    auto index = std::distance(data->data.begin(), itr);
+    if (itr == data->data.end())
+        index = std::distance(data->data.begin(), itr-1);
+    float range = 0.175 * index;
+    float intensity = data->data[index];
+    range_values.at(int(data->azimuth / 14)) = range;
+    intensity_values.at(int(data->azimuth / 14)) = intensity;
 
     if (data->azimuth < last_azimuth) {
         rotated_once = true;
+        Laser_scan_publisher::publish_laser_scan();
     }
     last_azimuth = data->azimuth;
 
     if (!rotated_once) {
         return;
     }
-
-    laser_scan_publisher->publish(message);
 }
 
 void Laser_scan_publisher::configuration_data_handler(const Configuration_data::Pointer& data){
@@ -95,7 +109,8 @@ void Laser_scan_publisher::configuration_data_handler(const Configuration_data::
     message.expected_rotation_rate = data->expected_rotation_rate;
     configuration_data_publisher->publish(message);
 
-    radar_client->start_fft_data();
+    range_values.resize(data->azimuth_samples);
+    intensity_values.resize(data->azimuth_samples);
 
     RCLCPP_INFO(Node::get_logger(), "Starting laser scan publisher");
     RCLCPP_INFO(Node::get_logger(), "Start azimuth: %i", start_azimuth);
@@ -103,4 +118,6 @@ void Laser_scan_publisher::configuration_data_handler(const Configuration_data::
     RCLCPP_INFO(Node::get_logger(), "Start bin: %i", start_bin);
     RCLCPP_INFO(Node::get_logger(), "End bin: %i", end_bin);
     RCLCPP_INFO(Node::get_logger(), "Power threshold: %i", power_threshold);
+
+    radar_client->start_fft_data();
 }

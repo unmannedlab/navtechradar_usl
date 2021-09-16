@@ -42,33 +42,12 @@ void Laser_scan_subscriber::configuration_data_callback(const interfaces::msg::C
 
 void Laser_scan_subscriber::laser_scan_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) const
 {
-
     RCLCPP_INFO(Node::get_logger(), "Laser Scan Received");
     time_t epoch = msg->header.stamp.sec;
     RCLCPP_INFO(Node::get_logger(), "Timestamp: %s", asctime(gmtime(&epoch)));
     RCLCPP_INFO(Node::get_logger(), "Start angle: %f", msg->angle_min * (180 / M_PI));
     RCLCPP_INFO(Node::get_logger(), "End angle: %f", msg->angle_max * (180 / M_PI));
     RCLCPP_INFO(Node::get_logger(), "Angle increment: %f", msg->angle_increment * (180 / M_PI));
-
-
-
-    //auto message = sensor_msgs::msg::LaserScan();
-    //message.header = std_msgs::msg::Header();
-    //message.header.stamp = Node::get_clock()->now();
-    //message.angle_min = (M_PI / 180) * ((360 / azimuth_samples) * start_azimuth);
-    //message.angle_max = (M_PI / 180) * ((360 / azimuth_samples) * end_azimuth);
-    //message.angle_increment = (M_PI / 180) * (360 / azimuth_samples);
-    //message.time_increment = 0;
-    //message.scan_time = 0;
-    //message.range_min = 0;
-    //message.range_max = 0;
-    //message.ranges.resize(azimuth_samples);
-    //message.intensities.resize(azimuth_samples);
-
-    //RCLCPP_INFO(Node::get_logger(), "FFT Data Received");
-    //RCLCPP_INFO(Node::get_logger(), "Angle: %f", msg->angle);
-    //RCLCPP_INFO(Node::get_logger(), "Azimuth: %i", msg->azimuth);
-    //RCLCPP_INFO(Node::get_logger(), "Sweep Counter: %i", msg->sweep_counter);
-    //RCLCPP_INFO(Node::get_logger(), "NTP Seconds: : %i", msg->ntp_seconds);
-    //RCLCPP_INFO(Node::get_logger(), "NTP Split Seconds: %i", msg->ntp_split_seconds);
+    RCLCPP_INFO(Node::get_logger(), "Ranges: %i", msg->ranges.size());
+    RCLCPP_INFO(Node::get_logger(), "Intensities: %i", msg->intensities.size());
 }

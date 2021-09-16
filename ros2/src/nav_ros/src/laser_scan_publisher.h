@@ -1,6 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include "radar_client.h"
 #include "sensor_msgs/msg/laser_scan.hpp"
+#include <vector>
 
 class Laser_scan_publisher : public ::rclcpp::Node
 {
@@ -16,8 +17,12 @@ public:
     uint16_t end_bin{ 0 };
     uint16_t power_threshold{ 0 };
 
+    std::vector <float> range_values;
+    std::vector <float> intensity_values;
+
     void fft_data_handler(const Navtech::Fft_data::Pointer& data);
     void configuration_data_handler(const Navtech::Configuration_data::Pointer& data);
+    void publish_laser_scan();
 
 private:
     constexpr static int radar_configuration_queue_size{ 1 };

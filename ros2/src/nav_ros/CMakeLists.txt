@@ -75,6 +75,11 @@ add_executable(laser_scan_subscriber src/laser_scan_subscriber_main.cpp src/lase
 target_link_libraries(laser_scan_subscriber iasdk_static)
 ament_target_dependencies(laser_scan_subscriber rclcpp std_msgs sensor_msgs interfaces)
 
+## Build executable for Laser scan subscriber to video
+add_executable(laser_scan_subscriber_to_video src/laser_scan_subscriber_to_video_main.cpp src/laser_scan_subscriber_to_video.cpp)
+target_link_libraries(laser_scan_subscriber_to_video iasdk_static)
+ament_target_dependencies(laser_scan_subscriber_to_video rclcpp std_msgs sensor_msgs interfaces OpenCV)
+
 ## Install the built executables
 install(TARGETS
   colossus_publisher
@@ -82,6 +87,7 @@ install(TARGETS
   colossus_subscriber_to_video
   laser_scan_publisher
   laser_scan_subscriber
+  laser_scan_subscriber_to_video
   DESTINATION lib/${PROJECT_NAME})
 
 ## Install the package
