@@ -30,13 +30,15 @@ See file LICENSE.txt or go to <https://opensource.org/licenses/MIT> for full lic
 
 ## Requirements
 As above and:
+ROS2 Galactic - CPP and Python bindings
 Python3
-OpenCV 4.5.3
+OpenCV 4.5.3 - CPP and Python bindings
 Numpy 1.17.4
+ffmpeg version 4.2.4-1ubuntu0.1
 
 To use ROS commands, ROS2 must first be sourced using: source /opt/ros/galactic/setup.bash
 Note - this must be done in every new terminal
-Alternatively, make this permanentt by adding to your bash file: echo "source /opt/ros/galactic/setup.bash" >> ~/.bashrc
+Alternatively, make this permanent by adding to your bash file: echo "source /opt/ros/galactic/setup.bash" >> ~/.bashrc
 This will source ROS for every newly opened terminal window
 
 All ROS2 packages must be built and installed before being run
