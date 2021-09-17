@@ -38,6 +38,10 @@ Colossus_subscriber_to_video::Colossus_subscriber_to_video() :Node{ "colossus_su
 
 void Colossus_subscriber_to_video::configuration_data_callback(const interfaces::msg::ConfigurationDataMessage::SharedPtr msg) const
 {
+    if (node->config_data_received) {
+        return;
+    }
+
     RCLCPP_INFO(Node::get_logger(), "Configuration Data recieved");
     RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", msg->azimuth_samples);
     node->azimuth_samples = msg->azimuth_samples;
@@ -55,7 +59,7 @@ void Colossus_subscriber_to_video::configuration_data_callback(const interfaces:
 void Colossus_subscriber_to_video::fft_data_callback(const interfaces::msg::FftDataMessage::SharedPtr msg) const
 {
     if (!node->config_data_received) {
-        RCLCPP_INFO(Node::get_logger(), "No Configuration Data Received");
+        RCLCPP_INFO(Node::get_logger(), "Configuration data not yet received");
         return;
     }
 

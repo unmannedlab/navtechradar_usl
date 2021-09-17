@@ -1,6 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include "radar_client.h"
 #include "sensor_msgs/msg/laser_scan.hpp"
+#include "interfaces/msg/configuration_data_message.hpp"
 #include <vector>
 
 class Laser_scan_publisher : public ::rclcpp::Node
@@ -26,7 +27,7 @@ public:
 
 private:
     constexpr static int radar_configuration_queue_size{ 1 };
-    constexpr static int radar_laser_scan_queue_size{ 400 };
+    constexpr static int radar_laser_scan_queue_size{ 4 };
 
     int azimuth_samples{ 0 };
     float bin_size{ 0 };
@@ -34,6 +35,10 @@ private:
     int expected_rotation_rate{ 0 };
     int last_azimuth{ 0 };
     bool rotated_once{ false };
+    int rotation_count{ 0 };
+    int config_publish_count{ 4 };
+
+    interfaces::msg::ConfigurationDataMessage config_message = interfaces::msg::ConfigurationDataMessage();
 
     rclcpp::Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher{};
     rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr laser_scan_publisher{};

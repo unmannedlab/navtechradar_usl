@@ -94,10 +94,16 @@ void Laser_scan_publisher::fft_data_handler(const Fft_data::Pointer& data)
     }
 
     if (data->azimuth < last_azimuth) {
+        rotation_count++;
         rotated_once = true;
         Laser_scan_publisher::publish_laser_scan();
     }
     last_azimuth = data->azimuth;
+
+    if (rotation_count >= config_publish_count) {
+        configuration_data_publisher->publish(config_message);
+        rotation_count = 0;
+    }
 
     if (!rotated_once) {
         return;
@@ -113,17 +119,16 @@ void Laser_scan_publisher::configuration_data_handler(const Configuration_data::
     RCLCPP_INFO(Node::get_logger(), "Expected Rotation Rate: %i", data->expected_rotation_rate);
     RCLCPP_INFO(Node::get_logger(), "Publishing Configuration Data");
 
-    auto message = interfaces::msg::ConfigurationDataMessage();
     azimuth_samples = data->azimuth_samples;
     bin_size = data->bin_size;
     range_in_bins = data->range_in_bins;
     expected_rotation_rate = data->expected_rotation_rate;
-    message.azimuth_samples = data->azimuth_samples;
-    message.encoder_size = data->encoder_size;
-    message.bin_size = data->bin_size;
-    message.range_in_bins = data->range_in_bins;
-    message.expected_rotation_rate = data->expected_rotation_rate;
-    configuration_data_publisher->publish(message);
+    config_message.azimuth_samples = data->azimuth_samples;
+    config_message.encoder_size = data->encoder_size;
+    config_message.bin_size = data->bin_size;
+    config_message.range_in_bins = data->range_in_bins;
+    config_message.expected_rotation_rate = data->expected_rotation_rate;
+    configuration_data_publisher->publish(config_message);
 
     range_values.resize(end_azimuth - start_azimuth);
     intensity_values.resize(end_azimuth - start_azimuth);

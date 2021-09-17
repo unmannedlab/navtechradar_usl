@@ -7,7 +7,7 @@ public:
 
 private:
     constexpr static int radar_configuration_queue_size{ 1 };
-    constexpr static int radar_laser_scan_queue_size{ 400 };
+    constexpr static int radar_laser_scan_queue_size{ 4 };
 
     bool config_data_received{ false };
     cv::VideoWriter video_writer{};

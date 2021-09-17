@@ -48,6 +48,6 @@ void Laser_scan_subscriber::laser_scan_callback(const sensor_msgs::msg::LaserSca
     RCLCPP_INFO(Node::get_logger(), "Start angle: %f", msg->angle_min * (180 / M_PI));
     RCLCPP_INFO(Node::get_logger(), "End angle: %f", msg->angle_max * (180 / M_PI));
     RCLCPP_INFO(Node::get_logger(), "Angle increment: %f", msg->angle_increment * (180 / M_PI));
-    RCLCPP_INFO(Node::get_logger(), "Ranges: %i", msg->ranges.size());
-    RCLCPP_INFO(Node::get_logger(), "Intensities: %i", msg->intensities.size());
+    RCLCPP_INFO(Node::get_logger(), "Ranges: %li", msg->ranges.size());
+    RCLCPP_INFO(Node::get_logger(), "Intensities: %li", msg->intensities.size());
 }

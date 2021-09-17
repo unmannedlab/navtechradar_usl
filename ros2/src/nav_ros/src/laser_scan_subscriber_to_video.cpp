@@ -38,6 +38,10 @@ Laser_scan_subscriber_to_video::Laser_scan_subscriber_to_video() :Node{ "laser_s
 
 void Laser_scan_subscriber_to_video::configuration_data_callback(const interfaces::msg::ConfigurationDataMessage::SharedPtr msg) const
 {
+    if (node->config_data_received) {
+        return;
+    }
+
     RCLCPP_INFO(Node::get_logger(), "Configuration Data recieved");
     RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", msg->azimuth_samples);
     node->azimuth_samples = msg->azimuth_samples;
@@ -56,7 +60,7 @@ void Laser_scan_subscriber_to_video::configuration_data_callback(const interface
 void Laser_scan_subscriber_to_video::laser_scan_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) const
 {
     if (!node->config_data_received) {
-        RCLCPP_INFO(Node::get_logger(), "No Configuration Data Received");
+        RCLCPP_INFO(Node::get_logger(), "Configuration data not yet received");
         return;
     }
 
@@ -70,16 +74,16 @@ void Laser_scan_subscriber_to_video::laser_scan_callback(const sensor_msgs::msg:
     RCLCPP_INFO(Node::get_logger(), "Range max: %f", msg->range_max);
     RCLCPP_INFO(Node::get_logger(), "Time increment: %f", msg->time_increment);
     RCLCPP_INFO(Node::get_logger(), "Scan time: %f", msg->scan_time);
-    RCLCPP_INFO(Node::get_logger(), "Ranges: %i", msg->ranges.size());
-    RCLCPP_INFO(Node::get_logger(), "Intensities: %i", msg->intensities.size());
+    RCLCPP_INFO(Node::get_logger(), "Ranges: %li", msg->ranges.size());
+    RCLCPP_INFO(Node::get_logger(), "Intensities: %li", msg->intensities.size());
 
     Mat laser_scan_image{ Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar(0, 0) };
-    for (int r = 0; r < msg->ranges.size(); r++){
+    for (int r = 0; r < int(msg->ranges.size()); r++){
         auto index = int(msg->ranges[r] / bin_size);
         auto intensity = int(msg->intensities[r]);
         if (index < azimuth_samples) {
             // Note - these points have been enhanced for visual purposes
-            circle(laser_scan_image, Point(msg->ranges[r], r), 2 ,Scalar(msg->intensities[r], msg->intensities[r], msg->intensities[r]), FILLED, 1);
+            circle(laser_scan_image, Point(msg->ranges[r], r), 2 ,Scalar(intensity, intensity, intensity), FILLED, 1);
         }
     }
 
