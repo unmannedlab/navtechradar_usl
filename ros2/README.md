@@ -31,10 +31,19 @@ See file LICENSE.txt or go to <https://opensource.org/licenses/MIT> for full lic
 ## Requirements
 As above and:
 ROS2 Galactic - CPP and Python bindings
+Installation instructions can be found here: https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Binary.html
+
 Python3
+Python3 is shipped with Linux by default
+
 OpenCV 4.5.3 - CPP and Python bindings
+Installation instructions here: https://www.linuxfromscratch.org/blfs/view/svn/general/opencv.html
+
 Numpy 1.17.4
+Can be installed with the following command: sudo apt install python3-numpy
+
 ffmpeg version 4.2.4-1ubuntu0.1
+Can be installed with the following command: sudo apt install ffmpeg
 
 To use ROS commands, ROS2 must first be sourced using: source /opt/ros/galactic/setup.bash
 Note - this must be done in every new terminal
