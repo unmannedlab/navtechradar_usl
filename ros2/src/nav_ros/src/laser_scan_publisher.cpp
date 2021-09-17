@@ -87,8 +87,11 @@ void Laser_scan_publisher::fft_data_handler(const Fft_data::Pointer& data)
         index = std::distance(data->data.begin(), itr-1);
     float range = bin_size * index;
     float intensity = data->data[index];
-    range_values.at(int(data->angle / (360.0 / azimuth_samples))) = range;
-    intensity_values.at(int(data->angle / (360.0 / azimuth_samples))) = intensity;
+    auto azimuth_index = int(data->angle / (360.0 / azimuth_samples));
+    if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
+        range_values.at(azimuth_index) = range;
+        intensity_values.at(azimuth_index) = intensity;
+    }
 
     if (data->azimuth < last_azimuth) {
         rotated_once = true;
@@ -122,8 +125,8 @@ void Laser_scan_publisher::configuration_data_handler(const Configuration_data::
     message.expected_rotation_rate = data->expected_rotation_rate;
     configuration_data_publisher->publish(message);
 
-    range_values.resize(data->azimuth_samples);
-    intensity_values.resize(data->azimuth_samples);
+    range_values.resize(end_azimuth - start_azimuth);
+    intensity_values.resize(end_azimuth - start_azimuth);
 
     RCLCPP_INFO(Node::get_logger(), "Starting laser scan publisher");
     RCLCPP_INFO(Node::get_logger(), "Start azimuth: %i", start_azimuth);
