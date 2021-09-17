@@ -74,7 +74,7 @@ void Laser_scan_subscriber_to_video::laser_scan_callback(const sensor_msgs::msg:
         auto intensity = int(msg->intensities[r]);
         if (index < azimuth_samples) {
             // Note - these points have been enhanced for visual purposes
-            circle(laser_scan_image, Point(msg->ranges[r], r), 4 ,Scalar(msg->intensities[r], msg->intensities[r], msg->intensities[r]), FILLED, 1);
+            circle(laser_scan_image, Point(msg->ranges[r], r), 2 ,Scalar(msg->intensities[r], msg->intensities[r], msg->intensities[r]), FILLED, 1);
         }
     }
 
