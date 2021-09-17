@@ -2,7 +2,7 @@
   ros__parameters:
     end_azimuth: 399
     end_bin: 2855
-    power_threshold: 50
+    power_threshold: 25
     qos_overrides:
       /parameter_events:
         publisher:

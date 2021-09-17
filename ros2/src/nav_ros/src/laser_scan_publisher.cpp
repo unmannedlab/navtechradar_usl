@@ -63,9 +63,9 @@ void Laser_scan_publisher::publish_laser_scan()
     message.range_min = 0;
     message.range_max = 0;
     message.ranges.resize(azimuth_samples);
-    //message.ranges = range_values;
+    message.ranges = range_values;
     message.intensities.resize(azimuth_samples);
-    //message.intensities = intensity_values;
+    message.intensities = intensity_values;
     laser_scan_publisher->publish(message);
 }
 
