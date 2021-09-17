@@ -59,14 +59,18 @@ void Laser_scan_subscriber_to_video::laser_scan_callback(const sensor_msgs::msg:
         return;
     }
 
-    //RCLCPP_INFO(Node::get_logger(), "Laser Scan Received");
-    //time_t epoch = msg->header.stamp.sec;
-    //RCLCPP_INFO(Node::get_logger(), "Timestamp: %s", asctime(gmtime(&epoch)));
-    //RCLCPP_INFO(Node::get_logger(), "Start angle: %f", msg->angle_min * (180 / M_PI));
-    //RCLCPP_INFO(Node::get_logger(), "End angle: %f", msg->angle_max * (180 / M_PI));
-    //RCLCPP_INFO(Node::get_logger(), "Angle increment: %f", msg->angle_increment * (180 / M_PI));
-    //RCLCPP_INFO(Node::get_logger(), "Ranges: %i", msg->ranges.size());
-    //RCLCPP_INFO(Node::get_logger(), "Intensities: %i", msg->intensities.size());
+    RCLCPP_INFO(Node::get_logger(), "Laser Scan Received");
+    time_t epoch = msg->header.stamp.sec;
+    RCLCPP_INFO(Node::get_logger(), "Timestamp: %s", asctime(gmtime(&epoch)));
+    RCLCPP_INFO(Node::get_logger(), "Start angle: %f", msg->angle_min * (180 / M_PI));
+    RCLCPP_INFO(Node::get_logger(), "End angle: %f", msg->angle_max * (180 / M_PI));
+    RCLCPP_INFO(Node::get_logger(), "Angle increment: %f", msg->angle_increment * (180 / M_PI));
+    RCLCPP_INFO(Node::get_logger(), "Range min: %f", msg->range_min);
+    RCLCPP_INFO(Node::get_logger(), "Range max: %f", msg->range_max);
+    RCLCPP_INFO(Node::get_logger(), "Time increment: %f", msg->time_increment);
+    RCLCPP_INFO(Node::get_logger(), "Scan time: %f", msg->scan_time);
+    RCLCPP_INFO(Node::get_logger(), "Ranges: %i", msg->ranges.size());
+    RCLCPP_INFO(Node::get_logger(), "Intensities: %i", msg->intensities.size());
 
     Mat laser_scan_image{ Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar(0, 0) };
     for (int r = 0; r < msg->ranges.size(); r++){

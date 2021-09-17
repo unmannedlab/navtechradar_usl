@@ -29,6 +29,9 @@ private:
     constexpr static int radar_laser_scan_queue_size{ 400 };
 
     int azimuth_samples{ 0 };
+    float bin_size{ 0 };
+    int range_in_bins{ 0 };
+    int expected_rotation_rate{ 0 };
     int last_azimuth{ 0 };
     bool rotated_once{ false };
 

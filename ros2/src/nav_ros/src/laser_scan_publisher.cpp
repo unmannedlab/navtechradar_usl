@@ -58,10 +58,10 @@ void Laser_scan_publisher::publish_laser_scan()
     message.angle_min = M_PI / 180 * 360 / azimuth_samples * start_azimuth;
     message.angle_max = M_PI / 180 * 360 / azimuth_samples * end_azimuth;
     message.angle_increment = M_PI / 180 * 360 / azimuth_samples;
-    message.time_increment = 0;
-    message.scan_time = 0;
-    message.range_min = 0;
-    message.range_max = 0;
+    message.time_increment = 1.0 / expected_rotation_rate / azimuth_samples;
+    message.scan_time = 1.0 / expected_rotation_rate;
+    message.range_min = 1.0 * bin_size;
+    message.range_max = range_in_bins * bin_size;
     message.ranges.resize(azimuth_samples);
     message.ranges = range_values;
     message.intensities.resize(azimuth_samples);
@@ -69,16 +69,26 @@ void Laser_scan_publisher::publish_laser_scan()
     laser_scan_publisher->publish(message);
 }
 
+struct more_than {
+    more_than(int limit) : _limit(limit) {}
+
+    bool operator()(int val) {
+        return val > _limit;
+    }
+
+    int _limit;
+};
+
 void Laser_scan_publisher::fft_data_handler(const Fft_data::Pointer& data)
 {
-    auto itr = std::find(data->data.begin(), data->data.end(), power_threshold);
+    auto itr = std::find_if(data->data.begin(), data->data.end(), more_than(power_threshold));
     auto index = std::distance(data->data.begin(), itr);
     if (itr == data->data.end())
         index = std::distance(data->data.begin(), itr-1);
-    float range = 0.175 * index;
+    float range = bin_size * index;
     float intensity = data->data[index];
-    range_values.at(int(data->azimuth / 14)) = range;
-    intensity_values.at(int(data->azimuth / 14)) = intensity;
+    range_values.at(int(data->angle / (360.0 / azimuth_samples))) = range;
+    intensity_values.at(int(data->angle / (360.0 / azimuth_samples))) = intensity;
 
     if (data->azimuth < last_azimuth) {
         rotated_once = true;
@@ -102,6 +112,9 @@ void Laser_scan_publisher::configuration_data_handler(const Configuration_data::
 
     auto message = interfaces::msg::ConfigurationDataMessage();
     azimuth_samples = data->azimuth_samples;
+    bin_size = data->bin_size;
+    range_in_bins = data->range_in_bins;
+    expected_rotation_rate = data->expected_rotation_rate;
     message.azimuth_samples = data->azimuth_samples;
     message.encoder_size = data->encoder_size;
     message.bin_size = data->bin_size;
