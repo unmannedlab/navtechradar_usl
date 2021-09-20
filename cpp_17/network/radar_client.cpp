@@ -31,6 +31,12 @@ namespace Navtech {
         fft_data_callback = std::move(fn);
     }
 
+    void Radar_client::set_raw_fft_data_callback(std::function<void(const std::vector<uint8_t>&)> fn)
+    {
+        std::lock_guard lock { callback_mutex };
+        raw_fft_data_callback = std::move(fn);
+    }
+
     void Radar_client::set_navigation_data_callback(std::function<void(const Navigation_data::Pointer&)> fn)
     {
         std::lock_guard lock { callback_mutex };
@@ -42,6 +48,12 @@ namespace Navtech {
     {
         std::lock_guard lock { callback_mutex };
         configuration_data_callback = std::move(fn);
+    }
+
+    void Radar_client::set_raw_configuration_data_callback(std::function<void(const std::vector<uint8_t>&)> fn)
+    {
+        std::lock_guard lock { callback_mutex };
+        raw_configuration_data_callback = std::move(fn);
     }
 
     void Radar_client::set_health_data_callback(std::function<void(const Shared_owner<Colossus::Protobuf::Health>&)> fn)
@@ -201,26 +213,29 @@ namespace Navtech {
         callback_mutex.lock();
         auto configuration_fn = configuration_data_callback;
         callback_mutex.unlock();
-        if (configuration_fn == nullptr) return;
+        if (configuration_fn != nullptr) {
+            auto config                 = msg.view_as<Colossus_network_protocol::Configuration>();
+            auto protobuf_configuration = allocate_shared<Colossus::Protobuf::ConfigurationData>();
+            protobuf_configuration->ParseFromString(config->to_string());
 
-        auto config                 = msg.view_as<Colossus_network_protocol::Configuration>();
-        auto protobuf_configuration = allocate_shared<Colossus::Protobuf::ConfigurationData>();
-        protobuf_configuration->ParseFromString(config->to_string());
+            if (send_radar_data) send_simple_network_message(Colossus_network_protocol::Message::Type::start_fft_data);
 
-        if (send_radar_data) send_simple_network_message(Colossus_network_protocol::Message::Type::start_fft_data);
+            encoder_size                               = config->encoder_size();
+            bin_size                                   = protobuf_configuration->rangeresolutionmetres();
+            auto configuration_data                    = allocate_shared<Configuration_data>();
+            configuration_data->azimuth_samples        = config->azimuth_samples();
+            configuration_data->bin_size               = bin_size;
+            configuration_data->range_in_bins          = config->range_in_bins();
+            configuration_data->encoder_size           = encoder_size;
+            configuration_data->expected_rotation_rate = config->rotation_speed() / 1000;
+            configuration_data->range_gain             = config->range_gain();
+            configuration_data->range_offset           = config->range_offset();
 
-        encoder_size                               = config->encoder_size();
-        bin_size                                   = protobuf_configuration->rangeresolutionmetres();
-        auto configuration_data                    = allocate_shared<Configuration_data>();
-        configuration_data->azimuth_samples        = config->azimuth_samples();
-        configuration_data->bin_size               = bin_size;
-        configuration_data->range_in_bins          = config->range_in_bins();
-        configuration_data->encoder_size           = encoder_size;
-        configuration_data->expected_rotation_rate = config->rotation_speed() / 1000;
-        configuration_data->range_gain             = config->range_gain();
-        configuration_data->range_offset           = config->range_offset();
+            configuration_fn(configuration_data, protobuf_configuration);
+        }
 
-        configuration_fn(configuration_data, protobuf_configuration);
+        if (raw_configuration_data_callback == nullptr) return;
+        raw_configuration_data_callback(msg.relinquish());
     }
 
     void Radar_client::handle_health_message(Colossus_network_protocol::Message& msg)
@@ -242,19 +257,22 @@ namespace Navtech {
         callback_mutex.lock();
         auto fft_data_fn = fft_data_callback;
         callback_mutex.unlock();
-        if (fft_data_fn == nullptr) return;
+        if (fft_data_fn != nullptr) {
+            auto fft_data = msg.view_as<Colossus_network_protocol::Fft_data>();
 
-        auto fft_data = msg.view_as<Colossus_network_protocol::Fft_data>();
+            auto fftData               = allocate_shared<Fft_data>();
+            fftData->azimuth           = fft_data->azimuth();
+            fftData->angle             = (fft_data->azimuth() * 360.0f) / encoder_size;
+            fftData->sweep_counter     = fft_data->sweep_counter();
+            fftData->ntp_seconds       = fft_data->ntp_seconds();
+            fftData->ntp_split_seconds = fft_data->ntp_split_seconds();
+            fftData->data              = fft_data->fft_data();
 
-        auto fftData               = allocate_shared<Fft_data>();
-        fftData->azimuth           = fft_data->azimuth();
-        fftData->angle             = (fft_data->azimuth() * 360.0f) / encoder_size;
-        fftData->sweep_counter     = fft_data->sweep_counter();
-        fftData->ntp_seconds       = fft_data->ntp_seconds();
-        fftData->ntp_split_seconds = fft_data->ntp_split_seconds();
-        fftData->data              = fft_data->fft_data();
+            fft_data_fn(fftData);
+        }
 
-        fft_data_fn(fftData);
+        if (raw_fft_data_callback == nullptr) return;
+        raw_fft_data_callback(msg.relinquish());
     }
 
     void Radar_client::handle_navigation_data_message(Colossus_network_protocol::Message& msg)
