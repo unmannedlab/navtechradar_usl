@@ -24,7 +24,7 @@ private:
     int rotation_count{ 0 };
     int config_publish_count{ 4 };
 
-    interfaces::msg::ConfigurationDataMessage config_message = interfaces::msg::ConfigurationDataMessage();
+    interfaces::msg::ConfigurationDataMessage config_message = interfaces::msg::ConfigurationDataMessage{};
 
     rclcpp::Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher{};
     rclcpp::Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher{};

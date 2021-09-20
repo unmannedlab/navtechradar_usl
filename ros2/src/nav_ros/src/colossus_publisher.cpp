@@ -27,16 +27,16 @@ Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }
 
     configuration_data_publisher =
     Node::create_publisher<interfaces::msg::ConfigurationDataMessage>(
-    "radar_data/configuration_data",
-    qos_radar_configuration_publisher);
+        "radar_data/configuration_data",
+        qos_radar_configuration_publisher);
 
     rclcpp::QoS qos_radar_fft_publisher(radar_fft_queue_size);
     qos_radar_fft_publisher.reliable();
 
     fft_data_publisher =
     Node::create_publisher<interfaces::msg::FftDataMessage>(
-    "radar_data/fft_data",
-    qos_radar_fft_publisher);
+        "radar_data/fft_data",
+        qos_radar_fft_publisher);
 }
 
 void Colossus_publisher::fft_data_handler(const Fft_data::Pointer& data)

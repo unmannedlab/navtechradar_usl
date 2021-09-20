@@ -38,16 +38,16 @@ Laser_scan_publisher::Laser_scan_publisher():Node{ "laser_scan_publisher" }
 
     configuration_data_publisher =
     Node::create_publisher<interfaces::msg::ConfigurationDataMessage>(
-    "radar_data/configuration_data",
-    qos_radar_configuration_publisher);
+        "radar_data/configuration_data",
+        qos_radar_configuration_publisher);
 
     rclcpp::QoS qos_laser_scan_publisher(radar_laser_scan_queue_size);
     qos_laser_scan_publisher.reliable();
 
     laser_scan_publisher =
     Node::create_publisher<sensor_msgs::msg::LaserScan>(
-    "radar_data/laser_scan",
-    qos_laser_scan_publisher);
+        "radar_data/laser_scan",
+        qos_laser_scan_publisher);
 }
 
 void Laser_scan_publisher::publish_laser_scan()
@@ -87,10 +87,10 @@ void Laser_scan_publisher::fft_data_handler(const Fft_data::Pointer& data)
         index = std::distance(data->data.begin(), itr-1);
     float range = bin_size * index;
     float intensity = data->data[index];
-    auto azimuth_index = int(data->angle / (360.0 / azimuth_samples));
+    int azimuth_index = static_cast<int>(data->angle / (360.0 / azimuth_samples));
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
-        range_values.at(azimuth_index) = range;
-        intensity_values.at(azimuth_index) = intensity;
+        range_values[azimuth_index] = range;
+        intensity_values[azimuth_index] = intensity;
     }
 
     if (data->azimuth < last_azimuth) {

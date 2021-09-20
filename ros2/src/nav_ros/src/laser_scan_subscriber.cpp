@@ -16,18 +16,18 @@ Laser_scan_subscriber::Laser_scan_subscriber() : Node{ "laser_scan_subscriber" }
 
     configuration_data_subscriber = 
     Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
-    "radar_data/configuration_data",
-    qos_radar_configuration_subscriber,
-    std::bind(&Laser_scan_subscriber::configuration_data_callback, this, _1));
+        "radar_data/configuration_data",
+        qos_radar_configuration_subscriber,
+        std::bind(&Laser_scan_subscriber::configuration_data_callback, this, _1));
 
     rclcpp::QoS qos_radar_laser_scan_subscriber(radar_laser_scan_queue_size);
     qos_radar_laser_scan_subscriber.reliable();
 
     laser_scan_subscriber =
     Node::create_subscription<sensor_msgs::msg::LaserScan>(
-    "radar_data/laser_scan",
-    qos_radar_laser_scan_subscriber,
-    std::bind(&Laser_scan_subscriber::laser_scan_callback, this, _1));
+        "radar_data/laser_scan",
+        qos_radar_laser_scan_subscriber,
+        std::bind(&Laser_scan_subscriber::laser_scan_callback, this, _1));
 }
 
 void Laser_scan_subscriber::configuration_data_callback(const interfaces::msg::ConfigurationDataMessage::SharedPtr msg) const

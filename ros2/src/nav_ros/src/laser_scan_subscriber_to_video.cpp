@@ -22,18 +22,18 @@ Laser_scan_subscriber_to_video::Laser_scan_subscriber_to_video() :Node{ "laser_s
 
     configuration_data_subscriber =
     Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
-    "radar_data/configuration_data",
-    qos_radar_configuration_subscriber,
-    std::bind(&Laser_scan_subscriber_to_video::configuration_data_callback, this, _1));
+        "radar_data/configuration_data",
+        qos_radar_configuration_subscriber,
+        std::bind(&Laser_scan_subscriber_to_video::configuration_data_callback, this, _1));
 
     rclcpp::QoS qos_radar_laser_scan_subscriber(radar_laser_scan_queue_size);
     qos_radar_laser_scan_subscriber.reliable();
 
     laser_scan_subscriber =
     Node::create_subscription<sensor_msgs::msg::LaserScan>(
-    "radar_data/laser_scan",
-    qos_radar_laser_scan_subscriber,
-    std::bind(&Laser_scan_subscriber_to_video::laser_scan_callback, this, _1));
+        "radar_data/laser_scan",
+        qos_radar_laser_scan_subscriber,
+        std::bind(&Laser_scan_subscriber_to_video::laser_scan_callback, this, _1));
 }
 
 void Laser_scan_subscriber_to_video::configuration_data_callback(const interfaces::msg::ConfigurationDataMessage::SharedPtr msg) const
@@ -78,24 +78,24 @@ void Laser_scan_subscriber_to_video::laser_scan_callback(const sensor_msgs::msg:
     RCLCPP_INFO(Node::get_logger(), "Intensities: %li", msg->intensities.size());
 
     Mat laser_scan_image{ Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar(0, 0) };
-    for (int r = 0; r < int(msg->ranges.size()); r++){
-        auto index = int(msg->ranges[r] / bin_size);
-        auto intensity = int(msg->intensities[r]);
+    for (int r{ 0 }; r < int(msg->ranges.size()); r++) {
+        int index { static_cast<int>(msg->ranges[r] / bin_size )};
+        int intensity { static_cast<int>(msg->intensities[r] )};
         if (index < azimuth_samples) {
             // Note - these points have been enhanced for visual purposes
             circle(laser_scan_image, Point(msg->ranges[r], r), 2 ,Scalar(intensity, intensity, intensity), FILLED, 1);
         }
     }
 
-    Mat recovered_lin_polar_img;
-    Point2f center((float)laser_scan_image.cols / 2, (float)laser_scan_image.rows / 2);
-    double max_radius = min(center.y, center.x);
+    Mat recovered_lin_polar_img{};
+    Point2f center{ (float)laser_scan_image.cols / 2, (float)laser_scan_image.rows / 2 };
+    double max_radius{ min(center.y, center.x )};
     linearPolar(laser_scan_image, recovered_lin_polar_img, center, max_radius, INTER_LINEAR + WARP_FILL_OUTLIERS + WARP_INVERSE_MAP);
-    Mat normalised_image(Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar(0, 0));
+    Mat normalised_image{ Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar{0, 0} };
     normalize(recovered_lin_polar_img, normalised_image, 0, 255, NORM_MINMAX);
-    Mat rotated_image(Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar(0, 0));
+    Mat rotated_image{ Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar{0, 0} };
     rotate(normalised_image, rotated_image, ROTATE_90_COUNTERCLOCKWISE);
-    Mat channels[3] = { blank_image, rotated_image, blank_image };
+    Mat channels[3] { blank_image, rotated_image, blank_image };
     Mat merged_data;
     merge(channels, 3, merged_data);
     node->video_writer.write(merged_data);
