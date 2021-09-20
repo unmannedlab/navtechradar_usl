@@ -26,7 +26,7 @@ Colossus_subscriber::Colossus_subscriber() : Node{ "colossus_subscriber" }
     Node::create_subscription<interfaces::msg::FftDataMessage>(
         "radar_data/fft_data",
         qos_radar_fft_subscriber,
-        td::bind(&Colossus_subscriber::fft_data_callback, this, _1));
+        std::bind(&Colossus_subscriber::fft_data_callback, this, _1));
 }
 
 void Colossus_subscriber::configuration_data_callback(const interfaces::msg::ConfigurationDataMessage::SharedPtr msg) const
