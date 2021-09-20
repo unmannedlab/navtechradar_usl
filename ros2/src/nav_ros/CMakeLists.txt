@@ -50,6 +50,11 @@ add_library(iasdk_protobuf STATIC ${PROTO_SRCS} ${PROTO_HDRS})
 
 target_link_libraries(iasdk_protobuf ${PROTOBUF_LIBRARY})
 
+## Build executable for Colossus test tool
+add_executable(colossus_test_tool src/colossus_test_tool_main.cpp src/colossus_test_tool.cpp)
+target_link_libraries(colossus_test_tool iasdk_static iasdk_protobuf)
+ament_target_dependencies(colossus_test_tool rclcpp std_msgs interfaces)
+
 ## Build executable for Colossus publisher
 add_executable(colossus_publisher src/colossus_publisher_main.cpp src/colossus_publisher.cpp)
 target_link_libraries(colossus_publisher iasdk_static iasdk_protobuf)
@@ -82,6 +87,7 @@ ament_target_dependencies(laser_scan_subscriber_to_video rclcpp std_msgs sensor_
 
 ## Install the built executables
 install(TARGETS
+  colossus_test_tool
   colossus_publisher
   colossus_subscriber
   colossus_subscriber_to_video
