@@ -79,10 +79,12 @@ namespace Navtech {
         void set_navigation_threshold(std::uint16_t threshold);
         void set_navigation_gain_and_offset(float gain, float offset);
         void set_fft_data_callback(std::function<void(const Fft_data::Pointer&)> fn = nullptr);
+        void set_raw_fft_data_callback(std::function<void(const std::vector<uint8_t>&)> fn = nullptr);
         void set_navigation_data_callback(std::function<void(const Navigation_data::Pointer&)> fn = nullptr);
         void set_configuration_data_callback(
             std::function<void(const Configuration_data::Pointer&, const Configuration_data::ProtobufPointer&)> fn =
                 nullptr);
+        void set_raw_configuration_data_callback(std::function<void(const std::vector<uint8_t>&)> fn = nullptr);
         void set_health_data_callback(
             std::function<void(const Shared_owner<Colossus::Protobuf::Health>&)> fn = nullptr);
 
@@ -91,10 +93,12 @@ namespace Navtech {
         std::atomic_bool running;
         std::atomic_bool send_radar_data;
         std::mutex callback_mutex;
+        std::function<void(const std::vector<uint8_t>&)> raw_fft_data_callback        = nullptr;
         std::function<void(const Fft_data::Pointer&)> fft_data_callback               = nullptr;
         std::function<void(const Navigation_data::Pointer&)> navigation_data_callback = nullptr;
         std::function<void(const Configuration_data::Pointer&, const Configuration_data::ProtobufPointer&)>
             configuration_data_callback                                                           = nullptr;
+        std::function<void(const std::vector<uint8_t>&)> raw_configuration_data_callback          = nullptr;
         std::function<void(const Shared_owner<Colossus::Protobuf::Health>&)> health_data_callback = nullptr;
 
         std::uint16_t encoder_size = 0;
