@@ -17,6 +17,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(interfaces REQUIRED) 
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(OpenCV 4.5.3 REQUIRED)
 find_package(Protobuf REQUIRED)
 
@@ -64,11 +65,29 @@ add_executable(colossus_subscriber_to_video src/colossus_subscriber_to_video_mai
 target_link_libraries(colossus_subscriber_to_video iasdk_static)
 ament_target_dependencies(colossus_subscriber_to_video rclcpp std_msgs interfaces OpenCV)
 
+## Build executable for laser scan publisher
+add_executable(laser_scan_publisher src/laser_scan_publisher_main.cpp src/laser_scan_publisher.cpp)
+target_link_libraries(laser_scan_publisher iasdk_static iasdk_protobuf)
+ament_target_dependencies(laser_scan_publisher rclcpp std_msgs sensor_msgs interfaces)
+
+## Build executable for Laser scan subscriber
+add_executable(laser_scan_subscriber src/laser_scan_subscriber_main.cpp src/laser_scan_subscriber.cpp)
+target_link_libraries(laser_scan_subscriber iasdk_static)
+ament_target_dependencies(laser_scan_subscriber rclcpp std_msgs sensor_msgs interfaces)
+
+## Build executable for Laser scan subscriber to video
+add_executable(laser_scan_subscriber_to_video src/laser_scan_subscriber_to_video_main.cpp src/laser_scan_subscriber_to_video.cpp)
+target_link_libraries(laser_scan_subscriber_to_video iasdk_static)
+ament_target_dependencies(laser_scan_subscriber_to_video rclcpp std_msgs sensor_msgs interfaces OpenCV)
+
 ## Install the built executables
 install(TARGETS
   colossus_publisher
   colossus_subscriber
   colossus_subscriber_to_video
+  laser_scan_publisher
+  laser_scan_subscriber
+  laser_scan_subscriber_to_video
   DESTINATION lib/${PROJECT_NAME})
 
 ## Install the package

@@ -32,6 +32,10 @@ private:
     int last_azimuth{ 0 };
     bool rotated_once{ false };
     bool configuration_sent{ false };
+    int rotation_count{ 0 };
+    int config_publish_count{ 4 };
+
+    interfaces::msg::ConfigurationDataMessage config_message = interfaces::msg::ConfigurationDataMessage();
 
     rclcpp::Publisher<interfaces::msg::CameraConfigurationMessage>::SharedPtr camera_configuration_publisher{};
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr camera_image_publisher{};

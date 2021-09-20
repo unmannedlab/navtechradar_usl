@@ -27,16 +27,16 @@ Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }
 
     configuration_data_publisher =
     Node::create_publisher<interfaces::msg::ConfigurationDataMessage>(
-    "radar_data/configuration_data",
-    qos_radar_configuration_publisher);
+        "radar_data/configuration_data",
+        qos_radar_configuration_publisher);
 
     rclcpp::QoS qos_radar_fft_publisher(radar_fft_queue_size);
     qos_radar_fft_publisher.reliable();
 
     fft_data_publisher =
     Node::create_publisher<interfaces::msg::FftDataMessage>(
-    "radar_data/fft_data",
-    qos_radar_fft_publisher);
+        "radar_data/fft_data",
+        qos_radar_fft_publisher);
 }
 
 void Colossus_publisher::fft_data_handler(const Fft_data::Pointer& data)
@@ -59,9 +59,15 @@ void Colossus_publisher::fft_data_handler(const Fft_data::Pointer& data)
     //RCLCPP_INFO(Node::get_logger(), "Data 4: %u", static_cast<int>(data->Data[4]));
 
     if (data->azimuth < last_azimuth) {
+        rotation_count++;
         rotated_once = true;
     }
     last_azimuth = data->azimuth;
+
+    if (rotation_count >= config_publish_count) {
+        configuration_data_publisher->publish(config_message);
+        rotation_count = 0;
+    }
 
     if (!rotated_once) {
         return;
@@ -79,14 +85,13 @@ void Colossus_publisher::configuration_data_handler(const Configuration_data::Po
     RCLCPP_INFO(Node::get_logger(), "Expected Rotation Rate: %i", data->expected_rotation_rate);
     RCLCPP_INFO(Node::get_logger(), "Publishing Configuration Data");
 
-    auto message = interfaces::msg::ConfigurationDataMessage();
     azimuth_samples = data->azimuth_samples;
-    message.azimuth_samples = data->azimuth_samples;
-    message.encoder_size = data->encoder_size;
-    message.bin_size = data->bin_size;
-    message.range_in_bins = data->range_in_bins;
-    message.expected_rotation_rate = data->expected_rotation_rate;
-    configuration_data_publisher->publish(message);
+    config_message.azimuth_samples = data->azimuth_samples;
+    config_message.encoder_size = data->encoder_size;
+    config_message.bin_size = data->bin_size;
+    config_message.range_in_bins = data->range_in_bins;
+    config_message.expected_rotation_rate = data->expected_rotation_rate;
+    configuration_data_publisher->publish(config_message);
 
     radar_client->start_fft_data();
 }

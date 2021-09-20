@@ -22,22 +22,26 @@ Colossus_subscriber_to_video::Colossus_subscriber_to_video() :Node{ "colossus_su
 
     configuration_data_subscriber =
     Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
-    "radar_data/configuration_data",
-    qos_radar_configuration_subscriber,
-    std::bind(&Colossus_subscriber_to_video::configuration_data_callback, this, _1));
+        "radar_data/configuration_data",
+        qos_radar_configuration_subscriber,
+        std::bind(&Colossus_subscriber_to_video::configuration_data_callback, this, _1));
 
     rclcpp::QoS qos_radar_fft_subscriber(radar_fft_queue_size);
     qos_radar_fft_subscriber.reliable();
 
     fft_data_subscriber =
     Node::create_subscription<interfaces::msg::FftDataMessage>(
-    "radar_data/fft_data",
-    qos_radar_fft_subscriber,
-    std::bind(&Colossus_subscriber_to_video::fft_data_callback, this, _1));
+        "radar_data/fft_data",
+        qos_radar_fft_subscriber,
+        std::bind(&Colossus_subscriber_to_video::fft_data_callback, this, _1));
 }
 
 void Colossus_subscriber_to_video::configuration_data_callback(const interfaces::msg::ConfigurationDataMessage::SharedPtr msg) const
 {
+    if (node->config_data_received) {
+        return;
+    }
+
     RCLCPP_INFO(Node::get_logger(), "Configuration Data recieved");
     RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", msg->azimuth_samples);
     node->azimuth_samples = msg->azimuth_samples;
@@ -55,7 +59,7 @@ void Colossus_subscriber_to_video::configuration_data_callback(const interfaces:
 void Colossus_subscriber_to_video::fft_data_callback(const interfaces::msg::FftDataMessage::SharedPtr msg) const
 {
     if (!node->config_data_received) {
-        RCLCPP_INFO(Node::get_logger(), "No Configuration Data Received");
+        RCLCPP_INFO(Node::get_logger(), "Configuration data not yet received");
         return;
     }
 
@@ -63,7 +67,7 @@ void Colossus_subscriber_to_video::fft_data_callback(const interfaces::msg::FftD
 
     int max_index = min((int)msg->data_length, (int)node->azimuth_samples);
     int matrix_max_index = radar_image.rows * radar_image.cols * radar_image.channels();
-    for (int i = 0; i < max_index; i++) {
+    for (int i{ 0 }; i < max_index; i++) {
         int index = i * 1 + node->current_bearing * radar_image.step + 1;
         if (index < matrix_max_index) {
             image_ptr[index] = static_cast<int>(msg->data[i]);
@@ -72,14 +76,14 @@ void Colossus_subscriber_to_video::fft_data_callback(const interfaces::msg::FftD
 
     if (msg->azimuth < node->last_azimuth) {
         Mat recovered_lin_polar_img;
-        Point2f center((float)radar_image.cols / 2, (float)radar_image.rows / 2);
+        Point2f center{ (float)radar_image.cols / 2, (float)radar_image.rows / 2 };
         double max_radius = min(center.y, center.x);
         linearPolar(radar_image, recovered_lin_polar_img, center, max_radius, INTER_LINEAR + WARP_FILL_OUTLIERS + WARP_INVERSE_MAP);
-        Mat normalised_image(Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar(0, 0));
+        Mat normalised_image(Size{ azimuth_samples, azimuth_samples }, CV_8UC1, Scalar{ 0, 0 });
         normalize(recovered_lin_polar_img, normalised_image, 0, 255, NORM_MINMAX);
-        Mat rotated_image(Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar(0, 0));
+        Mat rotated_image(Size{ azimuth_samples, azimuth_samples }, CV_8UC1, Scalar{ 0, 0 });
         rotate(normalised_image, rotated_image, ROTATE_90_COUNTERCLOCKWISE);
-        Mat channels[3] = { blank_image, rotated_image, blank_image };
+        Mat channels[3] { blank_image, rotated_image, blank_image };
         Mat merged_data;
         merge(channels, 3, merged_data);
         node->video_writer.write(merged_data);

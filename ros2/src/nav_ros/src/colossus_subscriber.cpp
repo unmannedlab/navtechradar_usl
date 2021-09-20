@@ -15,18 +15,18 @@ Colossus_subscriber::Colossus_subscriber() : Node{ "colossus_subscriber" }
 
     configuration_data_subscriber = 
     Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
-    "radar_data/configuration_data",
-    qos_radar_configuration_subscriber,
-    std::bind(&Colossus_subscriber::configuration_data_callback, this, _1));
+        "radar_data/configuration_data",
+        qos_radar_configuration_subscriber,
+        std::bind(&Colossus_subscriber::configuration_data_callback, this, _1));
 
     rclcpp::QoS qos_radar_fft_subscriber(radar_fft_queue_size);
     qos_radar_fft_subscriber.reliable();
 
     fft_data_subscriber =
     Node::create_subscription<interfaces::msg::FftDataMessage>(
-    "radar_data/fft_data",
-    qos_radar_fft_subscriber,
-    std::bind(&Colossus_subscriber::fft_data_callback, this, _1));
+        "radar_data/fft_data",
+        qos_radar_fft_subscriber,
+        td::bind(&Colossus_subscriber::fft_data_callback, this, _1));
 }
 
 void Colossus_subscriber::configuration_data_callback(const interfaces::msg::ConfigurationDataMessage::SharedPtr msg) const

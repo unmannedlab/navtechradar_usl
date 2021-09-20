@@ -53,7 +53,7 @@ void Camera_publisher::camera_image_handler(Mat image, int fps)
 
     //RCLCPP_INFO(Node::get_logger(), "Image buffer size: %li", buffer_length);
 
-    if (!configuration_sent) {
+    if ((!configuration_sent) || (frame_count >= config_publish_count)) {
         auto config_message = interfaces::msg::CameraConfigurationMessage();
         config_message.width = image.cols;
         config_message.height = image.rows;
@@ -61,7 +61,10 @@ void Camera_publisher::camera_image_handler(Mat image, int fps)
         config_message.fps = fps;
         camera_configuration_publisher->publish(config_message);
         configuration_sent = true;
+        frame_count = 0;
     }
+
+    frame_count++;
 
     auto message = sensor_msgs::msg::Image();
     message.header = std_msgs::msg::Header();

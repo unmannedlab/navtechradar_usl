@@ -42,6 +42,10 @@ rclcpp::Node{ "camera_subscriber_to_video" }
 
 void Camera_subscriber_to_video::configuration_data_callback(const interfaces::msg::CameraConfigurationMessage::SharedPtr data) const
 {
+    if (config_data_received) {
+        return;
+    }
+
     RCLCPP_INFO(Node::get_logger(), "Camera Configuration received");
     RCLCPP_INFO(Node::get_logger(), "Image Width: %i", data->width);
     RCLCPP_INFO(Node::get_logger(), "Image Height: %i", data->height);
@@ -55,7 +59,7 @@ void Camera_subscriber_to_video::configuration_data_callback(const interfaces::m
 void Camera_subscriber_to_video::camera_image_callback(const sensor_msgs::msg::Image::SharedPtr data) const
 {
     if (!config_data_received) {
-        RCLCPP_INFO(Node::get_logger(), "No Camera Configuration received");
+        RCLCPP_INFO(Node::get_logger(), "Camera configuration data not yet received");
         return;
     }
 

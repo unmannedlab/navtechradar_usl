@@ -16,6 +16,8 @@ private:
     constexpr static int camera_image_queue_size{ 25 };
 
     bool configuration_sent{ false };
+    int frame_count{ 0 };
+    int config_publish_count{ 4 };
 
     rclcpp::Publisher<interfaces::msg::CameraConfigurationMessage>::SharedPtr camera_configuration_publisher{};
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr camera_image_publisher{};

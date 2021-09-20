@@ -57,6 +57,10 @@ Colossus_and_camera_subscriber_to_video::Colossus_and_camera_subscriber_to_video
 
 void Colossus_and_camera_subscriber_to_video::configuration_data_callback(const interfaces::msg::ConfigurationDataMessage::SharedPtr msg) const
 {
+    if (node->config_data_received) {
+        return;
+    }
+
     RCLCPP_INFO(Node::get_logger(), "Configuration Data recieved");
     RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", msg->azimuth_samples);
     node->azimuth_samples = msg->azimuth_samples;
@@ -75,7 +79,7 @@ void Colossus_and_camera_subscriber_to_video::configuration_data_callback(const 
 void Colossus_and_camera_subscriber_to_video::fft_data_callback(const interfaces::msg::FftDataMessage::SharedPtr msg) const
 {
     if (!node->config_data_received) {
-        RCLCPP_INFO(Node::get_logger(), "No Configuration Data Received");
+        RCLCPP_INFO(Node::get_logger(), "Radar configuration data not yet received");
         return;
     }
 
@@ -119,6 +123,10 @@ void Colossus_and_camera_subscriber_to_video::fft_data_callback(const interfaces
 
 void Colossus_and_camera_subscriber_to_video::camera_configuration_data_callback(const interfaces::msg::CameraConfigurationMessage::SharedPtr data) const
 {
+    if (config_data_received) {
+        return;
+    }
+
     RCLCPP_INFO(Node::get_logger(), "Camera Configuration received");
     RCLCPP_INFO(Node::get_logger(), "Image Width: %i", data->width);
     RCLCPP_INFO(Node::get_logger(), "Image Height: %i", data->height);
@@ -132,7 +140,7 @@ void Colossus_and_camera_subscriber_to_video::camera_configuration_data_callback
 void Colossus_and_camera_subscriber_to_video::camera_image_callback(const sensor_msgs::msg::Image::SharedPtr data) const
 {
     if (!node->camera_config_data_received) {
-        RCLCPP_INFO(Node::get_logger(), "No Camera Configuration received");
+        RCLCPP_INFO(Node::get_logger(), "Camera configuration data not yet received");
         return;
     }
 
