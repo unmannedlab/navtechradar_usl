@@ -87,10 +87,16 @@ void Colossus_and_camera_publisher::fft_data_handler(const Fft_data::Pointer& da
 
     // On every radar rotation, send out the latest camera frame
     if (data->azimuth < last_azimuth) {
+        rotation_count++;
         rotated_once = true;
         camera_image_publisher->publish(camera_message);
     }
     last_azimuth = data->azimuth;
+
+    if (rotation_count >= config_publish_count) {
+        configuration_data_publisher->publish(config_message);
+        rotation_count = 0;
+    }
 
     if (!rotated_once) {
         return;
@@ -110,15 +116,14 @@ void Colossus_and_camera_publisher::configuration_data_handler(const Configurati
     RCLCPP_INFO(Node::get_logger(), "Expected Rotation Rate: %i", data->expected_rotation_rate);
     RCLCPP_INFO(Node::get_logger(), "Publishing Configuration Data");
 
-    auto message = interfaces::msg::ConfigurationDataMessage();
     azimuth_samples = data->azimuth_samples;
-    message.azimuth_samples = data->azimuth_samples;
-    message.encoder_size = data->encoder_size;
-    message.bin_size = data->bin_size;
-    message.range_in_bins = data->range_in_bins;
-    message.expected_rotation_rate = data->expected_rotation_rate;
+    config_message.azimuth_samples = data->azimuth_samples;
+    config_message.encoder_size = data->encoder_size;
+    config_message.bin_size = data->bin_size;
+    config_message.range_in_bins = data->range_in_bins;
+    config_message.expected_rotation_rate = data->expected_rotation_rate;
     fps = data->expected_rotation_rate;
-    configuration_data_publisher->publish(message);
+    configuration_data_publisher->publish(config_message);
 
     radar_client->start_fft_data();
 }

@@ -28,6 +28,10 @@ private:
     uint8_t* image_ptr = { (uint8_t*)radar_image.data };
     int last_azimuth{ 0 };
     bool first_frame{ true };
+    int rotation_count{ 0 };
+    int config_publish_count{ 4 };
+
+    interfaces::msg::ConfigurationDataMessage config_message = interfaces::msg::ConfigurationDataMessage();
 
     void configuration_data_callback(const interfaces::msg::ConfigurationDataMessage::SharedPtr msg) const;
     void fft_data_callback(const interfaces::msg::FftDataMessage::SharedPtr msg) const;
