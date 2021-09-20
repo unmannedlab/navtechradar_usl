@@ -7,6 +7,11 @@ class Colossus_test_tool : public ::rclcpp::Node
 public:
     Colossus_test_tool();
 
+    const int sweep_counter_increment{1};
+    const int azimuth_start_index{ 1 };
+    const int azimuth_increment{14};
+    const int azimuth_limit{ 5587 };
+
     std::shared_ptr<Navtech::Radar_client> radar_client{};
     std::string radar_ip{ "" };
     uint16_t radar_port{ 0 };

@@ -52,15 +52,15 @@ void Colossus_test_tool::fft_data_handler(const Fft_data::Pointer& data)
     message.data = data->data;
     message.data_length = data->data.size();
 
-    if (data->sweep_counter != previous_sweep_counter + 1) {
-        if ((previous_sweep_counter != 65535) && (data->sweep_counter != 0)){
+    if (data->sweep_counter != previous_sweep_counter + sweep_counter_increment) {
+        if ((previous_sweep_counter != numeric_limits<uint16_t>::max()) && (data->sweep_counter != 0)){
             RCLCPP_INFO(Node::get_logger(), "Sweep Counter increment incorrect: %i - %i", previous_sweep_counter, data->sweep_counter);
         }
     }
     previous_sweep_counter = data->sweep_counter;
 
-    if (data->azimuth != previous_azimuth + 14) {
-        if ((previous_azimuth != 5587) && (data->azimuth != 1)) {
+    if (data->azimuth != previous_azimuth + azimuth_increment) {
+        if ((previous_azimuth != azimuth_limit) && (data->azimuth != azimuth_start_index)) {
             RCLCPP_INFO(Node::get_logger(), "Azimuth increment incorrect: %i - %i", previous_azimuth, data->azimuth);
         }
     }
