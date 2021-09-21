@@ -1,8 +1,6 @@
-#include <rclcpp/rclcpp.hpp>
 #include "radar_client.h"
-#include "interfaces/msg/configuration_data_message.hpp"
 
-class Colossus_test_tool : public ::rclcpp::Node
+class Colossus_test_tool
 {
 public:
     Colossus_test_tool();
@@ -31,9 +29,4 @@ private:
     bool rotated_once{ false };
     int rotation_count{ 0 };
     int config_publish_count{ 4 };
-
-    interfaces::msg::ConfigurationDataMessage config_message = interfaces::msg::ConfigurationDataMessage{};
-
-    rclcpp::Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher{};
-    rclcpp::Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher{};
 };
