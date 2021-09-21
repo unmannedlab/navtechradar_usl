@@ -54,21 +54,16 @@ void Colossus_test_tool::fft_data_handler(const Fft_data::Pointer& data)
 
     if (data->sweep_counter != previous_sweep_counter + sweep_counter_increment) {
         if ((previous_sweep_counter != numeric_limits<uint16_t>::max()) && (data->sweep_counter != 0)){
-            RCLCPP_INFO(Node::get_logger(), "Sweep Counter increment incorrect: %i - %i", previous_sweep_counter, data->sweep_counter);
+            fft_data_loss_count++;
         }
     }
     previous_sweep_counter = data->sweep_counter;
 
-    if (data->azimuth != previous_azimuth + azimuth_increment) {
-        if ((previous_azimuth != azimuth_limit) && (data->azimuth != azimuth_start_index)) {
-            RCLCPP_INFO(Node::get_logger(), "Azimuth increment incorrect: %i - %i", previous_azimuth, data->azimuth);
-        }
-    }
-    previous_azimuth = data->azimuth;
-
     if (data->azimuth < last_azimuth) {
         rotation_count++;
         rotated_once = true;
+        RCLCPP_INFO(Node::get_logger(), "FFT data loss per rotation: %i", fft_data_loss_count);
+        fft_data_loss_count = 0;
     }
     last_azimuth = data->azimuth;
 

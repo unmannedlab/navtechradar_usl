@@ -17,7 +17,7 @@ public:
     uint16_t radar_port{ 0 };
 
     uint16_t previous_sweep_counter{ 0 };
-    uint16_t previous_azimuth{ 0 };
+    uint16_t fft_data_loss_count{ 0 };
 
     void fft_data_handler(const Navtech::Fft_data::Pointer& data);
     void configuration_data_handler(const Navtech::Configuration_data::Pointer& data);
