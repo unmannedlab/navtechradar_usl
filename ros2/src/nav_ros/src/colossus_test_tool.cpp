@@ -17,6 +17,7 @@ Colossus_test_tool::Colossus_test_tool()
 
 void Colossus_test_tool::fft_data_handler(const Fft_data::Pointer& data)
 {
+    azimuth_count++;
     if (data->sweep_counter != previous_sweep_counter + sweep_counter_increment) {
         if ((previous_sweep_counter != numeric_limits<uint16_t>::max()) && (data->sweep_counter != 0)){
             fft_data_loss_count++;
@@ -27,8 +28,10 @@ void Colossus_test_tool::fft_data_handler(const Fft_data::Pointer& data)
     if (data->azimuth < last_azimuth) {
         rotation_count++;
         rotated_once = true;
+        cout << "Azimuth count per rotation: " << azimuth_count << endl;
         cout << "FFT data loss per rotation: " << fft_data_loss_count << endl;
         fft_data_loss_count = 0;
+        azimuth_count = 0;
     }
     last_azimuth = data->azimuth;
 
