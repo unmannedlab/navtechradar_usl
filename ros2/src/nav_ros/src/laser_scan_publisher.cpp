@@ -55,6 +55,7 @@ void Laser_scan_publisher::publish_laser_scan()
     auto message = sensor_msgs::msg::LaserScan();
     message.header = std_msgs::msg::Header();
     message.header.stamp = Node::get_clock()->now();
+    message.header.frame_id = "laser_frame";
     message.angle_min = M_PI / 180 * 360 / azimuth_samples * start_azimuth;
     message.angle_max = M_PI / 180 * 360 / azimuth_samples * end_azimuth;
     message.angle_increment = M_PI / 180 * 360 / azimuth_samples;
