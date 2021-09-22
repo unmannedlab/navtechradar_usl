@@ -9,3 +9,9 @@ ros2 bag play recordings/record_test/record_test_0.db3
 
 // Run a tranform publisher to visulaise laser_scan data
 ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 1 map laser_frame
+
+// Get a parameter
+ros2 param get laser_scan_publisher power_threshold
+
+// Set a parameter
+ros2 param set laser_scan_publisher power_threshold 0
