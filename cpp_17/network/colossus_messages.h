@@ -21,31 +21,31 @@ namespace {
         std::uint32_t i;
     };
 
-    inline std::uint32_t to_host_endian(float in)
+    inline std::uint32_t to_uint32_host(float in)
     {
         float_uint32_map value {};
         value.f = in;
         return value.i;
     }
 
-    inline std::uint32_t to_network_endian(float in)
+    inline std::uint32_t to_uint32_network(float in)
     {
         float_uint32_map value {};
         value.f = in;
         return htonl(value.i);
     }
 
-    inline float from_host_endian(std::uint32_t in)
+    inline float from_uint32_host(std::uint32_t in)
     {
         float_uint32_map value {};
         value.i = in;
         return value.f;
     }
 
-    inline std::uint32_t from_network_endian(std::uint32_t in)
+    inline float from_uint32_network(std::uint32_t in)
     {
         float_uint32_map value {};
-        value.i = in;
+        value.i = ntohl(in);
         return value.f;
     }
 } // namespace
@@ -81,41 +81,11 @@ namespace Navtech::Colossus_network_protocol {
         std::uint16_t packet_rate() const { return ntohs(pckt_rate); }
         void packet_rate(std::uint16_t val) { pckt_rate = htons(val); }
 
-        float range_gain() const
-        {
-            return to_host_endian(gain);
+        float range_gain() const { return from_uint32_network(gain); }
+        void range_gain(float val) { gain = to_uint32_network(val); }
 
-            // float_uint32_map float_value { 0 };
-            // float_value.i = ntohl(gain);
-            // return float_value.f;
-        }
-
-        void range_gain(float val)
-        {
-            gain = to_network_endian(val);
-
-            // float_uint32_map float_value { 0 };
-            // float_value.f = val;
-            // gain          = htonl(float_value.i);
-        }
-
-        float range_offset() const
-        {
-            return to_host_endian(offset);
-
-            // float_uint32_map float_value { 0 };
-            // float_value.i = ntohl(offset);
-            // return float_value.f;
-        }
-
-        void range_offset(float val)
-        {
-            offset = to_network_endian(val);
-
-            // float_uint32_map float_value { 0 };
-            // float_value.f = val;
-            // offset        = htonl(float_value.i);
-        }
+        float range_offset() const { return from_uint32_network(offset); }
+        void range_offset(float val) { offset = to_uint32_network(val); }
 
         // If your message has a header you MUST provide this function
         //
@@ -220,14 +190,9 @@ namespace Navtech::Colossus_network_protocol {
 #pragma pack(1)
     class Navigation_config : public Message_base::Header_only<Navigation_config> {
     public:
-        std::size_t header_size() const 
-        { 
-            return (
-                sizeof(operating_bins)  +
-                sizeof(min_bin)         +
-                sizeof(threshold)       +
-                sizeof(max_peaks)
-            );
+        std::size_t header_size() const
+        {
+            return (sizeof(operating_bins) + sizeof(min_bin) + sizeof(threshold) + sizeof(max_peaks));
         }
 
         void bins_to_operate_on(std::uint16_t bins) { operating_bins = htons(bins); }
@@ -236,8 +201,8 @@ namespace Navtech::Colossus_network_protocol {
         void min_bin_to_operate_on(std::uint16_t min) { min_bin = htons(min); }
         std::uint16_t min_bin_to_operate_on() const { return ntohs(min_bin); }
 
-        void navigation_threshold(float level) { threshold = to_network_endian(level); }
-        float navigation_threshold() const { return from_network_endian(threshold); }
+        void navigation_threshold(float level) { threshold = to_uint32_network(level); }
+        float navigation_threshold() const { return from_uint32_network(threshold); }
 
         void max_peaks_per_azimuth(std::uint32_t peaks) { max_peaks = htons(peaks); }
         std::uint32_t max_peaks_per_azimuth() const { return ntohs(max_peaks); }
