@@ -9,7 +9,7 @@
 
 #include "common.h"
 #include "network/radar_client.h"
-#include "utility/Pointer_types.h"
+#include "utility/pointer_types.h"
 
 #ifdef _WIN32
 #include <WinSock2.h>
@@ -116,7 +116,7 @@ int main(int argc, char** argv)
 
     radar_client->start();
 
-    radar_client->request_navigation_configuration();
+    // radar_client->request_navigation_configuration();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(30'000));
 

@@ -94,39 +94,39 @@ namespace Navtech {
     void Radar_client::start_fft_data()
     {
         Log("Radar_client - Start FFT Data");
-        send_simple_network_message(Colossus_network_protocol::Message::Type::start_fft_data);
+        send_simple_network_message(Network::Colossus_protocol::Message::Type::start_fft_data);
         send_radar_data = true;
     }
 
     void Radar_client::stop_fft_data()
     {
         Log("Radar_client - Stop FFT Data");
-        send_simple_network_message(Colossus_network_protocol::Message::Type::stop_fft_data);
+        send_simple_network_message(Network::Colossus_protocol::Message::Type::stop_fft_data);
         send_radar_data = false;
     }
 
     void Radar_client::start_health_data()
     {
         Log("Radar_client - Start Health Data");
-        send_simple_network_message(Colossus_network_protocol::Message::Type::start_health_msgs);
+        send_simple_network_message(Network::Colossus_protocol::Message::Type::start_health_msgs);
     }
 
     void Radar_client::stop_health_data()
     {
         Log("Radar_client - Stop Health Data");
-        send_simple_network_message(Colossus_network_protocol::Message::Type::stop_health_msgs);
+        send_simple_network_message(Network::Colossus_protocol::Message::Type::stop_health_msgs);
     }
 
     void Radar_client::Start_navigation_data()
     {
         Log("Radar_client - Start Navigation Data");
-        send_simple_network_message(Colossus_network_protocol::Message::Type::start_nav_data);
+        send_simple_network_message(Network::Colossus_protocol::Message::Type::start_nav_data);
     }
 
     void Radar_client::stop_navigation_data()
     {
         Log("Radar_client - Stop Navigation Data");
-        send_simple_network_message(Colossus_network_protocol::Message::Type::stop_nav_data);
+        send_simple_network_message(Network::Colossus_protocol::Message::Type::stop_nav_data);
     }
 
     void Radar_client::set_navigation_threshold(std::uint16_t threshold)
@@ -137,8 +137,8 @@ namespace Navtech {
         auto network_threshold = ntohs(threshold);
         std::memcpy(buffer.data(), &network_threshold, sizeof(network_threshold));
 
-        Colossus_network_protocol::Message msg {};
-        msg.type(Colossus_network_protocol::Message::Type::set_nav_threshold);
+        Network::Colossus_protocol::Message msg {};
+        msg.type(Network::Colossus_protocol::Message::Type::set_nav_threshold);
         msg.append(buffer);
         radar_client.send(msg.relinquish());
     }
@@ -153,8 +153,8 @@ namespace Navtech {
         std::memcpy(buffer.data(), &net_gain, sizeof(net_gain));
         std::memcpy(&buffer[sizeof(net_gain)], &net_offset, sizeof(net_offset));
 
-        Colossus_network_protocol::Message msg {};
-        msg.type(Colossus_network_protocol::Message::Type::set_nav_range_offset_and_gain);
+        Network::Colossus_protocol::Message msg {};
+        msg.type(Network::Colossus_protocol::Message::Type::set_nav_range_offset_and_gain);
         msg.append(buffer);
         radar_client.send(msg.relinquish());
     }
@@ -162,7 +162,7 @@ namespace Navtech {
 
     void Radar_client::request_navigation_configuration()
     {
-        send_simple_network_message(Colossus_network_protocol::Message::Type::navigation_config_request);
+        send_simple_network_message(Network::Colossus_protocol::Message::Type::navigation_config_request);
     }
 
 
@@ -170,7 +170,7 @@ namespace Navtech {
     {
         // Ensure endianness is correct for transmission
         //
-        Colossus_network_protocol::Navigation_config nav_config { };
+        Network::Colossus_protocol::Navigation_config nav_config { };
         nav_config.bins_to_operate_on(cfg.bins_to_operate_on);
         nav_config.min_bin_to_operate_on(cfg.min_bin);
         nav_config.navigation_threshold(cfg.navigation_threshold);
@@ -180,19 +180,19 @@ namespace Navtech {
         buffer.resize(sizeof(Navigation_config));
         std::memcpy(&buffer[0], nav_config.begin(), nav_config.header_size());
 
-        Colossus_network_protocol::Message msg {};
-        msg.type(Colossus_network_protocol::Message::Type::set_navigation_configuration);
+        Network::Colossus_protocol::Message msg {};
+        msg.type(Network::Colossus_protocol::Message::Type::set_navigation_configuration);
         msg.append(buffer);
 
         radar_client.send(msg.relinquish());
     }
 
 
-    void Radar_client::send_simple_network_message(const Colossus_network_protocol::Message::Type& type)
+    void Radar_client::send_simple_network_message(const Network::Colossus_protocol::Message::Type& type)
     {
         if (radar_client.get_connection_state() != Connection_state::connected) return;
 
-        Colossus_network_protocol::Message msg {};
+        Network::Colossus_protocol::Message msg {};
         msg.type(type);
         radar_client.send(msg.relinquish());
     }
@@ -212,37 +212,37 @@ namespace Navtech {
             }
         }
 
-        Colossus_network_protocol::Message msg {};
-        msg.type(Colossus_network_protocol::Message::Type::contour_update);
+        Network::Colossus_protocol::Message msg {};
+        msg.type(Network::Colossus_protocol::Message::Type::contour_update);
         msg.append(contour);
         radar_client.send(msg.relinquish());
     }
 
     void Radar_client::handle_data(std::vector<std::uint8_t>&& data)
     {
-        Colossus_network_protocol::Message msg { std::move(data) };
+        Network::Colossus_protocol::Message msg { std::move(data) };
 
         switch (msg.type()) {
-            case Colossus_network_protocol::Message::Type::configuration:
+            case Network::Colossus_protocol::Message::Type::configuration:
                 handle_configuration_message(msg);
                 break;
 
-            case Colossus_network_protocol::Message::Type::fft_data:
+            case Network::Colossus_protocol::Message::Type::fft_data:
                 handle_fft_data_message(msg);
                 break;
 
-            case Colossus_network_protocol::Message::Type::navigation_data:
+            case Network::Colossus_protocol::Message::Type::navigation_data:
                 handle_navigation_data_message(msg);
                 break;
 
-            case Colossus_network_protocol::Message::Type::navigation_alarm_data:
+            case Network::Colossus_protocol::Message::Type::navigation_alarm_data:
                 break;
 
-            case Colossus_network_protocol::Message::Type::health:
+            case Network::Colossus_protocol::Message::Type::health:
                 handle_health_message(msg);
                 break;
 
-            case Colossus_network_protocol::Message::Type::navigation_configuration:
+            case Network::Colossus_protocol::Message::Type::navigation_configuration:
                 handle_navigation_config_message(msg);
                 break;
 
@@ -252,7 +252,7 @@ namespace Navtech {
         }
     }
 
-    void Radar_client::handle_configuration_message(Colossus_network_protocol::Message& msg)
+    void Radar_client::handle_configuration_message(Network::Colossus_protocol::Message& msg)
     {
         Log("Radar_client - Handle Configuration Message");
 
@@ -260,11 +260,11 @@ namespace Navtech {
         auto configuration_fn = configuration_data_callback;
         callback_mutex.unlock();
         if (configuration_fn != nullptr) {
-            auto config                 = msg.view_as<Colossus_network_protocol::Configuration>();
+            auto config                 = msg.view_as<Network::Colossus_protocol::Configuration>();
             auto protobuf_configuration = allocate_shared<Colossus::Protobuf::ConfigurationData>();
             protobuf_configuration->ParseFromString(config->to_string());
 
-            if (send_radar_data) send_simple_network_message(Colossus_network_protocol::Message::Type::start_fft_data);
+            if (send_radar_data) send_simple_network_message(Network::Colossus_protocol::Message::Type::start_fft_data);
 
             encoder_size                               = config->encoder_size();
             bin_size                                   = protobuf_configuration->rangeresolutionmetres();
@@ -284,27 +284,27 @@ namespace Navtech {
         raw_configuration_data_callback(msg.relinquish());
     }
 
-    void Radar_client::handle_health_message(Colossus_network_protocol::Message& msg)
+    void Radar_client::handle_health_message(Network::Colossus_protocol::Message& msg)
     {
         callback_mutex.lock();
         auto health_data_fn = health_data_callback;
         callback_mutex.unlock();
         if (health_data_fn == nullptr) return;
 
-        auto health          = msg.view_as<Colossus_network_protocol::Health>();
+        auto health          = msg.view_as<Network::Colossus_protocol::Health>();
         auto protobuf_health = allocate_shared<Colossus::Protobuf::Health>();
         protobuf_health->ParseFromString(health->to_string());
 
         health_data_fn(protobuf_health);
     }
 
-    void Radar_client::handle_fft_data_message(Colossus_network_protocol::Message& msg)
+    void Radar_client::handle_fft_data_message(Network::Colossus_protocol::Message& msg)
     {
         callback_mutex.lock();
         auto fft_data_fn = fft_data_callback;
         callback_mutex.unlock();
         if (fft_data_fn != nullptr) {
-            auto fft_data = msg.view_as<Colossus_network_protocol::Fft_data>();
+            auto fft_data = msg.view_as<Network::Colossus_protocol::Fft_data>();
 
             auto fftData               = allocate_shared<Fft_data>();
             fftData->azimuth           = fft_data->azimuth();
@@ -321,14 +321,14 @@ namespace Navtech {
         raw_fft_data_callback(msg.relinquish());
     }
 
-    void Radar_client::handle_navigation_data_message(Colossus_network_protocol::Message& msg)
+    void Radar_client::handle_navigation_data_message(Network::Colossus_protocol::Message& msg)
     {
         callback_mutex.lock();
         auto navigation_data_fn = navigation_data_callback;
         callback_mutex.unlock();
         if (navigation_data_fn == nullptr) return;
 
-        auto nav_data = msg.view_as<Colossus_network_protocol::Navigation_data>();
+        auto nav_data = msg.view_as<Network::Colossus_protocol::Navigation_data>();
         auto targets  = nav_data->nav_data();
 
         auto navigation_data               = allocate_shared<Navigation_data>();
@@ -351,14 +351,14 @@ namespace Navtech {
     }
 
 
-    void Radar_client::handle_navigation_config_message(Colossus_network_protocol::Message& msg)
+    void Radar_client::handle_navigation_config_message(Network::Colossus_protocol::Message& msg)
     {
         callback_mutex.lock();
         auto navigation_config_fn = navigation_config_callback;
         callback_mutex.unlock();
         if (navigation_config_fn == nullptr) return;
 
-        auto view = msg.view_as<Colossus_network_protocol::Navigation_config>();
+        auto view = msg.view_as<Network::Colossus_protocol::Navigation_config>();
 
         auto navigation_config                   = allocate_shared<Navigation_config>();
         navigation_config->bins_to_operate_on    = view->bins_to_operate_on();

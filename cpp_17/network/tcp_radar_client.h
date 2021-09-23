@@ -15,7 +15,7 @@
 #include <string>
 #include <thread>
 
-#include "../utility/Pointer_types.h"
+#include "pointer_types.h"
 #include "tcp_socket.h"
 #include "threaded_queue.h"
 #include "timer.h"

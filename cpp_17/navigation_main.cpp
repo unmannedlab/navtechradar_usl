@@ -17,7 +17,7 @@
 #include "common.h"
 #include "navigation/peak_finder.h"
 #include "network/radar_client.h"
-#include "utility/Pointer_types.h"
+#include "utility/pointer_types.h"
 
 using namespace Navtech;
 

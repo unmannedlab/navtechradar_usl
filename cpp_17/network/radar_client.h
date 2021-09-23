@@ -13,11 +13,13 @@
 #include <string>
 #include <vector>
 
-#include "../utility/Pointer_types.h"
-#include "colossus_network_message.h"
-#include "tcp_radar_client.h"
 #include <configurationdata.pb.h>
 #include <health.pb.h>
+
+#include "../utility/pointer_types.h"
+#include "colossus_network_message.h"
+#include "tcp_radar_client.h"
+
 
 namespace Navtech {
     constexpr std::uint32_t range_multiplier       = 1000000;
@@ -122,13 +124,13 @@ namespace Navtech {
         double bin_size            = 0;
 
         void handle_data(std::vector<std::uint8_t>&& data);
-        void handle_configuration_message(Colossus_network_protocol::Message& msg);
-        void handle_fft_data_message(Colossus_network_protocol::Message& msg);
-        void handle_health_message(Colossus_network_protocol::Message& data);
-        void handle_navigation_data_message(Colossus_network_protocol::Message& data);
-        void handle_navigation_config_message(Colossus_network_protocol::Message& data);
+        void handle_configuration_message(Network::Colossus_protocol::Message& msg);
+        void handle_fft_data_message(Network::Colossus_protocol::Message& msg);
+        void handle_health_message(Network::Colossus_protocol::Message& data);
+        void handle_navigation_data_message(Network::Colossus_protocol::Message& data);
+        void handle_navigation_config_message(Network::Colossus_protocol::Message& data);
 
-        void send_simple_network_message(const Colossus_network_protocol::Message::Type& type);
+        void send_simple_network_message(const Network::Colossus_protocol::Message::Type& type);
     };
 
 } // namespace Navtech

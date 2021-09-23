@@ -50,14 +50,19 @@ namespace {
     }
 } // namespace
 
-namespace Navtech::Colossus_network_protocol {
+namespace Navtech::Network::Colossus_protocol {
 
-// ---------------------------------------------------------------------------------------------
-// Actual message types must inherit from one of the Message_base templates
-// passing their own type as the template parameter.  This is an application
-// of the Curiously Recurring Template Pattern (CRTP)
+// DO NOT REMOVE - 
+// This ensures correct alignment for all 
+// Colossus messages
 //
 #pragma pack(1)
+
+    // ---------------------------------------------------------------------------------------------
+    // Actual message types must inherit from one of the Message_base templates
+    // passing their own type as the template parameter.  This is an application
+    // of the Curiously Recurring Template Pattern (CRTP)
+    //
     class Configuration : public Message_base::Protocol_buffer<Configuration> {
     public:
         // Accessor/mutator API; or, you could make the attributes public
@@ -104,9 +109,8 @@ namespace Navtech::Colossus_network_protocol {
         std::uint32_t gain;
         std::uint32_t offset;
     };
-#pragma pack()
 
-#pragma pack(1)
+
     class Fft_data : public Message_base::Protocol_buffer<Fft_data> {
     public:
         // Accessor/mutator API; or, you could make the attributes public
@@ -146,9 +150,8 @@ namespace Navtech::Colossus_network_protocol {
         std::uint32_t seconds;
         std::uint32_t split_seconds;
     };
-#pragma pack()
 
-#pragma pack(1)
+
     class Navigation_data : public Message_base::Protocol_buffer<Navigation_data> {
     public:
         // Accessor/mutator API; or, you could make the attributes public
@@ -178,16 +181,13 @@ namespace Navtech::Colossus_network_protocol {
         std::uint32_t seconds;
         std::uint32_t split_seconds;
     };
-#pragma pack()
 
-#pragma pack(1)
+
     class Health : public Message_base::Protocol_buffer<Health> {
     public:
     };
-#pragma pack()
 
 
-#pragma pack(1)
     class Navigation_config : public Message_base::Header_only<Navigation_config> {
     public:
         std::size_t header_size() const
@@ -215,10 +215,15 @@ namespace Navtech::Colossus_network_protocol {
         std::uint32_t threshold;
         std::uint32_t max_peaks;
     };
+
+
+// DO NOT REMOVE - 
+// This ensures correct alignment for all 
+// Colossus messages
+//
 #pragma pack()
 
-
-} // namespace Navtech::Colossus_network_protocol
+} // namespace Navtech::Network::Colossus_protocol
 
 
 #endif // CP_MESSAGES_H
