@@ -60,7 +60,10 @@ namespace Navtech::Colossus_network_protocol {
             navigation_alarm_data          = 143,
             set_nav_area_rules             = 144,
             nav_radar_reset                = 145,
-            nav_radar_halt                 = 146
+            nav_radar_halt                 = 146,
+            navigation_config_request      = 203,
+            navigation_configuration       = 204,
+            set_navigation_configuration   = 205
         };
 
         using ID             = std::uint32_t;

@@ -11,7 +11,7 @@
 
 // Constants
 //
-constexpr unsigned int largest_valid_message { 128 };
+constexpr unsigned int largest_valid_message { 255 };
 constexpr unsigned int largest_payload { 1'000'000 };
 
 namespace Navtech::Colossus_network_protocol {
@@ -128,7 +128,6 @@ namespace Navtech::Colossus_network_protocol {
 
     void Message::set_view_iterators()
     {
-        // TODO - Implement
         auto header = Header::overlay_onto(data.data());
 
         header->signature.as_iterators.begin = payload_begin();

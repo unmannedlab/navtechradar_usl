@@ -11,6 +11,45 @@
 
 #include "colossus_message_base.h"
 
+namespace {
+
+    // Conversion helpers
+    //
+    union float_uint32_map
+    {
+        float f;
+        std::uint32_t i;
+    };
+
+    inline std::uint32_t to_host_endian(float in)
+    {
+        float_uint32_map value {};
+        value.f = in;
+        return value.i;
+    }
+
+    inline std::uint32_t to_network_endian(float in)
+    {
+        float_uint32_map value {};
+        value.f = in;
+        return htonl(value.i);
+    }
+
+    inline float from_host_endian(std::uint32_t in)
+    {
+        float_uint32_map value {};
+        value.i = in;
+        return value.f;
+    }
+
+    inline std::uint32_t from_network_endian(std::uint32_t in)
+    {
+        float_uint32_map value {};
+        value.i = in;
+        return value.f;
+    }
+} // namespace
+
 namespace Navtech::Colossus_network_protocol {
 
 // ---------------------------------------------------------------------------------------------
@@ -20,12 +59,6 @@ namespace Navtech::Colossus_network_protocol {
 //
 #pragma pack(1)
     class Configuration : public Message_base::Protocol_buffer<Configuration> {
-        union float_uint32_map
-        {
-            float f;
-            std::uint32_t i;
-        };
-
     public:
         // Accessor/mutator API; or, you could make the attributes public
         // (but be careful of endianness issues!)
@@ -50,30 +83,38 @@ namespace Navtech::Colossus_network_protocol {
 
         float range_gain() const
         {
-            float_uint32_map float_value { 0 };
-            float_value.i = ntohl(gain);
-            return float_value.f;
+            return to_host_endian(gain);
+
+            // float_uint32_map float_value { 0 };
+            // float_value.i = ntohl(gain);
+            // return float_value.f;
         }
 
         void range_gain(float val)
         {
-            float_uint32_map float_value { 0 };
-            float_value.f = val;
-            gain          = htonl(float_value.i);
+            gain = to_network_endian(val);
+
+            // float_uint32_map float_value { 0 };
+            // float_value.f = val;
+            // gain          = htonl(float_value.i);
         }
 
         float range_offset() const
         {
-            float_uint32_map float_value { 0 };
-            float_value.i = ntohl(offset);
-            return float_value.f;
+            return to_host_endian(offset);
+
+            // float_uint32_map float_value { 0 };
+            // float_value.i = ntohl(offset);
+            // return float_value.f;
         }
 
         void range_offset(float val)
         {
-            float_uint32_map float_value { 0 };
-            float_value.f = val;
-            offset        = htonl(float_value.i);
+            offset = to_network_endian(val);
+
+            // float_uint32_map float_value { 0 };
+            // float_value.f = val;
+            // offset        = htonl(float_value.i);
         }
 
         // If your message has a header you MUST provide this function
@@ -172,6 +213,42 @@ namespace Navtech::Colossus_network_protocol {
 #pragma pack(1)
     class Health : public Message_base::Protocol_buffer<Health> {
     public:
+    };
+#pragma pack()
+
+
+#pragma pack(1)
+    class Navigation_config : public Message_base::Header_only<Navigation_config> {
+    public:
+        std::size_t header_size() const 
+        { 
+            return (
+                sizeof(operating_bins)  +
+                sizeof(min_bin)         +
+                sizeof(threshold)       +
+                sizeof(max_peaks)
+            );
+        }
+
+        void bins_to_operate_on(std::uint16_t bins) { operating_bins = htons(bins); }
+        std::uint16_t bins_to_operate_on() const { return ntohs(operating_bins); }
+
+        void min_bin_to_operate_on(std::uint16_t min) { min_bin = htons(min); }
+        std::uint16_t min_bin_to_operate_on() const { return ntohs(min_bin); }
+
+        void navigation_threshold(float level) { threshold = to_network_endian(level); }
+        float navigation_threshold() const { return from_network_endian(threshold); }
+
+        void max_peaks_per_azimuth(std::uint32_t peaks) { max_peaks = htons(peaks); }
+        std::uint32_t max_peaks_per_azimuth() const { return ntohs(max_peaks); }
+
+    private:
+        // Attribute overlay
+        //
+        std::uint16_t operating_bins;
+        std::uint16_t min_bin;
+        std::uint32_t threshold;
+        std::uint32_t max_peaks;
     };
 #pragma pack()
 
