@@ -193,7 +193,7 @@ namespace Navtech {
 
             // if (!result) {
 
-            if (signature == Network::Colossus_protocol::Message::valid_signature()) {
+            if (signature != Network::Colossus_protocol::Message::valid_signature()) {
                 bytes_read = socket.receive(signature, 1);
                 if (bytes_read <= 0 || !reading || !running) {
                     set_connection_state(Connection_state::disconnected);
