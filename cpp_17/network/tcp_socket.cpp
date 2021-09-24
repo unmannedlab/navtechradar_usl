@@ -20,9 +20,11 @@
 #include "tcp_socket.h"
 
 namespace Navtech {
-    Tcp_socket::Tcp_socket(const std::string& destination, const std::uint16_t& port) :
-        sock { -1 }, destination { destination }
-    { }
+    Tcp_socket::Tcp_socket(const Utility::IP_address& destination, const std::uint16_t& port) :
+        sock { -1 }, 
+        destination { destination }
+    {
+    }
 
 
     Tcp_socket::~Tcp_socket()
@@ -37,7 +39,10 @@ namespace Navtech {
     }
 
 
-    bool Tcp_socket::is_valid() const { return sock != -1; }
+    bool Tcp_socket::is_valid() const 
+    { 
+        return sock != -1; 
+    }
 
 
     bool Tcp_socket::create(std::uint32_t receive_timeout)
@@ -92,7 +97,7 @@ namespace Navtech {
 
         addr.sin_family = AF_INET;
         addr.sin_port   = htons(port);
-        auto status     = inet_pton(AF_INET, destination.c_str(), &addr.sin_addr);
+        auto status     = inet_pton(AF_INET, destination.to_string().c_str(), &addr.sin_addr);
         status          = ::connect(sock, (sockaddr*)&addr, sizeof(addr));
 
         if (status == 0) { return true; }
