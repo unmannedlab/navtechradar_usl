@@ -168,7 +168,10 @@ namespace Navtech {
 
     void Radar_client::set_navigation_configuration(const Navigation_config& cfg)
     {
-        // Ensure endianness is correct for transmission
+        // Copy struct to message to ensure correct endianness.
+        //
+        // TODO - The Colossus message itself could be used as the argument 
+        // to this function, removing the need for an intermediate struct.
         //
         Network::Colossus_protocol::Navigation_config nav_config { };
         nav_config.bins_to_operate_on(cfg.bins_to_operate_on);
@@ -176,13 +179,9 @@ namespace Navtech {
         nav_config.navigation_threshold(cfg.navigation_threshold);
         nav_config.max_peaks_per_azimuth(cfg.max_peaks_per_azimuth);
 
-        std::vector<std::uint8_t> buffer {};
-        buffer.resize(sizeof(Navigation_config));
-        std::memcpy(&buffer[0], nav_config.begin(), nav_config.header_size());
-
         Network::Colossus_protocol::Message msg {};
         msg.type(Network::Colossus_protocol::Message::Type::set_navigation_configuration);
-        msg.append(buffer);
+        msg.append(nav_config);
 
         radar_client.send(msg.relinquish());
     }

@@ -190,7 +190,7 @@ namespace Navtech::Network::Colossus_protocol {
 
     class Navigation_config : public Message_base::Header_only<Navigation_config> {
     public:
-        std::size_t header_size() const
+        std::size_t size() const
         {
             return (sizeof(operating_bins) + sizeof(min_bin) + sizeof(threshold) + sizeof(max_peaks));
         }
