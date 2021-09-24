@@ -1,0 +1,10 @@
+/colossus_and_camera_subscriber_to_video:
+  ros__parameters:
+    qos_overrides:
+      /parameter_events:
+        publisher:
+          depth: 1000
+          durability: volatile
+          history: keep_last
+          reliability: reliable
+    use_sim_time: false

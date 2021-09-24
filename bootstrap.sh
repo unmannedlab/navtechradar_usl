@@ -9,7 +9,7 @@ fi
 
 c_compiler=clang
 cpp_compiler=clang++
-if [ "$1" == "clang" ]; then
+if [ "$1" == "gcc" ]; then
   c_compiler=gcc
   cpp_compiler=g++
 fi

@@ -1,0 +1,2 @@
+#!/bin/bash
+ffmpeg -i ../../output_videos/camera_output.avi -s 400x400 -c:a copy ../../output_videos/camera_output_scaled.avi -y && ffmpeg -i ../../output_videos/camera_output_scaled.avi -i ../../output_videos/radar_output.avi -filter_complex hstack=inputs=2 ../../output_videos/combined.avi -y
