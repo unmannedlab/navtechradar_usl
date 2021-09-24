@@ -49,6 +49,7 @@ namespace Navtech {
     {
         using Pointer         = Shared_owner<Configuration_data>;
         using ProtobufPointer = Shared_owner<Colossus::Protobuf::ConfigurationData>;
+
         std::uint16_t azimuth_samples { 0 };
         std::uint16_t encoder_size { 0 };
         double bin_size { 0 };
@@ -57,6 +58,18 @@ namespace Navtech {
         float range_gain { 0.0f };
         float range_offset { 0.0f };
     };
+
+   
+    struct Navigation_config
+    {
+        using Pointer = Shared_owner<Navigation_config>;
+
+        std::uint16_t bins_to_operate_on;
+        std::uint16_t min_bin;
+        float navigation_threshold;
+        std::uint32_t max_peaks_per_azimuth;
+    };
+
 
     class Radar_client {
     public:
@@ -78,6 +91,8 @@ namespace Navtech {
         void stop_navigation_data();
         void set_navigation_threshold(std::uint16_t threshold);
         void set_navigation_gain_and_offset(float gain, float offset);
+        void request_navigation_configuration();
+        void set_navigation_configuration(const Navigation_config& cfg);
         void set_fft_data_callback(std::function<void(const Fft_data::Pointer&)> fn = nullptr);
         void set_raw_fft_data_callback(std::function<void(const std::vector<uint8_t>&)> fn = nullptr);
         void set_navigation_data_callback(std::function<void(const Navigation_data::Pointer&)> fn = nullptr);
@@ -87,6 +102,7 @@ namespace Navtech {
         void set_raw_configuration_data_callback(std::function<void(const std::vector<uint8_t>&)> fn = nullptr);
         void set_health_data_callback(
             std::function<void(const Shared_owner<Colossus::Protobuf::Health>&)> fn = nullptr);
+        void set_navigation_config_callback(std::function<void(const Navigation_config::Pointer&)> fn = nullptr);
 
     private:
         Tcp_radar_client radar_client;
@@ -100,6 +116,7 @@ namespace Navtech {
             configuration_data_callback                                                           = nullptr;
         std::function<void(const std::vector<uint8_t>&)> raw_configuration_data_callback          = nullptr;
         std::function<void(const Shared_owner<Colossus::Protobuf::Health>&)> health_data_callback = nullptr;
+        std::function<void(const Navigation_config::Pointer&)> navigation_config_callback         = nullptr;
 
         std::uint16_t encoder_size = 0;
         double bin_size            = 0;
@@ -109,6 +126,8 @@ namespace Navtech {
         void handle_fft_data_message(Colossus_network_protocol::Message& msg);
         void handle_health_message(Colossus_network_protocol::Message& data);
         void handle_navigation_data_message(Colossus_network_protocol::Message& data);
+        void handle_navigation_config_message(Colossus_network_protocol::Message& data);
+
         void send_simple_network_message(const Colossus_network_protocol::Message::Type& type);
     };
 

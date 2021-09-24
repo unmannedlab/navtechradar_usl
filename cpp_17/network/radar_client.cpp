@@ -62,6 +62,14 @@ namespace Navtech {
         health_data_callback = std::move(fn);
     }
 
+
+    void Radar_client::set_navigation_config_callback(std::function<void(const Navigation_config::Pointer&)> fn)
+    {
+        std::lock_guard lock { callback_mutex };
+        navigation_config_callback = std::move(fn);
+    }
+
+
     void Radar_client::start()
     {
         if (running) return;
@@ -151,6 +159,35 @@ namespace Navtech {
         radar_client.send(msg.relinquish());
     }
 
+
+    void Radar_client::request_navigation_configuration()
+    {
+        send_simple_network_message(Colossus_network_protocol::Message::Type::navigation_config_request);
+    }
+
+
+    void Radar_client::set_navigation_configuration(const Navigation_config& cfg)
+    {
+        // Ensure endianness is correct for transmission
+        //
+        Colossus_network_protocol::Navigation_config nav_config { };
+        nav_config.bins_to_operate_on(cfg.bins_to_operate_on);
+        nav_config.min_bin_to_operate_on(cfg.min_bin);
+        nav_config.navigation_threshold(cfg.navigation_threshold);
+        nav_config.max_peaks_per_azimuth(cfg.max_peaks_per_azimuth);
+
+        std::vector<std::uint8_t> buffer {};
+        buffer.resize(sizeof(Navigation_config));
+        std::memcpy(&buffer[0], nav_config.begin(), nav_config.header_size());
+
+        Colossus_network_protocol::Message msg {};
+        msg.type(Colossus_network_protocol::Message::Type::set_navigation_configuration);
+        msg.append(buffer);
+
+        radar_client.send(msg.relinquish());
+    }
+
+
     void Radar_client::send_simple_network_message(const Colossus_network_protocol::Message::Type& type)
     {
         if (radar_client.get_connection_state() != Connection_state::connected) return;
@@ -189,17 +226,26 @@ namespace Navtech {
             case Colossus_network_protocol::Message::Type::configuration:
                 handle_configuration_message(msg);
                 break;
+
             case Colossus_network_protocol::Message::Type::fft_data:
                 handle_fft_data_message(msg);
                 break;
+
             case Colossus_network_protocol::Message::Type::navigation_data:
                 handle_navigation_data_message(msg);
                 break;
+
             case Colossus_network_protocol::Message::Type::navigation_alarm_data:
                 break;
+
             case Colossus_network_protocol::Message::Type::health:
                 handle_health_message(msg);
                 break;
+
+            case Colossus_network_protocol::Message::Type::navigation_configuration:
+                handle_navigation_config_message(msg);
+                break;
+
             default:
                 Log("Radar_client - Unhandled Message [" + std::to_string(static_cast<uint32_t>(msg.type())) + "]");
                 break;
@@ -302,6 +348,25 @@ namespace Navtech {
         }
 
         navigation_data_fn(navigation_data);
+    }
+
+
+    void Radar_client::handle_navigation_config_message(Colossus_network_protocol::Message& msg)
+    {
+        callback_mutex.lock();
+        auto navigation_config_fn = navigation_config_callback;
+        callback_mutex.unlock();
+        if (navigation_config_fn == nullptr) return;
+
+        auto view = msg.view_as<Colossus_network_protocol::Navigation_config>();
+
+        auto navigation_config                   = allocate_shared<Navigation_config>();
+        navigation_config->bins_to_operate_on    = view->bins_to_operate_on();
+        navigation_config->min_bin               = view->min_bin_to_operate_on();
+        navigation_config->navigation_threshold  = view->navigation_threshold();
+        navigation_config->max_peaks_per_azimuth = view->max_peaks_per_azimuth();
+
+        navigation_config_fn(navigation_config);
     }
 
 } // namespace Navtech
