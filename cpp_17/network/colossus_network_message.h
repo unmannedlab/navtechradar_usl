@@ -19,8 +19,8 @@ namespace Navtech::Network {
             using Array          = std::array<std::uint8_t, 16>;
             using Const_iterator = const uint8_t*;
 
-            Const_iterator cbegin() const;
-            Const_iterator cend()   const;
+            Const_iterator begin() const;
+            Const_iterator end()   const;
 
             std::size_t size() const;
 

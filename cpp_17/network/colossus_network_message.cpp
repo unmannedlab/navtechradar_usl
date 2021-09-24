@@ -18,11 +18,6 @@ constexpr unsigned int largest_valid_message { 255 };
 constexpr unsigned int largest_payload       { 1'000'000 };
 constexpr std::uint8_t version               { 1 };
 
-// constexpr std::array<uint8_t, 16> valid_signature { 
-//     0x00, 0x01, 0x03, 0x03, 0x07, 0x07, 0x0F, 0x0F, 
-//     0x1F, 0x1F, 0x3F, 0x3F, 0x7F, 0x7F, 0xFE, 0xFE
-// };
-
 
 namespace Navtech::Network::Colossus_protocol {
 
@@ -35,13 +30,13 @@ namespace Navtech::Network::Colossus_protocol {
     };
 
             
-    Signature::Const_iterator Signature::cbegin() const
+    Signature::Const_iterator Signature::begin() const
     {
         return &signature[0];
     }
             
     
-    Signature::Const_iterator Signature::cend() const
+    Signature::Const_iterator Signature::end() const
     {
         return &signature[16];
     }
@@ -55,7 +50,7 @@ namespace Navtech::Network::Colossus_protocol {
     
     std::vector<std::uint8_t> Signature::to_vector() const
     {
-        return std::vector<std::uint8_t> { cbegin(), cend() };
+        return std::vector<std::uint8_t> { begin(), end() };
     }
 
 
@@ -85,7 +80,7 @@ namespace Navtech::Network::Colossus_protocol {
         return equal(
             rhs.cbegin(),
             rhs.cend(),
-            lhs.cbegin()
+            lhs.begin()
         );
     }
 
@@ -421,14 +416,7 @@ namespace Navtech::Network::Colossus_protocol {
         using std::uint8_t;
         using std::equal;
 
-        auto start = valid_signature().cbegin();
-        auto finish = valid_signature().cend();
-        auto msg_sig = signature_begin();
-
-        Buffer sig { signature_begin(), signature_end() };
-
-        bool valid = equal(sig.begin(), sig.end(), signature_begin());
-        return valid;
+        return equal(valid_signature().begin(), valid_signature().end(), signature_begin());
     }
 
 
@@ -438,7 +426,7 @@ namespace Navtech::Network::Colossus_protocol {
         using std::end;
         using std::copy;
 
-        copy(valid_signature().cbegin(), valid_signature().cend(), signature_begin());
+        copy(valid_signature().begin(), valid_signature().end(), signature_begin());
     }
 
 
