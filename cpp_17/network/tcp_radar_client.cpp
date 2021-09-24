@@ -13,9 +13,9 @@
 #include "tcp_radar_client.h"
 
 namespace Navtech {
-    Tcp_radar_client::Tcp_radar_client(const std::string& ip_address, const std::uint16_t& port) :
+    Tcp_radar_client::Tcp_radar_client(const Utility::IP_address& ip_addr, const std::uint16_t& port) :
         receive_data_queue      { Threaded_queue<std::vector<std::uint8_t>>() }, 
-        ip_address              { ip_address }, 
+        ip_address              { ip_addr }, 
         port                    { port },
         socket                  { ip_address, port }, 
         read_thread             { nullptr }, 
@@ -104,7 +104,7 @@ namespace Navtech {
                 break;
         }
 
-        Log("Tcp_radar_client - Connection State Changed [" + state_string + "] for [" + ip_address + ":" +
+        Log("Tcp_radar_client - Connection State Changed [" + state_string + "] for [" + ip_address.to_string() + ":" +
             std::to_string(port) + "]");
     }
 

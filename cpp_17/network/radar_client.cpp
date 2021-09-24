@@ -21,8 +21,10 @@
 #include "radar_client.h"
 
 namespace Navtech {
-    Radar_client::Radar_client(const std::string& radarAddress, const std::uint16_t& port) :
-        radar_client { radarAddress, port }, running { false }, send_radar_data { false }
+    Radar_client::Radar_client(const Utility::IP_address& radarAddress, const std::uint16_t& port) :
+        radar_client    { radarAddress, port }, 
+        running         { false }, 
+        send_radar_data { false }
     { }
 
     void Radar_client::set_fft_data_callback(std::function<void(const Fft_data::Pointer&)> fn)

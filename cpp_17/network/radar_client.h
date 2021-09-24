@@ -75,7 +75,7 @@ namespace Navtech {
 
     class Radar_client {
     public:
-        explicit Radar_client(const std::string& radarAddress, const std::uint16_t& port = 6317);
+        explicit Radar_client(const Utility::IP_address& radarAddress, const std::uint16_t& port = 6317);
         Radar_client(const Radar_client&) = delete;
         Radar_client(Radar_client&&)      = delete;
         Radar_client& operator=(const Radar_client&) = delete;
