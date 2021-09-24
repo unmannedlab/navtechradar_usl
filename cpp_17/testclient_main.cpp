@@ -9,7 +9,7 @@
 
 #include "common.h"
 #include "network/radar_client.h"
-#include "utility/Pointer_types.h"
+#include "utility/pointer_types.h"
 
 #ifdef _WIN32
 #include <WinSock2.h>
@@ -19,6 +19,7 @@
 #endif
 
 using namespace Navtech;
+using namespace Navtech::Utility;
 
 std::uint64_t Now()
 {
@@ -108,7 +109,7 @@ int main(int argc, char** argv)
 
     Log("Test Client Starting");
 
-    radar_client = allocate_owned<Radar_client>("127.0.0.1");
+    radar_client = allocate_owned<Radar_client>("127.0.0.1"_ipv4);
 
     radar_client->set_fft_data_callback(fft_data_handler);
     radar_client->set_configuration_data_callback(configuration_data_handler);
@@ -116,7 +117,7 @@ int main(int argc, char** argv)
 
     radar_client->start();
 
-    radar_client->request_navigation_configuration();
+    // radar_client->request_navigation_configuration();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(30'000));
 

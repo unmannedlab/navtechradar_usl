@@ -15,10 +15,12 @@
 #include <string>
 #include <thread>
 
-#include "../utility/Pointer_types.h"
+#include "pointer_types.h"
 #include "tcp_socket.h"
 #include "threaded_queue.h"
 #include "timer.h"
+
+#include "../utility/ip_address.h"
 
 namespace Navtech {
     enum class Connection_state { disconnected, connecting, connected };
@@ -37,7 +39,7 @@ namespace Navtech {
 
     class Tcp_radar_client {
     public:
-        explicit Tcp_radar_client(const std::string& ip_address, const std::uint16_t& port = 6317);
+        explicit Tcp_radar_client(const Utility::IP_address& ip_address, const std::uint16_t& port = 6317);
         explicit Tcp_radar_client(const Tcp_radar_client&) = delete;
         Tcp_radar_client& operator=(const Tcp_radar_client&) = delete;
         void start();
@@ -48,7 +50,7 @@ namespace Navtech {
 
     private:
         Threaded_queue<std::vector<std::uint8_t>> receive_data_queue;
-        std::string ip_address { "192.168.0.1" };
+        Utility::IP_address ip_address { "192.168.0.1" };
         std::uint16_t port { 6317 };
         Tcp_socket socket;
         Owner_of<std::thread> connect_thread { nullptr };
