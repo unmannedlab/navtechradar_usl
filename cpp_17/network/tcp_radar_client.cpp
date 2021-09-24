@@ -13,11 +13,18 @@
 #include "tcp_radar_client.h"
 
 namespace Navtech {
-    Tcp_radar_client::Tcp_radar_client(const std::string& ip_address, const std::uint16_t& port) :
-        receive_data_queue { Threaded_queue<std::vector<std::uint8_t>>() }, ip_address { ip_address }, port { port },
-        socket { ip_address, port }, read_thread { nullptr }, connection_check_timer { connection_check_timeout },
-        connection_state { Connection_state::disconnected }, reading { false }, running { false }
-    { }
+    Tcp_radar_client::Tcp_radar_client(const Utility::IP_address& ip_addr, const std::uint16_t& port) :
+        receive_data_queue      { Threaded_queue<std::vector<std::uint8_t>>() }, 
+        ip_address              { ip_addr }, 
+        port                    { port },
+        socket                  { ip_address, port }, 
+        read_thread             { nullptr }, 
+        connection_check_timer  { connection_check_timeout },
+        connection_state        { Connection_state::disconnected }, 
+        reading                 { false }, 
+        running                 { false }
+    {
+    }
 
 
     void Tcp_radar_client::set_receive_data_callback(std::function<void(std::vector<std::uint8_t>&&)> callback)
@@ -97,7 +104,7 @@ namespace Navtech {
                 break;
         }
 
-        Log("Tcp_radar_client - Connection State Changed [" + state_string + "] for [" + ip_address + ":" +
+        Log("Tcp_radar_client - Connection State Changed [" + state_string + "] for [" + ip_address.to_string() + ":" +
             std::to_string(port) + "]");
     }
 
@@ -159,9 +166,13 @@ namespace Navtech {
         using std::memcmp;
 
         while (reading && running) {
-            std::vector<std::uint8_t> signature;
-            std::int32_t bytes_read =
-                socket.receive(signature, Colossus_network_protocol::signature_sz, Tcp_socket::Receive_option::peek);
+            std::vector<std::uint8_t> signature { };
+
+            std::int32_t bytes_read = socket.receive(
+                signature, 
+                Network::Colossus_protocol::Message::valid_signature().size(), 
+                Tcp_socket::Receive_option::peek
+            );
 
             if (bytes_read == 0) continue;
 
@@ -174,11 +185,15 @@ namespace Navtech {
             using std::end;
             using std::equal;
 
-            auto result = equal(begin(Colossus_network_protocol::valid_signature),
-                                end(Colossus_network_protocol::valid_signature),
-                                begin(signature));
+            // TODO - remove
+            //
+            // auto result = equal(begin(Network::Colossus_protocol::valid_signature),
+            //                     end(Network::Colossus_protocol::valid_signature),
+            //                     begin(signature));
 
-            if (!result) {
+            // if (!result) {
+
+            if (signature != Network::Colossus_protocol::Message::valid_signature()) {
                 bytes_read = socket.receive(signature, 1);
                 if (bytes_read <= 0 || !reading || !running) {
                     set_connection_state(Connection_state::disconnected);
@@ -212,7 +227,7 @@ namespace Navtech {
 
     bool Tcp_radar_client::handle_data()
     {
-        Navtech::Colossus_network_protocol::Message msg {};
+        Navtech::Network::Colossus_protocol::Message msg {};
 
         std::vector<std::uint8_t> data {};
         std::int32_t bytes_read = socket.receive(data, msg.header_size());

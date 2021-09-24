@@ -17,11 +17,12 @@
 #include "common.h"
 #include "navigation/peak_finder.h"
 #include "network/radar_client.h"
-#include "utility/Pointer_types.h"
+#include "utility/pointer_types.h"
 
 using namespace Navtech;
+using namespace Navtech::Utility;
 
-Radar_client radar_client { "192.168.0.1" };
+Radar_client radar_client { "192.168.0.1"_ipv4 };
 Peak_finder peak_finder {};
 bool running { true };
 

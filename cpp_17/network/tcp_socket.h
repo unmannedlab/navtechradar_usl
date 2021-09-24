@@ -19,13 +19,15 @@
 #include <netinet/in.h>
 #endif
 
+#include "../utility/ip_address.h"
+
 namespace Navtech {
     class Tcp_socket {
     public:
         enum Close_option { do_not_shutdown, shutdown };
         enum Receive_option { consume, peek };
 
-        explicit Tcp_socket(const std::string& destination, const std::uint16_t& port = 6317);
+        explicit Tcp_socket(const Utility::IP_address& destination, const std::uint16_t& port = 6317);
         ~Tcp_socket();
         Tcp_socket(const Tcp_socket&) = delete;
         Tcp_socket& operator=(const Tcp_socket&) = delete;
@@ -44,7 +46,7 @@ namespace Navtech {
 
     private:
         std::atomic<std::int32_t> sock { -1 };
-        std::string destination { "192.168.0.1" };
+        Utility::IP_address destination { "192.168.0.1" };
         std::uint16_t port { 6317 };
         sockaddr_in addr {};
     };
