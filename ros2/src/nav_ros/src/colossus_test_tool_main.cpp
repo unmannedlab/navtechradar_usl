@@ -8,13 +8,15 @@
 
 using namespace std;
 using namespace Navtech;
+using namespace Navtech::Utility;
+
 
 int main(int argc, char* argv[])
 {
     auto test_tool = new Colossus_test_tool();
 
     cout << "Starting radar client" << endl;
-    test_tool->radar_client = allocate_owned<Navtech::Radar_client>(test_tool->radar_ip, test_tool->radar_port);
+    test_tool->radar_client = allocate_owned<Navtech::Radar_client>(IP_address { test_tool->radar_ip }, test_tool->radar_port);
     test_tool->radar_client->set_fft_data_callback(std::bind(&Colossus_test_tool::fft_data_handler, test_tool, std::placeholders::_1));
     test_tool->radar_client->set_configuration_data_callback(std::bind(&Colossus_test_tool::configuration_data_handler, test_tool, std::placeholders::_1));
 
