@@ -11,21 +11,59 @@
 
 #include "colossus_message_base.h"
 
-namespace Navtech::Colossus_network_protocol {
+namespace {
 
-// ---------------------------------------------------------------------------------------------
-// Actual message types must inherit from one of the Message_base templates
-// passing their own type as the template parameter.  This is an application
-// of the Curiously Recurring Template Pattern (CRTP)
+    // Conversion helpers
+    //
+    union float_uint32_map
+    {
+        float f;
+        std::uint32_t i;
+    };
+
+    inline std::uint32_t to_uint32_host(float in)
+    {
+        float_uint32_map value {};
+        value.f = in;
+        return value.i;
+    }
+
+    inline std::uint32_t to_uint32_network(float in)
+    {
+        float_uint32_map value {};
+        value.f = in;
+        return htonl(value.i);
+    }
+
+    inline float from_uint32_host(std::uint32_t in)
+    {
+        float_uint32_map value {};
+        value.i = in;
+        return value.f;
+    }
+
+    inline float from_uint32_network(std::uint32_t in)
+    {
+        float_uint32_map value {};
+        value.i = ntohl(in);
+        return value.f;
+    }
+} // namespace
+
+namespace Navtech::Network::Colossus_protocol {
+
+// DO NOT REMOVE - 
+// This ensures correct alignment for all 
+// Colossus messages
 //
 #pragma pack(1)
-    class Configuration : public Message_base::Protocol_buffer<Configuration> {
-        union float_uint32_map
-        {
-            float f;
-            std::uint32_t i;
-        };
 
+    // ---------------------------------------------------------------------------------------------
+    // Actual message types must inherit from one of the Message_base templates
+    // passing their own type as the template parameter.  This is an application
+    // of the Curiously Recurring Template Pattern (CRTP)
+    //
+    class Configuration : public Message_base::Protocol_buffer<Configuration> {
     public:
         // Accessor/mutator API; or, you could make the attributes public
         // (but be careful of endianness issues!)
@@ -48,33 +86,11 @@ namespace Navtech::Colossus_network_protocol {
         std::uint16_t packet_rate() const { return ntohs(pckt_rate); }
         void packet_rate(std::uint16_t val) { pckt_rate = htons(val); }
 
-        float range_gain() const
-        {
-            float_uint32_map float_value { 0 };
-            float_value.i = ntohl(gain);
-            return float_value.f;
-        }
+        float range_gain() const { return from_uint32_network(gain); }
+        void range_gain(float val) { gain = to_uint32_network(val); }
 
-        void range_gain(float val)
-        {
-            float_uint32_map float_value { 0 };
-            float_value.f = val;
-            gain          = htonl(float_value.i);
-        }
-
-        float range_offset() const
-        {
-            float_uint32_map float_value { 0 };
-            float_value.i = ntohl(offset);
-            return float_value.f;
-        }
-
-        void range_offset(float val)
-        {
-            float_uint32_map float_value { 0 };
-            float_value.f = val;
-            offset        = htonl(float_value.i);
-        }
+        float range_offset() const { return from_uint32_network(offset); }
+        void range_offset(float val) { offset = to_uint32_network(val); }
 
         // If your message has a header you MUST provide this function
         //
@@ -93,9 +109,8 @@ namespace Navtech::Colossus_network_protocol {
         std::uint32_t gain;
         std::uint32_t offset;
     };
-#pragma pack()
 
-#pragma pack(1)
+
     class Fft_data : public Message_base::Protocol_buffer<Fft_data> {
     public:
         // Accessor/mutator API; or, you could make the attributes public
@@ -135,9 +150,8 @@ namespace Navtech::Colossus_network_protocol {
         std::uint32_t seconds;
         std::uint32_t split_seconds;
     };
-#pragma pack()
 
-#pragma pack(1)
+
     class Navigation_data : public Message_base::Protocol_buffer<Navigation_data> {
     public:
         // Accessor/mutator API; or, you could make the attributes public
@@ -167,16 +181,49 @@ namespace Navtech::Colossus_network_protocol {
         std::uint32_t seconds;
         std::uint32_t split_seconds;
     };
-#pragma pack()
 
-#pragma pack(1)
+
     class Health : public Message_base::Protocol_buffer<Health> {
     public:
     };
+
+
+    class Navigation_config : public Message_base::Header_only<Navigation_config> {
+    public:
+        std::size_t size() const
+        {
+            return (sizeof(operating_bins) + sizeof(min_bin) + sizeof(threshold) + sizeof(max_peaks));
+        }
+
+        void bins_to_operate_on(std::uint16_t bins) { operating_bins = htons(bins); }
+        std::uint16_t bins_to_operate_on() const { return ntohs(operating_bins); }
+
+        void min_bin_to_operate_on(std::uint16_t min) { min_bin = htons(min); }
+        std::uint16_t min_bin_to_operate_on() const { return ntohs(min_bin); }
+
+        void navigation_threshold(float level) { threshold = to_uint32_network(level); }
+        float navigation_threshold() const { return from_uint32_network(threshold); }
+
+        void max_peaks_per_azimuth(std::uint32_t peaks) { max_peaks = htons(peaks); }
+        std::uint32_t max_peaks_per_azimuth() const { return ntohs(max_peaks); }
+
+    private:
+        // Attribute overlay
+        //
+        std::uint16_t operating_bins;
+        std::uint16_t min_bin;
+        std::uint32_t threshold;
+        std::uint32_t max_peaks;
+    };
+
+
+// DO NOT REMOVE - 
+// This ensures correct alignment for all 
+// Colossus messages
+//
 #pragma pack()
 
-
-} // namespace Navtech::Colossus_network_protocol
+} // namespace Navtech::Network::Colossus_protocol
 
 
 #endif // CP_MESSAGES_H

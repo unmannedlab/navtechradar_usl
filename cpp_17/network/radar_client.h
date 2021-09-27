@@ -13,11 +13,13 @@
 #include <string>
 #include <vector>
 
-#include "../utility/Pointer_types.h"
-#include "colossus_network_message.h"
-#include "tcp_radar_client.h"
 #include <configurationdata.pb.h>
 #include <health.pb.h>
+
+#include "../utility/pointer_types.h"
+#include "colossus_network_message.h"
+#include "tcp_radar_client.h"
+
 
 namespace Navtech {
     constexpr std::uint32_t range_multiplier       = 1000000;
@@ -49,6 +51,7 @@ namespace Navtech {
     {
         using Pointer         = Shared_owner<Configuration_data>;
         using ProtobufPointer = Shared_owner<Colossus::Protobuf::ConfigurationData>;
+
         std::uint16_t azimuth_samples { 0 };
         std::uint16_t encoder_size { 0 };
         double bin_size { 0 };
@@ -58,9 +61,21 @@ namespace Navtech {
         float range_offset { 0.0f };
     };
 
+   
+    struct Navigation_config
+    {
+        using Pointer = Shared_owner<Navigation_config>;
+
+        std::uint16_t bins_to_operate_on;
+        std::uint16_t min_bin;
+        float navigation_threshold;
+        std::uint32_t max_peaks_per_azimuth;
+    };
+
+
     class Radar_client {
     public:
-        explicit Radar_client(const std::string& radarAddress, const std::uint16_t& port = 6317);
+        explicit Radar_client(const Utility::IP_address& radarAddress, const std::uint16_t& port = 6317);
         Radar_client(const Radar_client&) = delete;
         Radar_client(Radar_client&&)      = delete;
         Radar_client& operator=(const Radar_client&) = delete;
@@ -78,6 +93,8 @@ namespace Navtech {
         void stop_navigation_data();
         void set_navigation_threshold(std::uint16_t threshold);
         void set_navigation_gain_and_offset(float gain, float offset);
+        void request_navigation_configuration();
+        void set_navigation_configuration(const Navigation_config& cfg);
         void set_fft_data_callback(std::function<void(const Fft_data::Pointer&)> fn = nullptr);
         void set_raw_fft_data_callback(std::function<void(const std::vector<uint8_t>&)> fn = nullptr);
         void set_navigation_data_callback(std::function<void(const Navigation_data::Pointer&)> fn = nullptr);
@@ -87,6 +104,7 @@ namespace Navtech {
         void set_raw_configuration_data_callback(std::function<void(const std::vector<uint8_t>&)> fn = nullptr);
         void set_health_data_callback(
             std::function<void(const Shared_owner<Colossus::Protobuf::Health>&)> fn = nullptr);
+        void set_navigation_config_callback(std::function<void(const Navigation_config::Pointer&)> fn = nullptr);
 
     private:
         Tcp_radar_client radar_client;
@@ -100,16 +118,19 @@ namespace Navtech {
             configuration_data_callback                                                           = nullptr;
         std::function<void(const std::vector<uint8_t>&)> raw_configuration_data_callback          = nullptr;
         std::function<void(const Shared_owner<Colossus::Protobuf::Health>&)> health_data_callback = nullptr;
+        std::function<void(const Navigation_config::Pointer&)> navigation_config_callback         = nullptr;
 
         std::uint16_t encoder_size = 0;
         double bin_size            = 0;
 
         void handle_data(std::vector<std::uint8_t>&& data);
-        void handle_configuration_message(Colossus_network_protocol::Message& msg);
-        void handle_fft_data_message(Colossus_network_protocol::Message& msg);
-        void handle_health_message(Colossus_network_protocol::Message& data);
-        void handle_navigation_data_message(Colossus_network_protocol::Message& data);
-        void send_simple_network_message(const Colossus_network_protocol::Message::Type& type);
+        void handle_configuration_message(Network::Colossus_protocol::Message& msg);
+        void handle_fft_data_message(Network::Colossus_protocol::Message& msg);
+        void handle_health_message(Network::Colossus_protocol::Message& data);
+        void handle_navigation_data_message(Network::Colossus_protocol::Message& data);
+        void handle_navigation_config_message(Network::Colossus_protocol::Message& data);
+
+        void send_simple_network_message(const Network::Colossus_protocol::Message::Type& type);
     };
 
 } // namespace Navtech

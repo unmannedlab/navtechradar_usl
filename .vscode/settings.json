@@ -1,5 +1,5 @@
 {
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "C_Cpp.clang_format_style": "file",
     "editor.rulers": [
         120
@@ -69,7 +69,12 @@
         "hash_set": "cpp",
         "unordered_set": "cpp",
         "any": "cpp",
-        "forward_list": "cpp"
+        "forward_list": "cpp",
+        "csignal": "cpp",
+        "codecvt": "cpp",
+        "regex": "cpp",
+        "future": "cpp",
+        "shared_mutex": "cpp"
     },
     "cmake.sourceDirectory": "${workspaceFolder}/cpp_17"
 }
