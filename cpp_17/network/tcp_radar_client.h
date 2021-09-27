@@ -23,6 +23,7 @@
 #include "../utility/ip_address.h"
 
 namespace Navtech {
+
     enum class Connection_state { disconnected, connecting, connected };
 
     struct Connection_info

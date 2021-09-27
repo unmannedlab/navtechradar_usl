@@ -61,6 +61,7 @@ namespace Navtech::Network {
                 high_precision_fft_data        = 31,
                 health                         = 40,
                 contour_update                 = 50,
+                blanking_sector_update         = 51,
                 system_restart                 = 76,
                 logging_levels                 = 90,
                 logging_levels_request         = 100,

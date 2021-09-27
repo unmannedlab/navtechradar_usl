@@ -3,4 +3,5 @@ add_library(
     timer.cpp 
     threaded_class.cpp
     ip_address.cpp
+    net_conversion.cpp
 )
