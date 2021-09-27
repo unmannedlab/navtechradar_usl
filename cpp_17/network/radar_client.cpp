@@ -198,7 +198,7 @@ namespace Navtech {
         Log("Radar_client - Set blanking sectors");
 
         Network::Colossus_protocol::Message msg { };
-        msg.type(Network::Colossus_protocol::Message::Type::blanking_sector_update);
+        msg.type(Network::Colossus_protocol::Message::Type::sector_blanking_update);
         msg.append(sector_list.to_vector());
 
         radar_client.send(msg.relinquish());

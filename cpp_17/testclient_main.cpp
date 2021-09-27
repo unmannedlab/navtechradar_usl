@@ -76,13 +76,11 @@ void configuration_data_handler(const Configuration_data::Pointer& data,
     // Set-up blanking sectors
     //
     Blanking_sector_list blanking_sectors {
-       Sector { 45.0, 60.0 },
-       Sector { 65.0, 80.0 },
-       Sector { 85.0, 100.0 },
-       Sector { 105.0, 120.0 }
-   };
-
-   blanking_sectors.add(Sector { 125.0, 140.0 });
+        Sector { 45.0, 60.0 },
+        Sector { 65.0, 80.0 },
+        Sector { 85.0, 100.0 },
+        Sector { 105.0, 120.0 }
+    };
 
     radar_client->set_blanking_sectors(blanking_sectors);
 }
