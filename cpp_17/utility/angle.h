@@ -58,9 +58,9 @@ namespace Navtech::Utility {
         constexpr float normalise(float value) const
         {
             float result { };
-            if (value >= 360.0)  value = (value - 360.0);
-            if (value <= -360.0) value = (value + 360.0);
-            if (value < 0.0)    value = (360.0 + value);
+            while (value >= 360.0)  value = (value - 360.0);
+            if (value <= -360.0)    value = (value + 360.0);
+            if (value < 0.0)        value = (360.0 + value);
 
             return (result + value);
         }
