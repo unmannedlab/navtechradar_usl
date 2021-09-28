@@ -42,7 +42,6 @@ Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }
 void Colossus_publisher::fft_data_handler(const Fft_data::Pointer& data)
 {
     //RCLCPP_INFO(Node::get_logger(), "Publishing FFT Data");
-
     auto message = interfaces::msg::FftDataMessage();
     message.angle = data->angle;
     message.azimuth = data->azimuth;
