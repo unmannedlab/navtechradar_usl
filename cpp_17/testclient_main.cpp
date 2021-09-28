@@ -8,8 +8,9 @@
 #include <cstdint>
 
 #include "common.h"
-#include "network/radar_client.h"
-#include "utility/pointer_types.h"
+#include "radar_client.h"
+#include "pointer_types.h"
+#include "sector_blanking.h"
 
 #ifdef _WIN32
 #include <WinSock2.h>
@@ -71,6 +72,17 @@ void configuration_data_handler(const Configuration_data::Pointer& data,
 
     // radar_client->start_fft_data();
     radar_client->request_navigation_configuration();
+
+    // Set-up blanking sectors
+    //
+    Blanking_sector_list blanking_sectors {
+        Sector { 45.0, 60.0 },
+        Sector { 65.0, 80.0 },
+        Sector { 85.0, 100.0 },
+        Sector { 105.0, 120.0 }
+    };
+
+    radar_client->set_blanking_sectors(blanking_sectors);
 }
 
 
@@ -117,9 +129,10 @@ int main(int argc, char** argv)
 
     radar_client->start();
 
-    // radar_client->request_navigation_configuration();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10'000));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(30'000));
+
+
 
     Log("Test Client Stopping");
     radar_client->stop_navigation_data();

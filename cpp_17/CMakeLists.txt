@@ -26,7 +26,7 @@ add_subdirectory(navigation)
 include_directories(navigation)
 
 add_executable(testclient testclient_main.cpp)
-target_link_libraries(testclient iasdk_network iasdk_utility iasdk_protobuf)
+target_link_libraries(testclient iasdk_network iasdk_utility iasdk_protobuf iasdk_navigation)
 
 add_executable(navigationclient navigation_main.cpp)
 target_link_libraries(navigationclient iasdk_network iasdk_utility iasdk_protobuf iasdk_navigation)
