@@ -6,7 +6,11 @@
 #include <iomanip>
 #include <iostream>
 
+#ifdef __linux
 #include <arpa/inet.h>
+#else
+#include "winsock.h"
+#endif
 #include <cstdint>
 
 #include "colossus_message_base.h"
