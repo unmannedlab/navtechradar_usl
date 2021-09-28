@@ -55,6 +55,7 @@ void Laser_scan_publisher::publish_laser_scan()
     auto message = sensor_msgs::msg::LaserScan();
     message.header = std_msgs::msg::Header();
     message.header.stamp = Node::get_clock()->now();
+    message.header.frame_id = "laser_frame";
     message.angle_min = M_PI / 180 * 360 / azimuth_samples * start_azimuth;
     message.angle_max = M_PI / 180 * 360 / azimuth_samples * end_azimuth;
     message.angle_increment = M_PI / 180 * 360 / azimuth_samples;
@@ -101,6 +102,9 @@ void Laser_scan_publisher::fft_data_handler(const Fft_data::Pointer& data)
     last_azimuth = data->azimuth;
 
     if (rotation_count >= config_publish_count) {
+        power_threshold = get_parameter("power_threshold").as_int();
+        start_azimuth = get_parameter("start_azimuth").as_int();
+        end_azimuth = get_parameter("end_azimuth").as_int();
         configuration_data_publisher->publish(config_message);
         rotation_count = 0;
     }

@@ -26,6 +26,8 @@ namespace Navtech {
     constexpr float range_multiplier_float         = 1000000.0f;
     constexpr std::uint32_t nav_data_record_length = (sizeof(std::uint32_t) + sizeof(std::uint16_t));
 
+    class Blanking_sector_list;
+
     struct Fft_data
     {
         using Pointer = Shared_owner<Fft_data>;
@@ -105,6 +107,7 @@ namespace Navtech {
         void set_health_data_callback(
             std::function<void(const Shared_owner<Colossus::Protobuf::Health>&)> fn = nullptr);
         void set_navigation_config_callback(std::function<void(const Navigation_config::Pointer&)> fn = nullptr);
+        void set_blanking_sectors(const Blanking_sector_list& sector_list);
 
     private:
         Tcp_radar_client radar_client;

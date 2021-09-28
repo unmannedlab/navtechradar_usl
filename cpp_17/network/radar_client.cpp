@@ -19,6 +19,8 @@
 #include "colossus_messages.h"
 #include "colossus_network_message.h"
 #include "radar_client.h"
+#include "../navigation/sector_blanking.h"
+
 
 namespace Navtech {
     Radar_client::Radar_client(const Utility::IP_address& radarAddress, const std::uint16_t& port) :
@@ -170,6 +172,8 @@ namespace Navtech {
 
     void Radar_client::set_navigation_configuration(const Navigation_config& cfg)
     {
+        Log("Radar_client - Set navigation configuration");
+
         // Copy struct to message to ensure correct endianness.
         //
         // TODO - The Colossus message itself could be used as the argument 
@@ -184,6 +188,18 @@ namespace Navtech {
         Network::Colossus_protocol::Message msg {};
         msg.type(Network::Colossus_protocol::Message::Type::set_navigation_configuration);
         msg.append(nav_config);
+
+        radar_client.send(msg.relinquish());
+    }
+
+
+    void Radar_client::set_blanking_sectors(const Blanking_sector_list& sector_list)
+    {
+        Log("Radar_client - Set blanking sectors");
+
+        Network::Colossus_protocol::Message msg { };
+        msg.type(Network::Colossus_protocol::Message::Type::sector_blanking_update);
+        msg.append(sector_list.to_vector());
 
         radar_client.send(msg.relinquish());
     }
