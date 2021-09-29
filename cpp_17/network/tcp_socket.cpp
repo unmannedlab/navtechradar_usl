@@ -22,7 +22,8 @@
 namespace Navtech {
     Tcp_socket::Tcp_socket(const Utility::IP_address& destination, const std::uint16_t& port) :
         sock { -1 }, 
-        destination { destination }
+        destination { destination },
+        port { port }
     {
     }
 

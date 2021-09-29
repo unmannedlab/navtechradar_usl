@@ -70,19 +70,19 @@ void configuration_data_handler(const Configuration_data::Pointer& data,
     packet_count = 0;
     last_azimuth = 0;
 
-    // radar_client->start_fft_data();
+    radar_client->start_fft_data();
     radar_client->request_navigation_configuration();
 
     // Set-up blanking sectors
     //
-    Blanking_sector_list blanking_sectors {
-        Sector { 45.0, 60.0 },
-        Sector { 65.0, 80.0 },
-        Sector { 85.0, 100.0 },
-        Sector { 105.0, 120.0 }
-    };
+    // Blanking_sector_list blanking_sectors {
+    //     Sector { 45.0, 60.0 },
+    //     Sector { 65.0, 80.0 },
+    //     Sector { 85.0, 100.0 },
+    //     Sector { 105.0, 120.0 }
+    // };
 
-    radar_client->set_blanking_sectors(blanking_sectors);
+    // radar_client->set_blanking_sectors(blanking_sectors);
 }
 
 
@@ -100,11 +100,11 @@ void navigation_config_handler(const Navigation_config::Pointer& cfg)
     // Now, change the configuration and send back to the
     // radar.
     //
-    nav_config.bins_to_operate_on   = 10;
-    nav_config.min_bin              = 100;
-    nav_config.navigation_threshold = 75.6;
+    // nav_config.bins_to_operate_on   = 10;
+    // nav_config.min_bin              = 100;
+    // nav_config.navigation_threshold = 75.6;
 
-    radar_client->set_navigation_configuration(nav_config);
+    // radar_client->set_navigation_configuration(nav_config);
 }
 
 
@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 
     Log("Test Client Starting");
 
-    radar_client = allocate_owned<Radar_client>("127.0.0.1"_ipv4);
+    radar_client = allocate_owned<Radar_client>("192.168.0.22"_ipv4, 6318);
 
     radar_client->set_fft_data_callback(fft_data_handler);
     radar_client->set_configuration_data_callback(configuration_data_handler);
