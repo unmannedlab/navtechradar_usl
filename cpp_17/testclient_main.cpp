@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 
     Log("Test Client Starting");
 
-    radar_client = allocate_owned<Radar_client>("192.168.0.22"_ipv4, 6318);
+    radar_client = allocate_owned<Radar_client>("192.168.0.1"_ipv4);
 
     radar_client->set_fft_data_callback(fft_data_handler);
     radar_client->set_configuration_data_callback(configuration_data_handler);
