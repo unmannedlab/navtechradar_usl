@@ -136,8 +136,8 @@ namespace Navtech::Network::Colossus_protocol {
         void ntp_split_seconds(std::uint32_t val) { split_seconds = htonl(val); }
 
         std::vector<std::uint8_t> fft_data() const
-        {
-            return std::vector<std::uint8_t>(payload_begin() + fft_data_offset(), payload_end());
+        { 
+            return to_vector();
         }
 
         // If your message has a header you MUST provide this function
