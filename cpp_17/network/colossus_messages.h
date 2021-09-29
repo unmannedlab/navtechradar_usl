@@ -67,7 +67,7 @@ namespace Navtech::Network::Colossus_protocol {
     // passing their own type as the template parameter.  This is an application
     // of the Curiously Recurring Template Pattern (CRTP)
     //
-    class Configuration : public Message_base::Protocol_buffer<Configuration> {
+    class Configuration : public Message_base::Header_and_payload<Configuration> {
     public:
         // Accessor/mutator API; or, you could make the attributes public
         // (but be careful of endianness issues!)
@@ -115,7 +115,7 @@ namespace Navtech::Network::Colossus_protocol {
     };
 
 
-    class Fft_data : public Message_base::Protocol_buffer<Fft_data> {
+    class Fft_data : public Message_base::Header_and_payload<Fft_data> {
     public:
         // Accessor/mutator API; or, you could make the attributes public
         // (but be careful of endianness issues!)
@@ -156,7 +156,7 @@ namespace Navtech::Network::Colossus_protocol {
     };
 
 
-    class Navigation_data : public Message_base::Protocol_buffer<Navigation_data> {
+    class Navigation_data : public Message_base::Header_and_payload<Navigation_data> {
     public:
         // Accessor/mutator API; or, you could make the attributes public
         // (but be careful of endianness issues!)
@@ -187,7 +187,7 @@ namespace Navtech::Network::Colossus_protocol {
     };
 
 
-    class Health : public Message_base::Protocol_buffer<Health> {
+    class Health : public Message_base::Payload_only<Health> {
     public:
     };
 
