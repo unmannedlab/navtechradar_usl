@@ -137,7 +137,7 @@ namespace Navtech::Network::Colossus_protocol {
 
         std::vector<std::uint8_t> fft_data() const
         {
-            return std::vector<std::uint8_t>(payload_begin() + fft_data_offset(), payload_end());
+            return to_vector();
         }
 
         // If your message has a header you MUST provide this function
