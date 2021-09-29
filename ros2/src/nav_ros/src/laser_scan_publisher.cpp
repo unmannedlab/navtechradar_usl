@@ -89,9 +89,15 @@ void Laser_scan_publisher::fft_data_handler(const Fft_data::Pointer& data)
     float range = bin_size * index;
     float intensity = data->data[index];
     int azimuth_index = static_cast<int>(data->angle / (360.0 / azimuth_samples));
+    azimuth_index = azimuth_samples - azimuth_index;
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
         range_values[azimuth_index] = range;
         intensity_values[azimuth_index] = intensity;
+    }
+    else
+    {
+        range_values[azimuth_index] = 0;
+        intensity_values[azimuth_index] = 0;
     }
 
     if (data->azimuth < last_azimuth) {
