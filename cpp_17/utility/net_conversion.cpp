@@ -30,12 +30,6 @@ namespace Navtech::Utility {
     }
 
 
-    std::uint16_t from_uint16_network(std::uint16_t network_value)
-    {
-        return ntohs(network_value);
-    }
-
-
     std::uint32_t to_uint32_host(float host_value)
     {
         float_uint32_map u { };
