@@ -156,16 +156,16 @@ namespace Navtech::Network::Colossus_protocol {
         }
 
         void bins_to_operate_on(std::uint16_t bins) { operating_bins = to_uint16_network(bins); }
-        std::uint16_t bins_to_operate_on() const { return to_uint16_host(operating_bins); }
+        std::uint16_t bins_to_operate_on() const    { return to_uint16_host(operating_bins); }
 
         void min_bin_to_operate_on(std::uint16_t min) { min_bin = to_uint16_network(min); }
-        std::uint16_t min_bin_to_operate_on() const { return to_uint16_host(min_bin); }
+        std::uint16_t min_bin_to_operate_on() const   { return to_uint16_host(min_bin); }
 
-        void navigation_threshold(float level) { threshold = to_uint32_network(level); }
-        float navigation_threshold() const { return from_uint32_network(threshold); }
+        void navigation_threshold(float level) { threshold = to_uint32_network(level * 10.0F); }
+        float navigation_threshold() const     { return (from_uint32_network(threshold) / 10.0F); }
 
         void max_peaks_per_azimuth(std::uint32_t peaks) { max_peaks = to_uint32_network(peaks); }
-        std::uint32_t max_peaks_per_azimuth() const { return to_uint32_host(max_peaks); }
+        std::uint32_t max_peaks_per_azimuth() const     { return to_uint32_host(max_peaks); }
 
     private:
         // Attribute overlay

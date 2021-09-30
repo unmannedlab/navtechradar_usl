@@ -74,18 +74,36 @@ namespace Navtech::Utility {
     }
 
 
-    Byte_array to_byte_array(std::uint32_t value)
+    Byte_array_4 to_byte_array(std::uint32_t value)
     {
-        Byte_array buffer { };
+        Byte_array_4 buffer { };
         std::memcpy(&buffer[0], &value, sizeof(std::uint32_t));
         
         return buffer;
     }
 
 
-    std::uint32_t from_byte_array(const Byte_array& value)
+    std::uint32_t from_byte_array(const Byte_array_4& value)
     {
         std::uint32_t output { };
+        std::memcpy(&output, &value[0], sizeof(output));
+        
+        return output;
+    }
+
+
+    Byte_array_2 to_byte_array(std::uint16_t value)
+    {
+        Byte_array_2 buffer { };
+        std::memcpy(&buffer[0], &value, sizeof(std::uint16_t));
+        
+        return buffer;
+    }
+
+
+    std::uint16_t from_byte_array(const Byte_array_2& value)
+    {
+        std::uint16_t output { };
         std::memcpy(&output, &value[0], sizeof(output));
         
         return output;
