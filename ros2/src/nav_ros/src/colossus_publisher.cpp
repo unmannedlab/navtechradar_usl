@@ -9,9 +9,11 @@
 #include "interfaces/msg/fft_data_message.hpp"
 #include "radar_client.h"
 #include "colossus_publisher.h"
+#include "net_conversion.h"
 
 using namespace std;
 using namespace Navtech;
+using namespace Navtech::Utility;
 using namespace rclcpp;
 
 Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }
@@ -43,19 +45,19 @@ void Colossus_publisher::fft_data_handler(const Fft_data::Pointer& data)
 {
     //RCLCPP_INFO(Node::get_logger(), "Publishing FFT Data");
     auto message = interfaces::msg::FftDataMessage();
-    message.angle = data->angle;
-    message.azimuth = data->azimuth;
-    message.sweep_counter = data->sweep_counter;
-    message.ntp_seconds = data->ntp_seconds;
-    message.ntp_split_seconds = data->ntp_split_seconds;
+    message.angle = to_vector(to_uint64_host(data->angle));
+    message.azimuth = to_vector(to_uint16_network(data->azimuth));
+    message.sweep_counter = to_vector(to_uint16_network(data->sweep_counter));
+    message.ntp_seconds = to_vector(to_uint32_network(data->ntp_seconds));
+    message.ntp_split_seconds = to_vector(to_uint32_network(data->ntp_split_seconds));
     message.data = data->data;
-    message.data_length = data->data.size();
+    message.data_length = to_vector(to_uint16_network(data->data.size()));
 
-    //RCLCPP_INFO(Node::get_logger(), "Data 0: %u", static_cast<int>(data->Data[0]));
-    //RCLCPP_INFO(Node::get_logger(), "Data 1: %u", static_cast<int>(data->Data[1]));
-    //RCLCPP_INFO(Node::get_logger(), "Data 2: %u", static_cast<int>(data->Data[2]));
-    //RCLCPP_INFO(Node::get_logger(), "Data 3: %u", static_cast<int>(data->Data[3]));
-    //RCLCPP_INFO(Node::get_logger(), "Data 4: %u", static_cast<int>(data->Data[4]));
+    ////RCLCPP_INFO(Node::get_logger(), "Data 0: %u", static_cast<int>(data->Data[0]));
+    ////RCLCPP_INFO(Node::get_logger(), "Data 1: %u", static_cast<int>(data->Data[1]));
+    ////RCLCPP_INFO(Node::get_logger(), "Data 2: %u", static_cast<int>(data->Data[2]));
+    ////RCLCPP_INFO(Node::get_logger(), "Data 3: %u", static_cast<int>(data->Data[3]));
+    ////RCLCPP_INFO(Node::get_logger(), "Data 4: %u", static_cast<int>(data->Data[4]));
 
     if (data->azimuth < last_azimuth) {
         rotation_count++;
@@ -85,11 +87,11 @@ void Colossus_publisher::configuration_data_handler(const Configuration_data::Po
     RCLCPP_INFO(Node::get_logger(), "Publishing Configuration Data");
 
     azimuth_samples = data->azimuth_samples;
-    config_message.azimuth_samples = data->azimuth_samples;
-    config_message.encoder_size = data->encoder_size;
-    config_message.bin_size = data->bin_size;
-    config_message.range_in_bins = data->range_in_bins;
-    config_message.expected_rotation_rate = data->expected_rotation_rate;
+    config_message.azimuth_samples = to_vector(to_uint16_network(data->azimuth_samples));
+    config_message.encoder_size = to_vector(to_uint16_network(data->encoder_size));
+    config_message.bin_size = to_vector(to_uint64_host(data->bin_size));
+    config_message.range_in_bins = to_vector(to_uint16_network(data->range_in_bins));
+    config_message.expected_rotation_rate = to_vector(to_uint16_network(data->expected_rotation_rate));
     configuration_data_publisher->publish(config_message);
 
     radar_client->start_fft_data();

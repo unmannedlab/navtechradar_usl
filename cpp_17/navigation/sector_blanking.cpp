@@ -80,7 +80,7 @@ namespace Navtech {
         if (buffer[0] != num_sectors) throw std::length_error { "Number of sectors does not match" };
 
         auto it = buffer.begin() + 1;
-        Byte_array bytes { };
+        Byte_array_4 bytes { };
 
         for (unsigned int i { 0 }; i < num_sectors; ++i) {
             copy_n(it, bytes.size(), begin(bytes));
