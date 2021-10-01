@@ -7,7 +7,9 @@
 #include "interfaces/msg/fft_data_message.hpp"
 #include "interfaces/msg/camera_image_message.hpp"
 #include "colossus_and_camera_subscriber_to_video.h"
+#include "net_conversion.h"
 
+using namespace Navtech::Utility;
 using namespace std;
 using namespace rclcpp;
 using namespace cv;
@@ -62,17 +64,52 @@ void Colossus_and_camera_subscriber_to_video::configuration_data_callback(const 
     }
 
     RCLCPP_INFO(Node::get_logger(), "Configuration Data recieved");
-    RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", msg->azimuth_samples);
-    node->azimuth_samples = msg->azimuth_samples;
-    RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", msg->encoder_size);
-    node->encoder_size = msg->encoder_size;
-    RCLCPP_INFO(Node::get_logger(), "Bin Size: %f", msg->bin_size);
-    RCLCPP_INFO(Node::get_logger(), "Range In Bins: %i", msg->range_in_bins);
-    RCLCPP_INFO(Node::get_logger(), "Expected Rotation Rate: %i", msg->expected_rotation_rate);
+    auto azimuth_samples = from_vector_to<uint16_t>(msg->azimuth_samples);
+    if (azimuth_samples.has_value()) {
+        node->azimuth_samples = to_uint16_host(azimuth_samples.value());
+        node->video_height = node->azimuth_samples;
+        RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", node->azimuth_samples);
+    }
+    else {
+        RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Azimuth Samples");
+    }
 
-    node->video_width = msg->range_in_bins;
-    node->video_height = msg->azimuth_samples;
-    node->video_writer_colossus.open("output_videos/radar_output.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), msg->expected_rotation_rate, Size(azimuth_samples, azimuth_samples), true);
+    auto encoder_size = from_vector_to<uint16_t>(msg->encoder_size);
+    if (encoder_size.has_value()) {
+        node->encoder_size = to_uint16_host(encoder_size.value());
+        RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", node->encoder_size);
+    }
+    else {
+        RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Encoder Size");
+    }
+
+    auto bin_size = from_vector_to<uint64_t>(msg->bin_size);
+    if (bin_size.has_value()) {
+        RCLCPP_INFO(Node::get_logger(), "Bin Size: %f", from_uint64_host(bin_size.value()));
+    }
+    else {
+        RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Bin Size");
+    }
+
+    auto range_in_bins = from_vector_to<uint16_t>(msg->range_in_bins);
+    if (range_in_bins.has_value()) {
+        node->video_width = to_uint16_host(range_in_bins.value());
+        RCLCPP_INFO(Node::get_logger(), "Range In Bins: %i", node->video_width);
+    }
+    else {
+        RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Range In Bins");
+    }
+
+    auto expected_rotation_rate = from_vector_to<uint16_t>(msg->expected_rotation_rate);
+    if (expected_rotation_rate.has_value()) {
+        node->expected_rotation_rate = to_uint16_host(expected_rotation_rate.value());
+        RCLCPP_INFO(Node::get_logger(), "Expected Rotation Rate: %i", node->expected_rotation_rate);
+    }
+    else {
+        RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Expected Rotation Rate");
+    }
+
+    node->video_writer_colossus.open("output_videos/radar_output.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), node->expected_rotation_rate, Size(node->azimuth_samples, node->azimuth_samples), true);
     node->config_data_received = true;
 }
 
@@ -83,42 +120,48 @@ void Colossus_and_camera_subscriber_to_video::fft_data_callback(const interfaces
         return;
     }
 
-    node->current_bearing = (static_cast<double>(msg->azimuth) / node->encoder_size) * node->azimuth_samples;
+    auto azimuth = from_vector_to<uint16_t>(msg->azimuth);
+    if (azimuth.has_value()) {
+        node->azimuth = to_uint16_host(azimuth.value());
+    }
+    else {
+        RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Azimuth");
+    }
 
-    int max_index = min(static_cast<int>(msg->data_length), static_cast<int>(node->azimuth_samples));
-    int matrix_max_index = node->radar_image.rows * node->radar_image.cols * node->radar_image.channels();
-    for (int i = 0; i < max_index; i++) {
-        int index = i * 1 + node->current_bearing * node->radar_image.step + 1;
+    auto data_length = from_vector_to<uint16_t>(msg->data_length);
+    if (data_length.has_value()) {
+        node->data_length = to_uint16_host(data_length.value());
+    }
+    else {
+        RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Data Length");
+    }
+
+    node->current_bearing = ((double)node->azimuth / (double)node->encoder_size) * (double)node->azimuth_samples;
+
+    int max_index = min((int)node->data_length, (int)node->azimuth_samples);
+    int matrix_max_index = radar_image.rows * radar_image.cols * radar_image.channels();
+    for (int i{ 0 }; i < max_index; i++) {
+        int index = i * 1 + node->current_bearing * radar_image.step + 1;
         if (index < matrix_max_index) {
-            node->image_ptr[index] = static_cast<int>(msg->data[i]);
+            image_ptr[index] = static_cast<int>(msg->data[i]);
         }
     }
 
-    if (msg->azimuth < node->last_azimuth) {
+    if (node->azimuth < node->last_azimuth) {
         Mat recovered_lin_polar_img;
-        Point2f center(static_cast<float>(radar_image.cols) / 2, radar_image.rows / 2);
+        Point2f center{ (float)radar_image.cols / 2, (float)radar_image.rows / 2 };
         double max_radius = min(center.y, center.x);
         linearPolar(radar_image, recovered_lin_polar_img, center, max_radius, INTER_LINEAR + WARP_FILL_OUTLIERS + WARP_INVERSE_MAP);
-        Mat normalised_image(Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar(0, 0));
+        Mat normalised_image(Size{ azimuth_samples, azimuth_samples }, CV_8UC1, Scalar{ 0, 0 });
         normalize(recovered_lin_polar_img, normalised_image, 0, 255, NORM_MINMAX);
-        Mat rotated_image(Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar(0, 0));
+        Mat rotated_image(Size{ azimuth_samples, azimuth_samples }, CV_8UC1, Scalar{ 0, 0 });
         rotate(normalised_image, rotated_image, ROTATE_90_COUNTERCLOCKWISE);
-        Mat channels[3] = { blank_image, rotated_image, blank_image };
+        Mat channels[3]{ blank_image, rotated_image, blank_image };
         Mat merged_data;
         merge(channels, 3, merged_data);
         node->video_writer_colossus.write(merged_data);
     }
-    node->last_azimuth = msg->azimuth;
-
-    //RCLCPP_INFO(Node::get_logger(), "FFT Data Received");
-	//RCLCPP_INFO(Node::get_logger(), "Angle: %f", msg->angle);
-	//RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", encoder_size);
-	//RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", azimuth_samples);
-	//RCLCPP_INFO(Node::get_logger(), "Azimuth: %i", msg->azimuth);
-	//RCLCPP_INFO(Node::get_logger(), "Current Bearing: %i", current_bearing);
-	//RCLCPP_INFO(Node::get_logger(), "Sweep Counter: %i", msg->sweep_counter);
-	//RCLCPP_INFO(Node::get_logger(), "NTP Seconds: : %i", msg->ntp_seconds);
-	//RCLCPP_INFO(Node::get_logger(), "NTP Split Seconds: %i", msg->ntp_split_seconds);
+    node->last_azimuth = node->azimuth;
 }
 
 void Colossus_and_camera_subscriber_to_video::camera_configuration_data_callback(const interfaces::msg::CameraConfigurationMessage::SharedPtr data) const

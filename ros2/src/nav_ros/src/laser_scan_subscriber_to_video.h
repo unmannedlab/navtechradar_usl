@@ -17,6 +17,7 @@ private:
     int video_width{ 0 };
     int video_height{ 0 };
     int current_bearing{ 0 };
+    int expected_rotation_rate{ 0 };
     cv::Mat blank_image{ cv::Size(400, 400), CV_8UC1, cv::Scalar(0, 0) };
     int last_azimuth{ 0 };
 

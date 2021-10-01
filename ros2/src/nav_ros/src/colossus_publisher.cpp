@@ -11,9 +11,9 @@
 #include "colossus_publisher.h"
 #include "net_conversion.h"
 
+using namespace Navtech::Utility;
 using namespace std;
 using namespace Navtech;
-using namespace Navtech::Utility;
 using namespace rclcpp;
 
 Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }

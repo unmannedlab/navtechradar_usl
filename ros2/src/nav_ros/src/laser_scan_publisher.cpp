@@ -10,9 +10,11 @@
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "radar_client.h"
 #include "laser_scan_publisher.h"
+#include "net_conversion.h"
 
 using namespace std;
 using namespace Navtech;
+using namespace Navtech::Utility;
 using namespace rclcpp;
 
 Laser_scan_publisher::Laser_scan_publisher():Node{ "laser_scan_publisher" }
@@ -134,11 +136,11 @@ void Laser_scan_publisher::configuration_data_handler(const Configuration_data::
     bin_size = data->bin_size;
     range_in_bins = data->range_in_bins;
     expected_rotation_rate = data->expected_rotation_rate;
-    config_message.azimuth_samples = data->azimuth_samples;
-    config_message.encoder_size = data->encoder_size;
-    config_message.bin_size = data->bin_size;
-    config_message.range_in_bins = data->range_in_bins;
-    config_message.expected_rotation_rate = data->expected_rotation_rate;
+    config_message.azimuth_samples = to_vector(to_uint16_network(data->azimuth_samples));
+    config_message.encoder_size = to_vector(to_uint16_network(data->encoder_size));
+    config_message.bin_size = to_vector(to_uint64_host(data->bin_size));
+    config_message.range_in_bins = to_vector(to_uint16_network(data->range_in_bins));
+    config_message.expected_rotation_rate = to_vector(to_uint16_network(data->expected_rotation_rate));
     configuration_data_publisher->publish(config_message);
 
     range_values.resize(end_azimuth - start_azimuth);
