@@ -22,7 +22,7 @@ namespace Navtech::Network::Colossus_protocol {
     namespace Message_base {
 
         template <typename Derived_Ty>
-        class Protocol_buffer;
+        class Header_and_payload;
 
         #pragma pack(1)
         template <typename Derived_Ty>
@@ -67,7 +67,7 @@ namespace Navtech::Network::Colossus_protocol {
             }
 
         protected:
-            friend Protocol_buffer<Derived_Ty>;
+            friend Header_and_payload<Derived_Ty>;
 
             Derived_Ty& actual()
             {
@@ -115,7 +115,7 @@ namespace Navtech::Network::Colossus_protocol {
 
         #pragma pack(1)
         template <typename Derived_Ty>
-        class Protocol_buffer : public Header_only<Derived_Ty> {
+        class Header_and_payload : public Header_only<Derived_Ty> {
         public:
             std::string to_string() const
             {
@@ -147,6 +147,10 @@ namespace Navtech::Network::Colossus_protocol {
             }
         };
         #pragma pack()
+
+
+        template <typename Derived_Ty>
+        using Payload_only = Header_and_payload<Derived_Ty>;
 
     } // namespace Message_base
     
