@@ -86,10 +86,15 @@ Also contains a subscriber to consume a published RTSP stream, and to convert it
 
 Contains the custom message types used within the ROS2 Navtech driver
 
+CameraConfigurationDataMessage
+A ROS message to represent some of the key attributes used in setting up an image stream - e.g. width, height, channels, fps
+
 ConfigurationDataMessage
+A ROS representation of the configuration data coming from the radar sensor. All values are presented as byte arrays, in network order.
+Subscribers will need to convert these byte arrays to language types in the appropriate host order.
 
 FftDataMessage
-A representation of the data coming from the radar sensor. All values are presented as byte arrays, in network order.
+A ROS representation of the fft data coming from the radar sensor. All values are presented as byte arrays, in network order.
 Subscribers will need to convert these byte arrays to language types in the appropriate host order.
 
 ## launch_ros
