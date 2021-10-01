@@ -82,10 +82,11 @@ struct more_than {
 
 void Laser_scan_publisher::fft_data_handler(const Fft_data::Pointer& data)
 {
-    auto itr = std::find_if(data->data.begin(), data->data.end(), more_than(power_threshold));
-    auto index = std::distance(data->data.begin(), itr);
-    if (itr == data->data.end())
-        index = std::distance(data->data.begin(), itr-1);
+    auto itr = find_if(data->data.begin(), data->data.end(), more_than(power_threshold));
+    auto index = distance(data->data.begin(), itr);
+    if (itr == data->data.end()) {
+        index = std::distance(data->data.begin(), itr - 1);
+    }
     float range = bin_size * index;
     float intensity = data->data[index];
     int azimuth_index = static_cast<int>(data->angle / (360.0 / azimuth_samples));
