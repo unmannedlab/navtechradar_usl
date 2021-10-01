@@ -70,19 +70,19 @@ void configuration_data_handler(const Configuration_data::Pointer& data,
     packet_count = 0;
     last_azimuth = 0;
 
-    // radar_client->start_fft_data();
+    radar_client->start_fft_data();
     radar_client->request_navigation_configuration();
 
     // Set-up blanking sectors
     //
-    Blanking_sector_list blanking_sectors {
-        Sector { 45.0, 60.0 },
-        Sector { 65.0, 80.0 },
-        Sector { 85.0, 100.0 },
-        Sector { 105.0, 120.0 }
-    };
+    // Blanking_sector_list blanking_sectors {
+    //     Sector { 45.0, 60.0 },
+    //     Sector { 65.0, 80.0 },
+    //     Sector { 85.0, 100.0 },
+    //     Sector { 105.0, 120.0 }
+    // };
 
-    radar_client->set_blanking_sectors(blanking_sectors);
+    // radar_client->set_blanking_sectors(blanking_sectors);
 }
 
 
