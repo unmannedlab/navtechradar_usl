@@ -5,6 +5,7 @@
 #include <array>
 #include <vector>
 #include <cstring>
+#include <optional>
 
 namespace Navtech::Utility {
 
@@ -22,6 +23,11 @@ namespace Navtech::Utility {
     std::uint32_t to_uint32_host(std::uint32_t network_value);
     std::uint32_t to_uint32_network(std::uint32_t host_value);
 
+    std::uint64_t to_uint64_host(double host_value);
+    std::uint64_t to_uint64_network(double host_value);
+    double        from_uint64_host(std::uint64_t host_value);
+    double        from_uint64_network(std::uint64_t network_value);
+
     Byte_array_4 to_byte_array(std::uint32_t value);
     Byte_array_2 to_byte_array(std::uint16_t value);
     std::uint32_t from_byte_array(const Byte_array_4& value);
@@ -32,6 +38,17 @@ namespace Navtech::Utility {
     {
         std::vector<std::uint8_t> result(sizeof(T));
         std::memcpy(result.data(), &value, sizeof(T));
+        return result;
+    }
+
+
+    template <typename T>
+    std::optional<T> from_vector_to(const std::vector<std::uint8_t>& vec)
+    {
+        if (vec.size() < sizeof(T)) return std::nullopt;
+
+        T result { };
+        std::memcpy(&result, vec.data(), sizeof(T));
         return result;
     }
 

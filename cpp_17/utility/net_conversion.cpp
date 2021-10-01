@@ -18,6 +18,12 @@ namespace Navtech::Utility {
     };
 
 
+    union double_uint64_map {
+        double        as_double;
+        std::uint64_t as_uint;
+        std::uint32_t as_array[2];
+    };
+
     std::uint16_t to_uint16_network(std::uint16_t host_value)
     {
         return htons(host_value);
@@ -107,6 +113,42 @@ namespace Navtech::Utility {
         std::memcpy(&output, &value[0], sizeof(output));
         
         return output;
+    }
+
+
+    std::uint64_t to_uint64_host(double host_value)
+    {
+        double_uint64_map u { };
+        u.as_double = host_value;
+        return u.as_uint;
+    }
+
+
+    std::uint64_t to_uint64_network(double host_value)
+    {
+        double_uint64_map u { };
+        u.as_double = host_value;
+        u.as_array[0] = to_uint32_network(u.as_array[0]);
+        u.as_array[1] = to_uint32_network(u.as_array[1]);
+        return u.as_uint;
+    }
+
+
+    double from_uint64_host(std::uint64_t host_value)
+    {
+        double_uint64_map u { };
+        u.as_uint = host_value;
+        return u.as_double;
+    }
+
+
+    double from_uint64_network(std::uint64_t network_value)
+    {
+        double_uint64_map u { };
+        u.as_uint = network_value;
+        u.as_array[0] = to_uint32_host(u.as_array[0]);
+        u.as_array[1] = to_uint32_host(u.as_array[1]);
+        return u.as_double;
     }
     
 } // namespace Navtech::Utility
