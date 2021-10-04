@@ -1,7 +1,22 @@
-float32 angle
-uint16 azimuth
-uint16 sweep_counter
-uint32 ntp_seconds
-uint32 ntp_split_seconds
+# A ROS message based on an FFT data message from a radar
+
+# angle (double) represented as a network order (uint8_t) byte array
+uint8[] angle
+
+# azimuth (uint16_t) represented as a network order (uint8_t) byte array
+uint8[] azimuth
+
+# sweep_counter (uint16_t) represented as a network order (uint8_t) byte array
+uint8[] sweep_counter
+
+# ntp_seconds (uint32_t) represented as a network order (uint8_t) byte array
+uint8[] ntp_seconds
+
+# ntp_split_seconds (uint32_t) represented as a network order (uint8_t) byte array
+uint8[] ntp_split_seconds
+
+# data (uint8_t) represented as a network order (uint8_t) byte array
 uint8[] data
-uint16 data_length
+
+# data_length (uint16_t) represented as a network order (uint8_t) byte array
+uint8[] data_length

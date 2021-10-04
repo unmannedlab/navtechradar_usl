@@ -13,11 +13,6 @@
 #include "std_msgs/msg/header.hpp"
 #include "camera_publisher.h"
 
-using namespace std;
-using namespace rclcpp;
-using namespace cv;
-using namespace chrono;
-
 Camera_publisher::Camera_publisher():rclcpp::Node{ "camera_publisher" }
 {
     declare_parameter("camera_url", "");
@@ -40,18 +35,10 @@ Camera_publisher::Camera_publisher():rclcpp::Node{ "camera_publisher" }
     qos_camera_image_publisher);
 }
 
-void Camera_publisher::camera_image_handler(Mat image, int fps)
+void Camera_publisher::camera_image_handler(cv::Mat image, int fps)
 {
-    //RCLCPP_INFO(Node::get_logger(), "Publishing Camera Image Data");
-    //RCLCPP_INFO(Node::get_logger(), "Mat rows: %i", image.rows);
-    //RCLCPP_INFO(Node::get_logger(), "Mat columns: %i", image.cols);
-    //RCLCPP_INFO(Node::get_logger(), "Mat size: %i", image.rows * image.cols);
-    //RCLCPP_INFO(Node::get_logger(), "Mat type: %i", image.type());
-
     auto buffer_length = image.cols * image.rows * sizeof(uint8_t) * 3;
-    vector<uint8_t> vector_buffer(image.ptr(0), image.ptr(0) + buffer_length);
-
-    //RCLCPP_INFO(Node::get_logger(), "Image buffer size: %li", buffer_length);
+    std::vector<uint8_t> vector_buffer(image.ptr(0), image.ptr(0) + buffer_length);
 
     if ((!configuration_sent) || (frame_count >= config_publish_count)) {
         auto config_message = interfaces::msg::CameraConfigurationMessage();

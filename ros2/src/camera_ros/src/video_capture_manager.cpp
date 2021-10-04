@@ -9,38 +9,35 @@
 
 #include "video_capture_manager.h"
 
-using namespace std;
-using namespace cv;
-
 Video_capture_manager::Video_capture_manager(){
 }
 
 int Video_capture_manager::connect_to_camera(std::string camera_url)
 {
-	cout << "Connecting to camera..." << endl;
+	std::cout << "Connecting to camera..." << std::endl;
 
-	capture = VideoCapture{camera_url};
+	capture = cv::VideoCapture{camera_url};
 	if (!capture.isOpened()) {
-		cout << "Unable to connect to camera" << endl;
+		std::cout << "Unable to connect to camera" << std::endl;
 		return 0;
 	}
 	else {
-		cout << "Camera connected" << endl;
-		cout << "Width: " << capture.get(CAP_PROP_FRAME_WIDTH) << endl;
-		cout << "Height: " << capture.get(CAP_PROP_FRAME_HEIGHT) << endl;
-		cout << "Fps: " << capture.get(CAP_PROP_FPS) << endl;
+		std::cout << "Camera connected" << std::endl;
+		std::cout << "Width: " << capture.get(cv::CAP_PROP_FRAME_WIDTH) << std::endl;
+		std::cout << "Height: " << capture.get(cv::CAP_PROP_FRAME_HEIGHT) << std::endl;
+		std::cout << "Fps: " << capture.get(cv::CAP_PROP_FPS) << std::endl;
 		return 1;
 	}
 	
 }
 
-Mat Video_capture_manager::get_latest_frame()
+cv::Mat Video_capture_manager::get_latest_frame()
 {
-	Mat latest_image{ };
+	cv::Mat latest_image{ };
 	auto start = std::chrono::steady_clock::now();
 	auto finish = std::chrono::steady_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;
-	while (elapsed.count() < 1 / (capture.get(CAP_PROP_FPS) + 1)) {
+	while (elapsed.count() < 1 / (capture.get(cv::CAP_PROP_FPS) + 1)) {
 		start = std::chrono::steady_clock::now();
 		capture >> latest_image;
 		finish = std::chrono::steady_clock::now();
@@ -56,33 +53,32 @@ void Video_capture_manager::test_framerate(int num_captures)
 	auto start = std::chrono::steady_clock::now();
 	auto finish = std::chrono::steady_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;
-	while (elapsed.count() < 1 / (capture.get(CAP_PROP_FPS) + 1)){
+	while (elapsed.count() < 1 / (capture.get(cv::CAP_PROP_FPS) + 1)){
 		start = std::chrono::steady_clock::now();
 		capture.grab();
 		finish = std::chrono::steady_clock::now();
 		elapsed = finish - start;
-		//std::cout << "Buffer not empty" << endl;
 	}
-	std::cout << "Buffer cleared" << endl;
+	std::cout << "Buffer cleared" << std::endl;
 
-	cout << "Capturing " << num_captures << " frames..." << endl;
+	std::cout << "Capturing " << num_captures << " frames..." << std::endl;
 	
 	start = std::chrono::steady_clock::now();
 
-	Mat captured_image{ };
+	cv::Mat captured_image{ };
 	for (int f = 0; f < num_captures; f++){
 		capture >> captured_image;
 	}
 	
 	finish = std::chrono::steady_clock::now();
 	elapsed = finish - start;
-	std::cout << "Elapsed time: " << elapsed.count() << endl;
+	std::cout << "Elapsed time: " << elapsed.count() << std::endl;
 	auto fps = num_captures / elapsed.count();
-	std::cout << "FPS: " << fps << endl;
+	std::cout << "FPS: " << fps << std::endl;
 }
 
 void Video_capture_manager::disconnect_from_camera()
 {
-	cout << "Disconnecting from camera..." << endl;
+	std::cout << "Disconnecting from camera..." << std::endl;
 	capture.release();
 }

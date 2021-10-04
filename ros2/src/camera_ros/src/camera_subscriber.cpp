@@ -8,10 +8,6 @@
 #include "opencv2/opencv.hpp"
 #include "camera_subscriber.h"
 
-using namespace std;
-using namespace rclcpp;
-using namespace cv;
-
 Camera_subscriber::Camera_subscriber():rclcpp::Node{ "camera_subscriber" }{
     using std::placeholders::_1;
 
@@ -53,7 +49,4 @@ void Camera_subscriber::camera_image_callback(const sensor_msgs::msg::Image::Sha
     RCLCPP_INFO(Node::get_logger(), "Image step: %i", data->step);
     RCLCPP_INFO(Node::get_logger(), "Image timestamp secs: %i", data->header.stamp.sec);
     RCLCPP_INFO(Node::get_logger(), "Image timestamp nsecs: %i", data->header.stamp.nanosec);
-
-    //Mat test_image = Mat(data->height, data->width, CV_8UC3, data->data.data()).clone();
-    //imwrite("test.jpg", test_image);
 }

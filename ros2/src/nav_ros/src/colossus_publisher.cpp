@@ -9,10 +9,7 @@
 #include "interfaces/msg/fft_data_message.hpp"
 #include "radar_client.h"
 #include "colossus_publisher.h"
-
-using namespace std;
-using namespace Navtech;
-using namespace rclcpp;
+#include "net_conversion.h"
 
 Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }
 {
@@ -39,24 +36,23 @@ Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }
         qos_radar_fft_publisher);
 }
 
-void Colossus_publisher::fft_data_handler(const Fft_data::Pointer& data)
+void Colossus_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data)
 {
     //RCLCPP_INFO(Node::get_logger(), "Publishing FFT Data");
-
     auto message = interfaces::msg::FftDataMessage();
-    message.angle = data->angle;
-    message.azimuth = data->azimuth;
-    message.sweep_counter = data->sweep_counter;
-    message.ntp_seconds = data->ntp_seconds;
-    message.ntp_split_seconds = data->ntp_split_seconds;
+    message.angle = Navtech::Utility::to_vector(Navtech::Utility::to_uint64_host(data->angle));
+    message.azimuth = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->azimuth));
+    message.sweep_counter = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->sweep_counter));
+    message.ntp_seconds = Navtech::Utility::to_vector(Navtech::Utility::to_uint32_network(data->ntp_seconds));
+    message.ntp_split_seconds = Navtech::Utility::to_vector(Navtech::Utility::to_uint32_network(data->ntp_split_seconds));
     message.data = data->data;
-    message.data_length = data->data.size();
+    message.data_length = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->data.size()));
 
-    //RCLCPP_INFO(Node::get_logger(), "Data 0: %u", static_cast<int>(data->Data[0]));
-    //RCLCPP_INFO(Node::get_logger(), "Data 1: %u", static_cast<int>(data->Data[1]));
-    //RCLCPP_INFO(Node::get_logger(), "Data 2: %u", static_cast<int>(data->Data[2]));
-    //RCLCPP_INFO(Node::get_logger(), "Data 3: %u", static_cast<int>(data->Data[3]));
-    //RCLCPP_INFO(Node::get_logger(), "Data 4: %u", static_cast<int>(data->Data[4]));
+    ////RCLCPP_INFO(Node::get_logger(), "Data 0: %u", static_cast<int>(data->Data[0]));
+    ////RCLCPP_INFO(Node::get_logger(), "Data 1: %u", static_cast<int>(data->Data[1]));
+    ////RCLCPP_INFO(Node::get_logger(), "Data 2: %u", static_cast<int>(data->Data[2]));
+    ////RCLCPP_INFO(Node::get_logger(), "Data 3: %u", static_cast<int>(data->Data[3]));
+    ////RCLCPP_INFO(Node::get_logger(), "Data 4: %u", static_cast<int>(data->Data[4]));
 
     if (data->azimuth < last_azimuth) {
         rotation_count++;
@@ -76,7 +72,7 @@ void Colossus_publisher::fft_data_handler(const Fft_data::Pointer& data)
     fft_data_publisher->publish(message);
 }
 
-void Colossus_publisher::configuration_data_handler(const Configuration_data::Pointer& data){
+void Colossus_publisher::configuration_data_handler(const Navtech::Configuration_data::Pointer& data){
     RCLCPP_INFO(Node::get_logger(), "Configuration Data Received");
     RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", data->azimuth_samples);
     RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", data->encoder_size);
@@ -86,11 +82,11 @@ void Colossus_publisher::configuration_data_handler(const Configuration_data::Po
     RCLCPP_INFO(Node::get_logger(), "Publishing Configuration Data");
 
     azimuth_samples = data->azimuth_samples;
-    config_message.azimuth_samples = data->azimuth_samples;
-    config_message.encoder_size = data->encoder_size;
-    config_message.bin_size = data->bin_size;
-    config_message.range_in_bins = data->range_in_bins;
-    config_message.expected_rotation_rate = data->expected_rotation_rate;
+    config_message.azimuth_samples = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->azimuth_samples));
+    config_message.encoder_size = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->encoder_size));
+    config_message.bin_size = Navtech::Utility::to_vector(Navtech::Utility::to_uint64_host(data->bin_size));
+    config_message.range_in_bins = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->range_in_bins));
+    config_message.expected_rotation_rate = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->expected_rotation_rate));
     configuration_data_publisher->publish(config_message);
 
     radar_client->start_fft_data();

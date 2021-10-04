@@ -31,9 +31,10 @@ private:
     int fps{ 0 };
     int last_azimuth{ 0 };
     bool rotated_once{ false };
-    bool configuration_sent{ false };
     int rotation_count{ 0 };
+    int frame_count{ 0 };
     int config_publish_count{ 4 };
+    bool configuration_sent{ false };
 
     interfaces::msg::ConfigurationDataMessage config_message = interfaces::msg::ConfigurationDataMessage();
 

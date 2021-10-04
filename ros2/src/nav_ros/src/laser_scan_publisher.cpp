@@ -10,10 +10,7 @@
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "radar_client.h"
 #include "laser_scan_publisher.h"
-
-using namespace std;
-using namespace Navtech;
-using namespace rclcpp;
+#include "net_conversion.h"
 
 Laser_scan_publisher::Laser_scan_publisher():Node{ "laser_scan_publisher" }
 {
@@ -80,18 +77,24 @@ struct more_than {
     int _limit;
 };
 
-void Laser_scan_publisher::fft_data_handler(const Fft_data::Pointer& data)
+void Laser_scan_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data)
 {
-    auto itr = std::find_if(data->data.begin(), data->data.end(), more_than(power_threshold));
-    auto index = std::distance(data->data.begin(), itr);
-    if (itr == data->data.end())
-        index = std::distance(data->data.begin(), itr-1);
-    float range = bin_size * index;
-    float intensity = data->data[index];
+    auto itr = find_if(data->data.begin(), data->data.end(), more_than(power_threshold));
+    auto first_peak = distance(data->data.begin(), itr);
+    if (itr == data->data.end()) {
+        first_peak = std::distance(data->data.begin(), itr - 1);
+    }
+    float range = bin_size * first_peak;
+    float intensity = data->data[first_peak];
     int azimuth_index = static_cast<int>(data->angle / (360.0 / azimuth_samples));
+    azimuth_index = azimuth_samples - azimuth_index;
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
         range_values[azimuth_index] = range;
         intensity_values[azimuth_index] = intensity;
+    }
+    else{
+        range_values[azimuth_index] = 0;
+        intensity_values[azimuth_index] = 0;
     }
 
     if (data->azimuth < last_azimuth) {
@@ -114,7 +117,7 @@ void Laser_scan_publisher::fft_data_handler(const Fft_data::Pointer& data)
     }
 }
 
-void Laser_scan_publisher::configuration_data_handler(const Configuration_data::Pointer& data){
+void Laser_scan_publisher::configuration_data_handler(const Navtech::Configuration_data::Pointer& data){
     RCLCPP_INFO(Node::get_logger(), "Configuration Data Received");
     RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", data->azimuth_samples);
     RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", data->encoder_size);
@@ -127,11 +130,11 @@ void Laser_scan_publisher::configuration_data_handler(const Configuration_data::
     bin_size = data->bin_size;
     range_in_bins = data->range_in_bins;
     expected_rotation_rate = data->expected_rotation_rate;
-    config_message.azimuth_samples = data->azimuth_samples;
-    config_message.encoder_size = data->encoder_size;
-    config_message.bin_size = data->bin_size;
-    config_message.range_in_bins = data->range_in_bins;
-    config_message.expected_rotation_rate = data->expected_rotation_rate;
+    config_message.azimuth_samples = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->azimuth_samples));
+    config_message.encoder_size = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->encoder_size));
+    config_message.bin_size = Navtech::Utility::to_vector(Navtech::Utility::to_uint64_host(data->bin_size));
+    config_message.range_in_bins = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->range_in_bins));
+    config_message.expected_rotation_rate = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->expected_rotation_rate));
     configuration_data_publisher->publish(config_message);
 
     range_values.resize(end_azimuth - start_azimuth);
