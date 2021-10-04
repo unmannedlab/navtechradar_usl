@@ -9,23 +9,19 @@
 #include "radar_client.h"
 #include "colossus_publisher.h"
 
-using namespace std;
-using namespace Navtech;
-using namespace rclcpp;
-
 int main(int argc, char* argv[])
 {
-    init(argc, argv);
+    rclcpp::init(argc, argv);
     auto node = std::make_shared<Colossus_publisher>();
 
     RCLCPP_INFO(node->get_logger(), "Starting radar client");
-    node->radar_client = allocate_owned<Navtech::Radar_client>(node->radar_ip, node->radar_port);
+    node->radar_client = Navtech::allocate_owned<Navtech::Radar_client>(Navtech::Utility::IP_address { node->radar_ip }, node->radar_port);
     node->radar_client->set_fft_data_callback(std::bind(&Colossus_publisher::fft_data_handler, node.get(), std::placeholders::_1));
     node->radar_client->set_configuration_data_callback(std::bind(&Colossus_publisher::configuration_data_handler, node.get(), std::placeholders::_1));
 
     node->radar_client->start();
 
-    while (ok()) {
+    while (rclcpp::ok()) {
         spin(node);
     }
 
@@ -33,6 +29,6 @@ int main(int argc, char* argv[])
     node->radar_client->set_configuration_data_callback();
     node->radar_client->set_fft_data_callback();
     node->radar_client->stop();
-    shutdown();
+    rclcpp::shutdown();
     RCLCPP_INFO(node->get_logger(), "Stopped radar client");
 }

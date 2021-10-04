@@ -6,10 +6,7 @@
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "laser_scan_subscriber_to_video.h"
-
-using namespace std;
-using namespace rclcpp;
-using namespace cv;
+#include "net_conversion.h"
 
 std::shared_ptr<Laser_scan_subscriber_to_video> node{};
 
@@ -43,18 +40,53 @@ void Laser_scan_subscriber_to_video::configuration_data_callback(const interface
     }
 
     RCLCPP_INFO(Node::get_logger(), "Configuration Data recieved");
-    RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", msg->azimuth_samples);
-    node->azimuth_samples = msg->azimuth_samples;
-    RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", msg->encoder_size);
-    node->encoder_size = msg->encoder_size;
-    node->bin_size = msg->bin_size;
-    RCLCPP_INFO(Node::get_logger(), "Bin Size: %f", msg->bin_size);
-    RCLCPP_INFO(Node::get_logger(), "Range In Bins: %i", msg->range_in_bins);
-    RCLCPP_INFO(Node::get_logger(), "Expected Rotation Rate: %i", msg->expected_rotation_rate);
+    auto azimuth_samples = Navtech::Utility::from_vector_to<uint16_t>(msg->azimuth_samples);
+    if (azimuth_samples.has_value()) {
+        node->azimuth_samples = Navtech::Utility::to_uint16_host(azimuth_samples.value());
+        node->video_height = node->azimuth_samples;
+        RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", node->azimuth_samples);
+    }
+    else {
+        RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Azimuth Samples");
+    }
 
-    node->video_width = msg->range_in_bins;
-    node->video_height = msg->azimuth_samples;
-    node->video_writer.open("output_videos/laser_scan_output.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), msg->expected_rotation_rate, Size(azimuth_samples, azimuth_samples), true);
+    auto encoder_size = Navtech::Utility::from_vector_to<uint16_t>(msg->encoder_size);
+    if (encoder_size.has_value()) {
+        node->encoder_size = Navtech::Utility::to_uint16_host(encoder_size.value());
+        RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", node->encoder_size);
+    }
+    else {
+        RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Encoder Size");
+    }
+
+    auto bin_size = Navtech::Utility::from_vector_to<uint64_t>(msg->bin_size);
+    if (bin_size.has_value()) {
+        node->bin_size = Navtech::Utility::from_uint64_host(bin_size.value());
+        RCLCPP_INFO(Node::get_logger(), "Bin Size: %f", node->bin_size);
+    }
+    else {
+        RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Bin Size");
+    }
+
+    auto range_in_bins = Navtech::Utility::from_vector_to<uint16_t>(msg->range_in_bins);
+    if (range_in_bins.has_value()) {
+        node->video_width = Navtech::Utility::to_uint16_host(range_in_bins.value());
+        RCLCPP_INFO(Node::get_logger(), "Range In Bins: %i", node->video_width);
+    }
+    else {
+        RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Range In Bins");
+    }
+
+    auto expected_rotation_rate = Navtech::Utility::from_vector_to<uint16_t>(msg->expected_rotation_rate);
+    if (expected_rotation_rate.has_value()) {
+        node->expected_rotation_rate = Navtech::Utility::to_uint16_host(expected_rotation_rate.value());
+        RCLCPP_INFO(Node::get_logger(), "Expected Rotation Rate: %i", node->expected_rotation_rate);
+    }
+    else {
+        RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Expected Rotation Rate");
+    }
+
+    node->video_writer.open("output_videos/laser_scan_output.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), node->expected_rotation_rate, cv::Size(node->azimuth_samples, node->azimuth_samples), true);
     node->config_data_received = true;
 }
 void Laser_scan_subscriber_to_video::laser_scan_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) const
@@ -77,26 +109,26 @@ void Laser_scan_subscriber_to_video::laser_scan_callback(const sensor_msgs::msg:
     RCLCPP_INFO(Node::get_logger(), "Ranges: %li", msg->ranges.size());
     RCLCPP_INFO(Node::get_logger(), "Intensities: %li", msg->intensities.size());
 
-    Mat laser_scan_image{ Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar(0, 0) };
+    cv::Mat laser_scan_image{ cv::Size(azimuth_samples, azimuth_samples), CV_8UC1, cv::Scalar(0, 0) };
     for (int r{ 0 }; r < int(msg->ranges.size()); r++) {
         int index { static_cast<int>(msg->ranges[r] / bin_size )};
         int intensity { static_cast<int>(msg->intensities[r] )};
         if (index < azimuth_samples) {
-            // Note - these points have been enhanced for visual purposes
-            circle(laser_scan_image, Point(msg->ranges[r], r), 2 ,Scalar(intensity, intensity, intensity), FILLED, 1);
+            // Note - these cv:Points have been enhanced for visual purposes
+            cv::circle(laser_scan_image, cv::Point(msg->ranges[r], r), 2 , cv::Scalar(intensity, intensity, intensity), cv::FILLED, 1);
         }
     }
 
-    Mat recovered_lin_polar_img{};
-    Point2f center{ (float)laser_scan_image.cols / 2, (float)laser_scan_image.rows / 2 };
-    double max_radius{ min(center.y, center.x )};
-    linearPolar(laser_scan_image, recovered_lin_polar_img, center, max_radius, INTER_LINEAR + WARP_FILL_OUTLIERS + WARP_INVERSE_MAP);
-    Mat normalised_image{ Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar{0, 0} };
-    normalize(recovered_lin_polar_img, normalised_image, 0, 255, NORM_MINMAX);
-    Mat rotated_image{ Size(azimuth_samples, azimuth_samples), CV_8UC1, Scalar{0, 0} };
-    rotate(normalised_image, rotated_image, ROTATE_90_COUNTERCLOCKWISE);
-    Mat channels[3] { blank_image, rotated_image, blank_image };
-    Mat merged_data;
+    cv::Mat recovered_lin_polar_img{};
+    cv::Point2f center{ (float)laser_scan_image.cols / 2, (float)laser_scan_image.rows / 2 };
+    double max_radius{ std::min(center.y, center.x )};
+    linearPolar(laser_scan_image, recovered_lin_polar_img, center, max_radius, cv::INTER_LINEAR + cv::WARP_FILL_OUTLIERS + cv::WARP_INVERSE_MAP);
+    cv::Mat normalised_image{ cv::Size(azimuth_samples, azimuth_samples), CV_8UC1, cv::Scalar{0, 0} };
+    normalize(recovered_lin_polar_img, normalised_image, 0, 255, cv::NORM_MINMAX);
+    cv::Mat rotated_image{ cv::Size(azimuth_samples, azimuth_samples), CV_8UC1, cv::Scalar{0, 0} };
+    rotate(normalised_image, rotated_image, cv::ROTATE_90_COUNTERCLOCKWISE);
+    cv::Mat channels[3] { blank_image, rotated_image, blank_image };
+    cv::Mat merged_data;
     merge(channels, 3, merged_data);
     node->video_writer.write(merged_data);
 }

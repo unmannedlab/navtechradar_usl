@@ -7,13 +7,9 @@
 #include "interfaces/msg/camera_image_message.hpp"
 #include "camera_subscriber_to_video.h"
 
-using namespace std;
-using namespace rclcpp;
-using namespace cv;
-
 namespace{
     bool config_data_received { false };
-    VideoWriter video_writer {};
+    cv::VideoWriter video_writer {};
 }
 
 Camera_subscriber_to_video::Camera_subscriber_to_video() :
@@ -52,7 +48,7 @@ void Camera_subscriber_to_video::configuration_data_callback(const interfaces::m
     RCLCPP_INFO(Node::get_logger(), "Image Channels: %i", data->channels);
     RCLCPP_INFO(Node::get_logger(), "Video FPS: %i", data->fps);
 
-    video_writer.open("output_videos/camera_output.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), data->fps, Size(data->width, data->height), true);
+    video_writer.open("output_videos/camera_output.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), data->fps, cv::Size(data->width, data->height), true);
     config_data_received = true;
 }
 
@@ -63,6 +59,6 @@ void Camera_subscriber_to_video::camera_image_callback(const sensor_msgs::msg::I
         return;
     }
 
-    Mat camera_image = Mat{ data->height, data->width, CV_8UC3, data->data.data() }.clone();
+    cv::Mat camera_image = cv::Mat{ data->height, data->width, CV_8UC3, data->data.data() }.clone();
     video_writer.write(camera_image);
 }

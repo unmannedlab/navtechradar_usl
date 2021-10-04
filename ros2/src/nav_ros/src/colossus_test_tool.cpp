@@ -6,20 +6,17 @@
 #include "../../../cpp_17/network/radar_client.h"
 #include "colossus_test_tool.h"
 
-using namespace std;
-using namespace Navtech;
-
 Colossus_test_tool::Colossus_test_tool()
 {
     radar_ip = "10.77.2.211";
     radar_port = 6317;
 }
 
-void Colossus_test_tool::fft_data_handler(const Fft_data::Pointer& data)
+void Colossus_test_tool::fft_data_handler(const Navtech::Fft_data::Pointer& data)
 {
     azimuth_count++;
     if (data->sweep_counter != previous_sweep_counter + sweep_counter_increment) {
-        if ((previous_sweep_counter != numeric_limits<uint16_t>::max()) && (data->sweep_counter != 0)){
+        if ((previous_sweep_counter != std::numeric_limits<uint16_t>::max()) && (data->sweep_counter != 0)) {
             fft_data_loss_count++;
         }
     }
@@ -28,8 +25,8 @@ void Colossus_test_tool::fft_data_handler(const Fft_data::Pointer& data)
     if (data->azimuth < last_azimuth) {
         rotation_count++;
         rotated_once = true;
-        cout << "Azimuth count per rotation: " << azimuth_count << endl;
-        cout << "FFT data loss per rotation: " << fft_data_loss_count << endl;
+        std::cout << "Azimuth count per rotation: " << azimuth_count << std::endl;
+        std::cout << "FFT data loss per rotation: " << fft_data_loss_count << std::endl;
         fft_data_loss_count = 0;
         azimuth_count = 0;
     }
@@ -44,7 +41,7 @@ void Colossus_test_tool::fft_data_handler(const Fft_data::Pointer& data)
     }
 }
 
-void Colossus_test_tool::configuration_data_handler(const Configuration_data::Pointer& data)
+void Colossus_test_tool::configuration_data_handler(const Navtech::Configuration_data::Pointer& data)
 {
     azimuth_samples = data->azimuth_samples;
     radar_client->start_fft_data();

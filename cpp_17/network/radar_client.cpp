@@ -329,7 +329,7 @@ namespace Navtech {
             fftData->sweep_counter     = fft_data->sweep_counter();
             fftData->ntp_seconds       = fft_data->ntp_seconds();
             fftData->ntp_split_seconds = fft_data->ntp_split_seconds();
-            fftData->data              = fft_data->fft_data();
+            fftData->data              = fft_data->to_vector();
 
             fft_data_fn(fftData);
         }
@@ -346,7 +346,7 @@ namespace Navtech {
         if (navigation_data_fn == nullptr) return;
 
         auto nav_data = msg.view_as<Network::Colossus_protocol::Navigation_data>();
-        auto targets  = nav_data->nav_data();
+        auto targets  = nav_data->to_vector();
 
         auto navigation_data               = allocate_shared<Navigation_data>();
         navigation_data->azimuth           = nav_data->azimuth();

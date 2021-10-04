@@ -52,7 +52,7 @@ PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${protobuf_files})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 ## Add additional CPP libs
-add_library(iasdk_static STATIC ../../../cpp_17/network/radar_client.cpp ../../../cpp_17/network/tcp_radar_client.cpp ../../../cpp_17/network/tcp_socket.cpp ../../../cpp_17/utility/timer.cpp ../../../cpp_17/utility/threaded_class.cpp ../../../cpp_17/network/colossus_network_message.cpp ../../../cpp_17/network/IP_address.cpp)
+add_library(iasdk_static STATIC ../../../cpp_17/network/radar_client.cpp ../../../cpp_17/network/tcp_radar_client.cpp ../../../cpp_17/network/tcp_socket.cpp ../../../cpp_17/utility/timer.cpp ../../../cpp_17/utility/threaded_class.cpp ../../../cpp_17/network/colossus_network_message.cpp ../../../cpp_17/utility/ip_address.cpp ../../../cpp_17/navigation/sector_blanking.cpp ../../../cpp_17/utility/net_conversion.cpp)
 add_library(iasdk_protobuf STATIC ${PROTO_SRCS} ${PROTO_HDRS})
 
 target_link_libraries(iasdk_protobuf ${PROTOBUF_LIBRARY})
