@@ -4,9 +4,6 @@
 #include "interfaces/msg/fft_data_message.hpp"
 #include "colossus_subscriber_to_video.h"
 
-using namespace std;
-using namespace rclcpp;
-
 int main(int argc, char* argv[]){
     rclcpp::init(argc, argv);
     node = std::make_shared<Colossus_subscriber_to_video>();

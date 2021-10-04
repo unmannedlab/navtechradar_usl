@@ -11,22 +11,15 @@
 #include "colossus_and_camera_publisher.h"
 #include "../../camera_ros/src/video_capture_manager.h"
 
-using namespace std;
-using namespace Navtech;
-using namespace Navtech::Utility;
-using namespace rclcpp;
-using namespace cv;
-using namespace chrono;
-
 std::shared_ptr<Colossus_and_camera_publisher> node{};
 
 int main(int argc, char* argv[])
 {
-    init(argc, argv);
+    rclcpp::init(argc, argv);
     node = std::make_shared<Colossus_and_camera_publisher>();
 
     RCLCPP_INFO(node->get_logger(), "Starting radar client");
-    node->radar_client = allocate_owned<Radar_client>(IP_address { node->radar_ip }, node->radar_port);
+    node->radar_client = Navtech::allocate_owned<Navtech::Radar_client>(Navtech::Utility::IP_address { node->radar_ip }, node->radar_port);
     node->radar_client->set_fft_data_callback(std::bind(&Colossus_and_camera_publisher::fft_data_handler, node.get(), std::placeholders::_1));
     node->radar_client->set_configuration_data_callback(std::bind(&Colossus_and_camera_publisher::configuration_data_handler, node.get(), std::placeholders::_1));
     node->radar_client->start();
@@ -41,9 +34,9 @@ int main(int argc, char* argv[])
 
     if (ret) {
 
-        Mat image{ };
+        cv::Mat image{ };
 
-        while (ok()) {
+        while (rclcpp::ok()) {
 
             image = vid_cap_manager->get_latest_frame();
             node->camera_image_handler(image);

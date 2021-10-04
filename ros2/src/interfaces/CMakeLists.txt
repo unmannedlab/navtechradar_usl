@@ -24,7 +24,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ConfigurationDataMessage.msg"
   "msg/FftDataMessage.msg"
   "msg/CameraConfigurationMessage.msg"
-  "msg/CameraImageMessage.msg"
  )
 
 if(BUILD_TESTING)

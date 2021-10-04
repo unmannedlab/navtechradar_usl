@@ -10,8 +10,6 @@
 #include "colossus_subscriber.h"
 #include "net_conversion.h"
 
-using namespace Navtech::Utility;
-
 Colossus_subscriber::Colossus_subscriber() : Node{ "colossus_subscriber" }
 {
     using std::placeholders::_1;
@@ -39,41 +37,41 @@ void Colossus_subscriber::configuration_data_callback(const interfaces::msg::Con
 {
     RCLCPP_INFO(Node::get_logger(), "Configuration Data recieved");
 
-    auto azimuth_samples = from_vector_to<uint16_t>(msg->azimuth_samples);
+    auto azimuth_samples = Navtech::Utility::from_vector_to<uint16_t>(msg->azimuth_samples);
     if (azimuth_samples.has_value()) {
-        RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", to_uint16_host(azimuth_samples.value()));
+        RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", Navtech::Utility::to_uint16_host(azimuth_samples.value()));
     }
     else {
         RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Azimuth Samples");
     }
 
-    auto encoder_size = from_vector_to<uint16_t>(msg->encoder_size);
+    auto encoder_size = Navtech::Utility::from_vector_to<uint16_t>(msg->encoder_size);
     if (encoder_size.has_value()) {
-        RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", to_uint16_host(encoder_size.value()));
+        RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", Navtech::Utility::to_uint16_host(encoder_size.value()));
     }
     else {
         RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Encoder Size");
     }
 
-    auto bin_size = from_vector_to<uint64_t>(msg->bin_size);
+    auto bin_size = Navtech::Utility::from_vector_to<uint64_t>(msg->bin_size);
     if (bin_size.has_value()) {
-        RCLCPP_INFO(Node::get_logger(), "Bin Size: %f", from_uint64_host(bin_size.value()));
+        RCLCPP_INFO(Node::get_logger(), "Bin Size: %f", Navtech::Utility::from_uint64_host(bin_size.value()));
     }
     else {
         RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Bin Size");
     }
 
-    auto range_in_bins = from_vector_to<uint16_t>(msg->range_in_bins);
+    auto range_in_bins = Navtech::Utility::from_vector_to<uint16_t>(msg->range_in_bins);
     if (range_in_bins.has_value()) {
-        RCLCPP_INFO(Node::get_logger(), "Range In Bins: %i", to_uint16_host(range_in_bins.value()));
+        RCLCPP_INFO(Node::get_logger(), "Range In Bins: %i", Navtech::Utility::to_uint16_host(range_in_bins.value()));
     }
     else {
         RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Range In Bins");
     }
 
-    auto expected_rotation_rate = from_vector_to<uint16_t>(msg->expected_rotation_rate);
+    auto expected_rotation_rate = Navtech::Utility::from_vector_to<uint16_t>(msg->expected_rotation_rate);
     if (expected_rotation_rate.has_value()) {
-        RCLCPP_INFO(Node::get_logger(), "Expected Rotation Rate: %i", to_uint16_host(expected_rotation_rate.value()));
+        RCLCPP_INFO(Node::get_logger(), "Expected Rotation Rate: %i", Navtech::Utility::to_uint16_host(expected_rotation_rate.value()));
     }
     else {
         RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Expected Rotation Rate");
@@ -84,49 +82,49 @@ void Colossus_subscriber::fft_data_callback(const interfaces::msg::FftDataMessag
 {
     RCLCPP_INFO(Node::get_logger(), "FFT Data Received");
 
-    auto angle = from_vector_to<uint64_t>(msg->angle);
+    auto angle = Navtech::Utility::from_vector_to<uint64_t>(msg->angle);
     if (angle.has_value()) {
-        RCLCPP_INFO(Node::get_logger(), "Angle: %f", from_uint64_host(angle.value()));
+        RCLCPP_INFO(Node::get_logger(), "Angle: %f", Navtech::Utility::from_uint64_host(angle.value()));
     }
     else {
         RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Angle");
     }
 
-    auto azimuth = from_vector_to<uint16_t>(msg->azimuth);
+    auto azimuth = Navtech::Utility::from_vector_to<uint16_t>(msg->azimuth);
     if (azimuth.has_value()) {
-        RCLCPP_INFO(Node::get_logger(), "Azimuth: %i", to_uint16_host(azimuth.value()));
+        RCLCPP_INFO(Node::get_logger(), "Azimuth: %i", Navtech::Utility::to_uint16_host(azimuth.value()));
     }
     else {
         RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Azimuth");
     }
 
-    auto sweep_counter = from_vector_to<uint16_t>(msg->sweep_counter);
+    auto sweep_counter = Navtech::Utility::from_vector_to<uint16_t>(msg->sweep_counter);
     if (sweep_counter.has_value()) {
-        RCLCPP_INFO(Node::get_logger(), "Sweep Counter: %i", to_uint16_host(sweep_counter.value()));
+        RCLCPP_INFO(Node::get_logger(), "Sweep Counter: %i", Navtech::Utility::to_uint16_host(sweep_counter.value()));
     }
     else {
         RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Sweep Counter");
     }
 
-    auto ntp_seconds = from_vector_to<uint32_t>(msg->ntp_seconds);
+    auto ntp_seconds = Navtech::Utility::from_vector_to<uint32_t>(msg->ntp_seconds);
     if (ntp_seconds.has_value()) {
-        RCLCPP_INFO(Node::get_logger(), "NTP Seconds: %i", to_uint32_host(ntp_seconds.value()));
+        RCLCPP_INFO(Node::get_logger(), "NTP Seconds: %i", Navtech::Utility::to_uint32_host(ntp_seconds.value()));
     }
     else {
         RCLCPP_INFO(Node::get_logger(), "Failed to get value for: NTP Seconds");
     }
 
-    auto ntp_split_seconds = from_vector_to<uint32_t>(msg->ntp_split_seconds);
+    auto ntp_split_seconds = Navtech::Utility::from_vector_to<uint32_t>(msg->ntp_split_seconds);
     if (ntp_split_seconds.has_value()) {
-        RCLCPP_INFO(Node::get_logger(), "NTP Split Seconds: %i", to_uint32_host(ntp_split_seconds.value()));
+        RCLCPP_INFO(Node::get_logger(), "NTP Split Seconds: %i", Navtech::Utility::to_uint32_host(ntp_split_seconds.value()));
     }
     else {
         RCLCPP_INFO(Node::get_logger(), "Failed to get value for: NTP SPlit Seconds");
     }
 
-    auto data_length = from_vector_to<uint16_t>(msg->data_length);
+    auto data_length = Navtech::Utility::from_vector_to<uint16_t>(msg->data_length);
     if (data_length.has_value()) {
-        RCLCPP_INFO(Node::get_logger(), "Data Length: %i", to_uint16_host(data_length.value()));
+        RCLCPP_INFO(Node::get_logger(), "Data Length: %i", Navtech::Utility::to_uint16_host(data_length.value()));
     }
     else {
         RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Data Length");
