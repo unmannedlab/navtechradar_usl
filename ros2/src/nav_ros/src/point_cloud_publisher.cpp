@@ -58,53 +58,46 @@ void Point_cloud_publisher::publish_point_cloud(const Navtech::Fft_data::Pointer
     message.height = 1;
     message.width = 3;
     uint8_t data_type = 7;
+    uint8_t num_bytes = 4; //float32 as bytes
 
     auto x_field = sensor_msgs::msg::PointField();
     x_field.name = "x";
-    x_field.offset = 0 * 4;
+    x_field.offset = 0 * num_bytes;
     x_field.datatype = data_type;
     x_field.count = message.width;
 
     auto y_field = sensor_msgs::msg::PointField();
     y_field.name = "y";
-    y_field.offset = 1 * 4;
+    y_field.offset = 1 * num_bytes;
     y_field.datatype = data_type;
     y_field.count = message.width;
 
     auto z_field = sensor_msgs::msg::PointField();
     z_field.name = "z";
-    z_field.offset = 2 * 4;
+    z_field.offset = 2 * num_bytes;
     z_field.datatype = data_type;
     z_field.count = message.width;
 
     message.fields = std::vector<sensor_msgs::msg::PointField>{x_field, y_field, z_field};
 
     message.is_bigendian = false;
-    message.point_step = 3 * 4;
+    message.point_step = 3 * num_bytes;
     message.row_step = message.point_step * message.width;
 
+    auto five_vec = Point_cloud_publisher::floats_to_uint8_t_vector(5.0, 5.0, 5.0);
+    auto ten_vec = Point_cloud_publisher::floats_to_uint8_t_vector(10.0, 10.0, 10.0);
+    auto fifteen_vec = Point_cloud_publisher::floats_to_uint8_t_vector(15.0, 15.0, 15.0);
 
-    float five = 5.0;
-    uint8_t* five_char = reinterpret_cast<uint8_t*>(&five);
+    std::vector<uint8_t> data_vector;
+    data_vector.reserve(five_vec.size() + ten_vec.size() + fifteen_vec.size());
 
-    float ten = 10.0;
-    uint8_t* ten_char = reinterpret_cast<uint8_t*>(&ten);
+    data_vector.insert(data_vector.end(), five_vec.begin(), five_vec.end());
 
-    float fifteen = 15.0;
-    uint8_t* fifteen_char = reinterpret_cast<uint8_t*>(&fifteen);
+    data_vector.insert(data_vector.end(), ten_vec.begin(), ten_vec.end());
 
+    data_vector.insert(data_vector.end(), fifteen_vec.begin(), fifteen_vec.end());
 
-    message.data = std::vector<uint8_t>{ five_char[0],five_char[1],five_char[2],five_char[3],
-        five_char[0],five_char[1],five_char[2],five_char[3],
-        five_char[0],five_char[1],five_char[2],five_char[3],
-    
-    ten_char[0],ten_char[1],ten_char[2],ten_char[3],
-        ten_char[0],ten_char[1],ten_char[2],ten_char[3],
-        ten_char[0],ten_char[1],ten_char[2],ten_char[3],
-    
-    fifteen_char[0],fifteen_char[1],fifteen_char[2],fifteen_char[3],
-        fifteen_char[0],fifteen_char[1],fifteen_char[2],fifteen_char[3],
-        fifteen_char[0],fifteen_char[1],fifteen_char[2],fifteen_char[3] };
+    message.data = data_vector;
     message.is_dense = true;
 
     point_cloud_publisher->publish(message);
@@ -120,8 +113,16 @@ struct more_than {
     int _limit;
 };
 
-void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data)
-{
+std::vector<uint8_t> Point_cloud_publisher::floats_to_uint8_t_vector(float float_x, float float_y, float float_z) {
+    uint8_t* chars_float_x = reinterpret_cast<uint8_t*>(&float_x);
+    uint8_t* chars_float_y = reinterpret_cast<uint8_t*>(&float_y);
+    uint8_t* chars_float_z = reinterpret_cast<uint8_t*>(&float_z);
+    return std::vector<uint8_t>{chars_float_x[0], chars_float_x[1], chars_float_x[2], chars_float_x[3],
+        chars_float_y[0], chars_float_y[1], chars_float_y[2], chars_float_y[3],
+        chars_float_z[0], chars_float_z[1], chars_float_z[2], chars_float_z[3]};
+}
+
+void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data){
     auto itr = find_if(data->data.begin(), data->data.end(), more_than(power_threshold));
     auto first_peak = distance(data->data.begin(), itr);
     if (itr == data->data.end()) {

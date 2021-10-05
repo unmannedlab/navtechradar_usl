@@ -24,6 +24,7 @@ public:
     void fft_data_handler(const Navtech::Fft_data::Pointer& data);
     void configuration_data_handler(const Navtech::Configuration_data::Pointer& data);
     void publish_point_cloud(const Navtech::Fft_data::Pointer& data);
+    std::vector<uint8_t> floats_to_uint8_t_vector(float float_x, float float_y, float float_z);
 
 private:
     constexpr static int radar_configuration_queue_size{ 1 };
