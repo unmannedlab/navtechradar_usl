@@ -47,12 +47,15 @@ Laser_scan_publisher::Laser_scan_publisher():Node{ "laser_scan_publisher" }
         qos_laser_scan_publisher);
 }
 
-void Laser_scan_publisher::publish_laser_scan()
+void Laser_scan_publisher::publish_laser_scan(const Navtech::Fft_data::Pointer& data)
 {
     auto message = sensor_msgs::msg::LaserScan();
+
     message.header = std_msgs::msg::Header();
-    message.header.stamp = Node::get_clock()->now();
+    message.header.stamp.sec = data->ntp_seconds;
+    message.header.stamp.nanosec = data->ntp_split_seconds;
     message.header.frame_id = "laser_frame";
+
     message.angle_min = M_PI / 180 * 360 / azimuth_samples * start_azimuth;
     message.angle_max = M_PI / 180 * 360 / azimuth_samples * end_azimuth;
     message.angle_increment = M_PI / 180 * 360 / azimuth_samples;
@@ -100,7 +103,7 @@ void Laser_scan_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& da
     if (data->azimuth < last_azimuth) {
         rotation_count++;
         rotated_once = true;
-        Laser_scan_publisher::publish_laser_scan();
+        Laser_scan_publisher::publish_laser_scan(data);
     }
     last_azimuth = data->azimuth;
 

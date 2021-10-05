@@ -23,7 +23,7 @@ public:
 
     void fft_data_handler(const Navtech::Fft_data::Pointer& data);
     void configuration_data_handler(const Navtech::Configuration_data::Pointer& data);
-    void publish_laser_scan();
+    void publish_laser_scan(const Navtech::Fft_data::Pointer& data);
 
 private:
     constexpr static int radar_configuration_queue_size{ 1 };

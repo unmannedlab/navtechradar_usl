@@ -57,37 +57,54 @@ void Point_cloud_publisher::publish_point_cloud(const Navtech::Fft_data::Pointer
 
     message.height = 1;
     message.width = 3;
+    uint8_t data_type = 7;
 
     auto x_field = sensor_msgs::msg::PointField();
     x_field.name = "x";
-    x_field.offset = 0;
-    x_field.datatype = 2;
+    x_field.offset = 0 * 4;
+    x_field.datatype = data_type;
     x_field.count = message.width;
 
     auto y_field = sensor_msgs::msg::PointField();
     y_field.name = "y";
-    y_field.offset = 1;
-    y_field.datatype = 2;
+    y_field.offset = 1 * 4;
+    y_field.datatype = data_type;
     y_field.count = message.width;
 
     auto z_field = sensor_msgs::msg::PointField();
     z_field.name = "z";
-    z_field.offset = 2;
-    z_field.datatype = 2;
+    z_field.offset = 2 * 4;
+    z_field.datatype = data_type;
     z_field.count = message.width;
 
-    auto intensity_field = sensor_msgs::msg::PointField();
-    intensity_field.name = "intensity";
-    intensity_field.offset = 3;
-    intensity_field.datatype = 2;
-    intensity_field.count = message.width;
-
-    message.fields = std::vector<sensor_msgs::msg::PointField>{x_field, y_field, z_field, intensity_field};
+    message.fields = std::vector<sensor_msgs::msg::PointField>{x_field, y_field, z_field};
 
     message.is_bigendian = false;
-    message.point_step = 4;
+    message.point_step = 3 * 4;
     message.row_step = message.point_step * message.width;
-    message.data = std::vector<uint8_t>{5,5,5,100,10,10,10,100,15,15,15,100};
+
+
+    float five = 5.0;
+    uint8_t* five_char = reinterpret_cast<uint8_t*>(&five);
+
+    float ten = 10.0;
+    uint8_t* ten_char = reinterpret_cast<uint8_t*>(&ten);
+
+    float fifteen = 15.0;
+    uint8_t* fifteen_char = reinterpret_cast<uint8_t*>(&fifteen);
+
+
+    message.data = std::vector<uint8_t>{ five_char[0],five_char[1],five_char[2],five_char[3],
+        five_char[0],five_char[1],five_char[2],five_char[3],
+        five_char[0],five_char[1],five_char[2],five_char[3],
+    
+    ten_char[0],ten_char[1],ten_char[2],ten_char[3],
+        ten_char[0],ten_char[1],ten_char[2],ten_char[3],
+        ten_char[0],ten_char[1],ten_char[2],ten_char[3],
+    
+    fifteen_char[0],fifteen_char[1],fifteen_char[2],fifteen_char[3],
+        fifteen_char[0],fifteen_char[1],fifteen_char[2],fifteen_char[3],
+        fifteen_char[0],fifteen_char[1],fifteen_char[2],fifteen_char[3] };
     message.is_dense = true;
 
     point_cloud_publisher->publish(message);

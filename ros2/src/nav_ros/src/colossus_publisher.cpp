@@ -38,7 +38,6 @@ Colossus_publisher::Colossus_publisher():Node{ "colossus_publisher" }
 
 void Colossus_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data)
 {
-    //RCLCPP_INFO(Node::get_logger(), "Publishing FFT Data");
     auto message = interfaces::msg::FftDataMessage();
     message.angle = Navtech::Utility::to_vector(Navtech::Utility::to_uint64_host(data->angle));
     message.azimuth = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->azimuth));
@@ -47,12 +46,6 @@ void Colossus_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data
     message.ntp_split_seconds = Navtech::Utility::to_vector(Navtech::Utility::to_uint32_network(data->ntp_split_seconds));
     message.data = data->data;
     message.data_length = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->data.size()));
-
-    ////RCLCPP_INFO(Node::get_logger(), "Data 0: %u", static_cast<int>(data->Data[0]));
-    ////RCLCPP_INFO(Node::get_logger(), "Data 1: %u", static_cast<int>(data->Data[1]));
-    ////RCLCPP_INFO(Node::get_logger(), "Data 2: %u", static_cast<int>(data->Data[2]));
-    ////RCLCPP_INFO(Node::get_logger(), "Data 3: %u", static_cast<int>(data->Data[3]));
-    ////RCLCPP_INFO(Node::get_logger(), "Data 4: %u", static_cast<int>(data->Data[4]));
 
     if (data->azimuth < last_azimuth) {
         rotation_count++;

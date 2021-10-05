@@ -65,7 +65,6 @@ Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_a
 
 void Colossus_and_camera_publisher::fft_data_handler(const Fft_data::Pointer& data)
 {
-    //RCLCPP_INFO(Node::get_logger(), "Publishing FFT Data");
     auto message = interfaces::msg::FftDataMessage();
     message.angle = to_vector(to_uint64_host(data->angle));
     message.azimuth = to_vector(to_uint16_network(data->azimuth));
@@ -124,16 +123,8 @@ void Colossus_and_camera_publisher::configuration_data_handler(const Configurati
 
 void Colossus_and_camera_publisher::camera_image_handler(Mat image)
 {
-    //RCLCPP_INFO(Node::get_logger(), "Publishing Camera Image Data");
-    //RCLCPP_INFO(Node::get_logger(), "Mat rows: %i", image.rows);
-    //RCLCPP_INFO(Node::get_logger(), "Mat columns: %i", image.cols);
-    //RCLCPP_INFO(Node::get_logger(), "Mat size: %i", image.rows * image.cols);
-    //RCLCPP_INFO(Node::get_logger(), "Mat type: %i", image.type());
-
     auto buffer_length = image.cols * image.rows * sizeof(uint8_t) * 3;
     vector<uint8_t> vector_buffer(image.ptr(0), image.ptr(0) + buffer_length);
-
-    //RCLCPP_INFO(Node::get_logger(), "Image buffer size: %li", buffer_length);
 
     if ((!configuration_sent) || (frame_count >= config_publish_count)) {
         auto config_message = interfaces::msg::CameraConfigurationMessage();
@@ -150,6 +141,7 @@ void Colossus_and_camera_publisher::camera_image_handler(Mat image)
 
     camera_message.header = std_msgs::msg::Header();
     camera_message.header.stamp = node->get_clock()->now();
+    camera_message.header.frame_id = "camera_image";
 
     camera_message.height = image.rows;
     camera_message.width = image.cols;
