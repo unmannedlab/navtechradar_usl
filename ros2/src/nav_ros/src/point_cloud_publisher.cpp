@@ -56,9 +56,11 @@ void Point_cloud_publisher::publish_point_cloud(const Navtech::Fft_data::Pointer
     message.header.frame_id = "point_cloud";
 
     message.height = 1;
-    message.width = 3;
+    message.width = azimuth_samples;
     uint8_t data_type = 7;
     uint8_t num_bytes = 4; //float32 as bytes
+
+    // bin is always 0, azimuth is y, z is depth or range
 
     auto x_field = sensor_msgs::msg::PointField();
     x_field.name = "x";
@@ -78,25 +80,24 @@ void Point_cloud_publisher::publish_point_cloud(const Navtech::Fft_data::Pointer
     z_field.datatype = data_type;
     z_field.count = message.width;
 
-    message.fields = std::vector<sensor_msgs::msg::PointField>{x_field, y_field, z_field};
+    auto intensity_field = sensor_msgs::msg::PointField();
+    intensity_field.name = "intensity";
+    intensity_field.offset = 3 * num_bytes;
+    intensity_field.datatype = data_type;
+    intensity_field.count = message.width;
+
+    message.fields = std::vector<sensor_msgs::msg::PointField>{x_field, y_field, z_field, intensity_field};
 
     message.is_bigendian = false;
-    message.point_step = 3 * num_bytes;
+    message.point_step = 4 * num_bytes;
     message.row_step = message.point_step * message.width;
 
-    auto five_vec = Point_cloud_publisher::floats_to_uint8_t_vector(5.0, 5.0, 5.0);
-    auto ten_vec = Point_cloud_publisher::floats_to_uint8_t_vector(10.0, 10.0, 10.0);
-    auto fifteen_vec = Point_cloud_publisher::floats_to_uint8_t_vector(15.0, 15.0, 15.0);
-
     std::vector<uint8_t> data_vector;
-    data_vector.reserve(five_vec.size() + ten_vec.size() + fifteen_vec.size());
-
-    data_vector.insert(data_vector.end(), five_vec.begin(), five_vec.end());
-
-    data_vector.insert(data_vector.end(), ten_vec.begin(), ten_vec.end());
-
-    data_vector.insert(data_vector.end(), fifteen_vec.begin(), fifteen_vec.end());
-
+    data_vector.reserve(message.height * message.row_step);
+    for (int i = 0; i < message.width; i++) {
+        auto vec = Point_cloud_publisher::floats_to_uint8_t_vector(0, i, range_values[i], intensity_values[i]);
+        data_vector.insert(data_vector.end(), vec.begin(), vec.end());
+    }
     message.data = data_vector;
     message.is_dense = true;
 
@@ -113,13 +114,15 @@ struct more_than {
     int _limit;
 };
 
-std::vector<uint8_t> Point_cloud_publisher::floats_to_uint8_t_vector(float float_x, float float_y, float float_z) {
-    uint8_t* chars_float_x = reinterpret_cast<uint8_t*>(&float_x);
-    uint8_t* chars_float_y = reinterpret_cast<uint8_t*>(&float_y);
-    uint8_t* chars_float_z = reinterpret_cast<uint8_t*>(&float_z);
-    return std::vector<uint8_t>{chars_float_x[0], chars_float_x[1], chars_float_x[2], chars_float_x[3],
-        chars_float_y[0], chars_float_y[1], chars_float_y[2], chars_float_y[3],
-        chars_float_z[0], chars_float_z[1], chars_float_z[2], chars_float_z[3]};
+std::vector<uint8_t> Point_cloud_publisher::floats_to_uint8_t_vector(float x, float y, float z, float intensity) {
+    uint8_t* chars_x = reinterpret_cast<uint8_t*>(&x);
+    uint8_t* chars_y = reinterpret_cast<uint8_t*>(&y);
+    uint8_t* chars_z = reinterpret_cast<uint8_t*>(&z);
+    uint8_t* chars_intensity = reinterpret_cast<uint8_t*>(&intensity);
+    return std::vector<uint8_t>{chars_x[0], chars_x[1], chars_x[2], chars_x[3],
+        chars_y[0], chars_y[1], chars_y[2], chars_y[3],
+        chars_z[0], chars_z[1], chars_z[2], chars_z[3],
+        chars_intensity[0], chars_intensity[1], chars_intensity[2], chars_intensity[3]};
 }
 
 void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data){
