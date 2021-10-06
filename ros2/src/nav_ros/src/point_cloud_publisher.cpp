@@ -21,6 +21,7 @@ Point_cloud_publisher::Point_cloud_publisher():Node{ "point_cloud_publisher" }
     declare_parameter("start_bin", 0);
     declare_parameter("end_bin", 0);
     declare_parameter("power_threshold", 0);
+    declare_parameter("azimuth_offset", 0);
 
     radar_ip = get_parameter("radar_ip").as_string();
     radar_port = get_parameter("radar_port").as_int();
@@ -29,6 +30,7 @@ Point_cloud_publisher::Point_cloud_publisher():Node{ "point_cloud_publisher" }
     start_bin = get_parameter("start_bin").as_int();
     end_bin = get_parameter("end_bin").as_int();
     power_threshold = get_parameter("power_threshold").as_int();
+    azimuth_offset = get_parameter("azimuth_offset").as_int();
 
     rclcpp::QoS qos_radar_configuration_publisher(radar_configuration_queue_size);
     qos_radar_configuration_publisher.reliable();
@@ -130,18 +132,24 @@ void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& d
     // To adjust radar start azimuth, for sake of visualisation
     // Note - this value will be different for every setup!
     // Values based on 0 angle of radar, and surrounding landscape
-    int adjusted_azimuth_index = azimuth_index + 200;
+    int adjusted_azimuth_index = azimuth_index + azimuth_offset;
     if (adjusted_azimuth_index >= azimuth_samples) {
-        adjusted_azimuth_index = adjusted_azimuth_index - 400;
+        adjusted_azimuth_index = adjusted_azimuth_index - azimuth_samples;
     }
 
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
-
         for (int bin_index = 0; bin_index < data->data.size(); bin_index++) {
-            if (data->data[bin_index] > power_threshold) {
-                azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
-                bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
-                intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = data->data[bin_index];
+            if ((bin_index >= start_bin) && (bin_index < end_bin)) {
+                if (data->data[bin_index] > power_threshold) {
+                    azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
+                    bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
+                    intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = data->data[bin_index];
+                }
+                else {
+                    azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
+                    bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
+                    intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = 0;
+                }
             }
             else {
                 azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
@@ -152,9 +160,16 @@ void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& d
     }
     else {
         for (int bin_index = 0; bin_index < data->data.size(); bin_index++) {
-            azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
-            bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
-            intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = 0;
+            if ((bin_index >= start_bin) && (bin_index < end_bin)) {
+                azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
+                bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
+                intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = 0;
+            }
+            else {
+                azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
+                bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
+                intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = 0;
+            }
         }
     }
 
@@ -166,9 +181,12 @@ void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& d
     last_azimuth = data->azimuth;
 
     if (rotation_count >= config_publish_count) {
+        azimuth_offset = get_parameter("azimuth_offset").as_int();
         power_threshold = get_parameter("power_threshold").as_int();
         start_azimuth = get_parameter("start_azimuth").as_int();
         end_azimuth = get_parameter("end_azimuth").as_int();
+        start_bin = get_parameter("start_bin").as_int();
+        end_bin = get_parameter("end_bin").as_int();
         configuration_data_publisher->publish(config_message);
         rotation_count = 0;
     }
@@ -198,16 +216,17 @@ void Point_cloud_publisher::configuration_data_handler(const Navtech::Configurat
     config_message.expected_rotation_rate = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->expected_rotation_rate));
     configuration_data_publisher->publish(config_message);
 
-    azimuth_values.resize((end_azimuth - start_azimuth) * (end_bin - start_bin));
-    bin_values.resize((end_azimuth - start_azimuth) * (end_bin - start_bin));
-    intensity_values.resize((end_azimuth - start_azimuth) * (end_bin - start_bin));
+    azimuth_values.resize(azimuth_samples * range_in_bins);
+    bin_values.resize(azimuth_samples * range_in_bins);
+    intensity_values.resize(azimuth_samples * range_in_bins);
 
-    RCLCPP_INFO(Node::get_logger(), "Starting laser scan publisher");
+    RCLCPP_INFO(Node::get_logger(), "Starting point cloud publisher");
     RCLCPP_INFO(Node::get_logger(), "Start azimuth: %i", start_azimuth);
     RCLCPP_INFO(Node::get_logger(), "End azimuth: %i", end_azimuth);
     RCLCPP_INFO(Node::get_logger(), "Start bin: %i", start_bin);
     RCLCPP_INFO(Node::get_logger(), "End bin: %i", end_bin);
     RCLCPP_INFO(Node::get_logger(), "Power threshold: %i", power_threshold);
+    RCLCPP_INFO(Node::get_logger(), "Azimuth offset: %i", azimuth_offset);
 
     radar_client->start_fft_data();
 }

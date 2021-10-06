@@ -1,5 +1,6 @@
 /point_cloud_publisher:
   ros__parameters:
+    azimuth_offset: 0
     end_azimuth: 400
     end_bin: 2856
     power_threshold: 50
