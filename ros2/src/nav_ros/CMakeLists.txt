@@ -85,6 +85,11 @@ add_executable(laser_scan_subscriber_to_video src/laser_scan_subscriber_to_video
 target_link_libraries(laser_scan_subscriber_to_video iasdk_static)
 ament_target_dependencies(laser_scan_subscriber_to_video rclcpp std_msgs sensor_msgs interfaces OpenCV)
 
+## Build executable for point cloud publisher
+add_executable(point_cloud_publisher src/point_cloud_publisher_main.cpp src/point_cloud_publisher.cpp)
+target_link_libraries(point_cloud_publisher iasdk_static iasdk_protobuf)
+ament_target_dependencies(point_cloud_publisher rclcpp std_msgs sensor_msgs interfaces)
+
 ## Install the built executables
 install(TARGETS
   colossus_test_tool
@@ -94,6 +99,7 @@ install(TARGETS
   laser_scan_publisher
   laser_scan_subscriber
   laser_scan_subscriber_to_video
+  point_cloud_publisher
   DESTINATION lib/${PROJECT_NAME})
 
 ## Install the package
