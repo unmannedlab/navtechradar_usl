@@ -1,7 +1,7 @@
 /laser_scan_publisher:
   ros__parameters:
     end_azimuth: 400
-    end_bin: 2855
+    end_bin: 2856
     power_threshold: 110
     qos_overrides:
       /parameter_events:

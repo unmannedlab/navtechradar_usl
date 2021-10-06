@@ -55,36 +55,34 @@ void Point_cloud_publisher::publish_point_cloud(const Navtech::Fft_data::Pointer
     message.header.stamp.nanosec = data->ntp_split_seconds;
     message.header.frame_id = "point_cloud";
 
-    message.height = 1;
+    message.height = range_in_bins;
     message.width = azimuth_samples;
-    uint8_t data_type = 7;
-    uint8_t num_bytes = 4; //float32 as bytes
-
-    // bin is always 0, azimuth is y, z is depth or range
+    const uint8_t data_type = 7;
+    const uint8_t num_bytes = 4; //float32 as bytes
 
     auto x_field = sensor_msgs::msg::PointField();
     x_field.name = "x";
     x_field.offset = 0 * num_bytes;
     x_field.datatype = data_type;
-    x_field.count = message.width;
+    x_field.count = message.height * message.width;
 
     auto y_field = sensor_msgs::msg::PointField();
     y_field.name = "y";
     y_field.offset = 1 * num_bytes;
     y_field.datatype = data_type;
-    y_field.count = message.width;
+    y_field.count = message.height * message.width;
 
     auto z_field = sensor_msgs::msg::PointField();
     z_field.name = "z";
     z_field.offset = 2 * num_bytes;
     z_field.datatype = data_type;
-    z_field.count = message.width;
+    z_field.count = message.height * message.width;
 
     auto intensity_field = sensor_msgs::msg::PointField();
     intensity_field.name = "intensity";
     intensity_field.offset = 3 * num_bytes;
     intensity_field.datatype = data_type;
-    intensity_field.count = message.width;
+    intensity_field.count = message.height * message.width;
 
     message.fields = std::vector<sensor_msgs::msg::PointField>{x_field, y_field, z_field, intensity_field};
 
@@ -94,8 +92,8 @@ void Point_cloud_publisher::publish_point_cloud(const Navtech::Fft_data::Pointer
 
     std::vector<uint8_t> data_vector;
     data_vector.reserve(message.height * message.row_step);
-    for (int i = 0; i < message.width; i++) {
-        auto vec = Point_cloud_publisher::floats_to_uint8_t_vector(0, i, range_values[i], intensity_values[i]);
+    for (int i = 0; i < message.height * message.width; i++) {
+        auto vec = Point_cloud_publisher::floats_to_uint8_t_vector(bin_values[i], azimuth_values[i], 0, intensity_values[i]);
         data_vector.insert(data_vector.end(), vec.begin(), vec.end());
     }
     message.data = data_vector;
@@ -126,22 +124,38 @@ std::vector<uint8_t> Point_cloud_publisher::floats_to_uint8_t_vector(float x, fl
 }
 
 void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data){
-    auto itr = find_if(data->data.begin(), data->data.end(), more_than(power_threshold));
-    auto first_peak = distance(data->data.begin(), itr);
-    if (itr == data->data.end()) {
-        first_peak = std::distance(data->data.begin(), itr - 1);
-    }
-    float range = bin_size * first_peak;
-    float intensity = data->data[first_peak];
+
     int azimuth_index = static_cast<int>(data->angle / (360.0 / azimuth_samples));
-    azimuth_index = azimuth_samples - azimuth_index;
-    if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
-        range_values[azimuth_index] = range;
-        intensity_values[azimuth_index] = intensity;
+
+    // To adjust radar start azimuth, for sake of visualisation
+    // Note - this value will be different for every setup!
+    // Values based on 0 angle of radar, and surrounding landscape
+    int adjusted_azimuth_index = azimuth_index + 200;
+    if (adjusted_azimuth_index >= azimuth_samples) {
+        adjusted_azimuth_index = adjusted_azimuth_index - 400;
     }
-    else{
-        range_values[azimuth_index] = 0;
-        intensity_values[azimuth_index] = 0;
+
+    if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
+
+        for (int bin_index = 0; bin_index < data->data.size(); bin_index++) {
+            if (data->data[bin_index] > power_threshold) {
+                azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
+                bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
+                intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = data->data[bin_index];
+            }
+            else {
+                azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
+                bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
+                intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = 0;
+            }
+        }
+    }
+    else {
+        for (int bin_index = 0; bin_index < data->data.size(); bin_index++) {
+            azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
+            bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
+            intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = 0;
+        }
     }
 
     if (data->azimuth < last_azimuth) {
@@ -184,8 +198,9 @@ void Point_cloud_publisher::configuration_data_handler(const Navtech::Configurat
     config_message.expected_rotation_rate = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->expected_rotation_rate));
     configuration_data_publisher->publish(config_message);
 
-    range_values.resize(end_azimuth - start_azimuth);
-    intensity_values.resize(end_azimuth - start_azimuth);
+    azimuth_values.resize((end_azimuth - start_azimuth) * (end_bin - start_bin));
+    bin_values.resize((end_azimuth - start_azimuth) * (end_bin - start_bin));
+    intensity_values.resize((end_azimuth - start_azimuth) * (end_bin - start_bin));
 
     RCLCPP_INFO(Node::get_logger(), "Starting laser scan publisher");
     RCLCPP_INFO(Node::get_logger(), "Start azimuth: %i", start_azimuth);

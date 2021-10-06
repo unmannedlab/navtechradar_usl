@@ -18,7 +18,8 @@ public:
     uint16_t end_bin{ 0 };
     uint16_t power_threshold{ 0 };
 
-    std::vector <float> range_values;
+    std::vector <float> azimuth_values;
+    std::vector <float> bin_values;
     std::vector <float> intensity_values;
 
     void fft_data_handler(const Navtech::Fft_data::Pointer& data);
