@@ -72,19 +72,14 @@ void Laser_scan_publisher::publish_laser_scan(const Navtech::Fft_data::Pointer& 
     laser_scan_publisher->publish(message);
 }
 
-struct more_than {
-    more_than(int limit) : _limit(limit) {}
-
-    bool operator()(int val) {
-        return val > _limit;
-    }
-
-    int _limit;
-};
-
 void Laser_scan_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data)
 {
-    auto itr = find_if(data->data.begin(), data->data.end(), more_than(power_threshold));
+    auto itr = find_if(
+        data->data.begin(),
+        data->data.end(),
+        [this](const auto& value) { return value > power_threshold; }
+    );
+
     auto first_peak_bin_index = distance(data->data.begin(), itr);
     if (itr == data->data.end()) {
         first_peak_bin_index = std::distance(data->data.begin(), itr - 1);

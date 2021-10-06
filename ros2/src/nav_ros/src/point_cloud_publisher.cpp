@@ -137,38 +137,39 @@ void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& d
         adjusted_azimuth_index = adjusted_azimuth_index - azimuth_samples;
     }
 
+    int adjusted_range = adjusted_azimuth_index * range_in_bins;
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
         for (int bin_index = 0; bin_index < data->data.size(); bin_index++) {
             if ((bin_index >= start_bin) && (bin_index < end_bin)) {
                 if (data->data[bin_index] > power_threshold) {
-                    azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
-                    bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
-                    intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = data->data[bin_index];
+                    azimuth_values[adjusted_range + bin_index] = adjusted_azimuth_index;
+                    bin_values[adjusted_range + bin_index] = bin_index;
+                    intensity_values[adjusted_range + bin_index] = data->data[bin_index];
                 }
                 else {
-                    azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
-                    bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
-                    intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = 0;
+                    azimuth_values[adjusted_range + bin_index] = adjusted_azimuth_index;
+                    bin_values[adjusted_range + bin_index] = bin_index;
+                    intensity_values[adjusted_range + bin_index] = 0;
                 }
             }
             else {
-                azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
-                bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
-                intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = 0;
+                azimuth_values[adjusted_range + bin_index] = adjusted_azimuth_index;
+                bin_values[adjusted_range + bin_index] = bin_index;
+                intensity_values[adjusted_range + bin_index] = 0;
             }
         }
     }
     else {
         for (int bin_index = 0; bin_index < data->data.size(); bin_index++) {
             if ((bin_index >= start_bin) && (bin_index < end_bin)) {
-                azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
-                bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
-                intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = 0;
+                azimuth_values[adjusted_range + bin_index] = adjusted_azimuth_index;
+                bin_values[adjusted_range + bin_index] = bin_index;
+                intensity_values[adjusted_range + bin_index] = 0;
             }
             else {
-                azimuth_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = adjusted_azimuth_index;
-                bin_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = bin_index;
-                intensity_values[(adjusted_azimuth_index * range_in_bins) + bin_index] = 0;
+                azimuth_values[adjusted_range + bin_index] = adjusted_azimuth_index;
+                bin_values[adjusted_range + bin_index] = bin_index;
+                intensity_values[adjusted_range + bin_index] = 0;
             }
         }
     }
