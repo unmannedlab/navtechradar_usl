@@ -17,6 +17,7 @@ public:
     uint16_t start_bin{ 0 };
     uint16_t end_bin{ 0 };
     uint16_t power_threshold{ 0 };
+    uint16_t azimuth_offset{ 0 };
 
     std::vector <float> range_values;
     std::vector <float> intensity_values;
