@@ -9,10 +9,10 @@
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "radar_client.h"
-#include "point_cloud_publisher.h"
+#include "navigation_mode_point_cloud_publisher.h"
 #include "net_conversion.h"
 
-Point_cloud_publisher::Point_cloud_publisher():Node{ "point_cloud_publisher" }
+Navigation_mode_point_cloud_publisher::Navigation_mode_point_cloud_publisher():Node{ "navigation_mode_point_cloud_publisher" }
 {
     declare_parameter("radar_ip", "");
     declare_parameter("radar_port", 0);
@@ -49,7 +49,7 @@ Point_cloud_publisher::Point_cloud_publisher():Node{ "point_cloud_publisher" }
         qos_point_cloud_publisher);
 }
 
-void Point_cloud_publisher::publish_point_cloud(const Navtech::Fft_data::Pointer& data)
+void Navigation_mode_point_cloud_publisher::publish_point_cloud(const Navtech::Fft_data::Pointer& data)
 {
     auto message = sensor_msgs::msg::PointCloud2();
     message.header = std_msgs::msg::Header();
@@ -95,7 +95,7 @@ void Point_cloud_publisher::publish_point_cloud(const Navtech::Fft_data::Pointer
     std::vector<uint8_t> data_vector;
     data_vector.reserve(message.height * message.row_step);
     for (int i = 0; i < message.height * message.width; i++) {
-        auto vec = Point_cloud_publisher::floats_to_uint8_t_vector(bin_values[i], azimuth_values[i], 0, intensity_values[i]);
+        auto vec = Navigation_mode_point_cloud_publisher::floats_to_uint8_t_vector(bin_values[i], azimuth_values[i], 0, intensity_values[i]);
         data_vector.insert(data_vector.end(), vec.begin(), vec.end());
     }
     message.data = data_vector;
@@ -104,7 +104,7 @@ void Point_cloud_publisher::publish_point_cloud(const Navtech::Fft_data::Pointer
     point_cloud_publisher->publish(message);
 }
 
-std::vector<uint8_t> Point_cloud_publisher::floats_to_uint8_t_vector(float x, float y, float z, float intensity) {
+std::vector<uint8_t> Navigation_mode_point_cloud_publisher::floats_to_uint8_t_vector(float x, float y, float z, float intensity) {
     uint8_t* chars_x = reinterpret_cast<uint8_t*>(&x);
     uint8_t* chars_y = reinterpret_cast<uint8_t*>(&y);
     uint8_t* chars_z = reinterpret_cast<uint8_t*>(&z);
@@ -115,7 +115,7 @@ std::vector<uint8_t> Point_cloud_publisher::floats_to_uint8_t_vector(float x, fl
         chars_intensity[0], chars_intensity[1], chars_intensity[2], chars_intensity[3]};
 }
 
-void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data){
+void Navigation_mode_point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data){
 
     int azimuth_index = static_cast<int>(data->angle / (360.0 / azimuth_samples));
 
@@ -167,7 +167,7 @@ void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& d
     if (data->azimuth < last_azimuth) {
         rotation_count++;
         rotated_once = true;
-        Point_cloud_publisher::publish_point_cloud(data);
+        Navigation_mode_point_cloud_publisher::publish_point_cloud(data);
     }
     last_azimuth = data->azimuth;
 
@@ -187,7 +187,11 @@ void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& d
     }
 }
 
-void Point_cloud_publisher::configuration_data_handler(const Navtech::Configuration_data::Pointer& data){
+void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtech::Navigation_data::Pointer& data) {
+    RCLCPP_INFO(Node::get_logger(), "Navigation Data Received");
+}
+
+void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Navtech::Configuration_data::Pointer& data){
     RCLCPP_INFO(Node::get_logger(), "Configuration Data Received");
     RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", data->azimuth_samples);
     RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", data->encoder_size);
@@ -219,5 +223,6 @@ void Point_cloud_publisher::configuration_data_handler(const Navtech::Configurat
     RCLCPP_INFO(Node::get_logger(), "Power threshold: %i", power_threshold);
     RCLCPP_INFO(Node::get_logger(), "Azimuth offset: %i", azimuth_offset);
 
-    radar_client->start_fft_data();
+    //radar_client->start_fft_data();
+    radar_client->start_navigation_data();
 }

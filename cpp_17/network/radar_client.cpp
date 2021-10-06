@@ -121,7 +121,7 @@ namespace Navtech {
         send_simple_network_message(Network::Colossus_protocol::Message::Type::stop_health_msgs);
     }
 
-    void Radar_client::Start_navigation_data()
+    void Radar_client::start_navigation_data()
     {
         Log("Radar_client - Start Navigation Data");
         send_simple_network_message(Network::Colossus_protocol::Message::Type::start_nav_data);
