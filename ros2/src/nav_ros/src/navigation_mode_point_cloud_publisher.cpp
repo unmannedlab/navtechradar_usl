@@ -189,6 +189,11 @@ void Navigation_mode_point_cloud_publisher::fft_data_handler(const Navtech::Fft_
 
 void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtech::Navigation_data::Pointer& data) {
     RCLCPP_INFO(Node::get_logger(), "Navigation Data Received");
+    RCLCPP_INFO(Node::get_logger(), "Angle: %f", data->angle);
+    RCLCPP_INFO(Node::get_logger(), "Azimuth: %i", data->azimuth);
+    RCLCPP_INFO(Node::get_logger(), "NTP Seconds: %i", data->ntp_seconds);
+    RCLCPP_INFO(Node::get_logger(), "NTP Split Seconds: %i", data->ntp_split_seconds);
+    RCLCPP_INFO(Node::get_logger(), "Num Peaks: %i", data->peaks.size());
 }
 
 void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Navtech::Configuration_data::Pointer& data){
@@ -223,6 +228,11 @@ void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Nav
     RCLCPP_INFO(Node::get_logger(), "Power threshold: %i", power_threshold);
     RCLCPP_INFO(Node::get_logger(), "Azimuth offset: %i", azimuth_offset);
 
-    //radar_client->start_fft_data();
+    auto navigation_config = Navtech::Navigation_config();
+    navigation_config.bins_to_operate_on = range_in_bins;
+    navigation_config.min_bin = 0;
+    navigation_config.navigation_threshold = 80;
+    navigation_config.max_peaks_per_azimuth = 1;
+    radar_client->set_navigation_configuration(navigation_config);
     radar_client->start_navigation_data();
 }
