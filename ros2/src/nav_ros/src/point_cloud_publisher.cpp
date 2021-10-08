@@ -95,7 +95,26 @@ void Point_cloud_publisher::publish_point_cloud(const Navtech::Fft_data::Pointer
     std::vector<uint8_t> data_vector;
     data_vector.reserve(intensity_values.size());
     for (int i = 0; i < intensity_values.size(); i++) {
-        auto vec = Point_cloud_publisher::floats_to_uint8_t_vector(bin_values[i], azimuth_values[i], 0, intensity_values[i]);
+
+
+        //def polarToCartesian(image) :
+        //    cartesianImage = np.zeros((image.shape[1], image.shape[1], image.shape[2]))
+        //    angles = np.arange(0, image.shape[0], (360 / image.shape[0]))
+        //    centerPoint = (int(cartesianImage.shape[0] / 2), int(cartesianImage.shape[1] / 2))
+        //
+        //    for x in range(0, image.shape[0]) :
+        //        currentAzimuth = math.radians(angles[x])
+        //        currentAzimuthData = image[x, :, : ]
+        //        for y in range(0, image.shape[1]) :
+        //            pointX, pointY = int(y * math.cos(currentAzimuth) / 2), int(y * math.sin(currentAzimuth) / 2)
+        //            cartesianImage[pointX + centerPoint[0], pointY + centerPoint[1], :] = currentAzimuthData[y]
+        //            return cartesianImage
+
+        float current_azimuth = (azimuth_values[i] * 0.9) * (M_PI / 180.0);
+        float point_x = bin_values[i] * cos(current_azimuth);
+        float point_y = bin_values[i] * sin(current_azimuth);
+
+        auto vec = Point_cloud_publisher::floats_to_uint8_t_vector(point_x, point_y, 0, intensity_values[i]);
         data_vector.insert(data_vector.end(), vec.begin(), vec.end());
     }
     message.data = data_vector;
@@ -132,6 +151,9 @@ void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& d
         for (int bin_index = 0; bin_index < data->data.size(); bin_index++) {
             if ((bin_index >= start_bin) && (bin_index < end_bin)) {
                 if (data->data[bin_index] > power_threshold) {
+
+
+
                     azimuth_values.push_back(adjusted_azimuth_index);
                     bin_values.push_back(bin_index);
                     intensity_values.push_back(data->data[bin_index]);
