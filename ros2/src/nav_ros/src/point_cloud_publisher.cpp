@@ -136,6 +136,9 @@ void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& d
                     bin_values.push_back(bin_index);
                     intensity_values.push_back(data->data[bin_index]);
                 }
+            }
+        }
+    }
 
     if (data->azimuth < last_azimuth) {
         rotation_count++;
