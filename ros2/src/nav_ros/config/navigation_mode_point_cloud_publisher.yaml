@@ -3,7 +3,7 @@
     azimuth_offset: 0
     end_azimuth: 400
     end_bin: 2856
-    power_threshold: 50
+    power_threshold: 70
     qos_overrides:
       /parameter_events:
         publisher:
