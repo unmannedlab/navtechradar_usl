@@ -6,3 +6,4 @@ add_library(
     colossus_network_message.cpp
 )
 
+target_link_libraries(iasdk_network iasdk_utility iasdk_protobuf)
