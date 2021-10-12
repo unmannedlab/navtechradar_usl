@@ -90,6 +90,11 @@ add_executable(point_cloud_publisher src/point_cloud_publisher_main.cpp src/poin
 target_link_libraries(point_cloud_publisher iasdk_static iasdk_protobuf)
 ament_target_dependencies(point_cloud_publisher rclcpp std_msgs sensor_msgs interfaces)
 
+## Build executable for navigation mode point cloud publisher
+add_executable(navigation_mode_point_cloud_publisher src/navigation_mode_point_cloud_publisher_main.cpp src/navigation_mode_point_cloud_publisher.cpp)
+target_link_libraries(navigation_mode_point_cloud_publisher iasdk_static iasdk_protobuf)
+ament_target_dependencies(navigation_mode_point_cloud_publisher rclcpp std_msgs sensor_msgs interfaces)
+
 ## Install the built executables
 install(TARGETS
   colossus_test_tool
@@ -100,6 +105,7 @@ install(TARGETS
   laser_scan_subscriber
   laser_scan_subscriber_to_video
   point_cloud_publisher
+  navigation_mode_point_cloud_publisher
   DESTINATION lib/${PROJECT_NAME})
 
 ## Install the package

@@ -121,7 +121,7 @@ namespace Navtech {
         send_simple_network_message(Network::Colossus_protocol::Message::Type::stop_health_msgs);
     }
 
-    void Radar_client::Start_navigation_data()
+    void Radar_client::start_navigation_data()
     {
         Log("Radar_client - Start Navigation Data");
         send_simple_network_message(Network::Colossus_protocol::Message::Type::start_nav_data);
@@ -355,7 +355,7 @@ namespace Navtech {
         navigation_data->angle             = (nav_data->azimuth() * 360.0f) / encoder_size;
 
         auto peaks_count = targets.size() / nav_data_record_length;
-        for (auto i = 0u; i < (10 + (peaks_count * nav_data_record_length)); i += nav_data_record_length) {
+        for (auto i = 0u; i < (peaks_count * nav_data_record_length); i += nav_data_record_length) {
             std::uint32_t peak_resolve = 0;
             std::memcpy(&peak_resolve, &targets[i], sizeof(peak_resolve));
             std::uint16_t power = 0;

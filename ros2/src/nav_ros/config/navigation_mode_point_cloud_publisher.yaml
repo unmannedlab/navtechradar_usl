@@ -1,9 +1,12 @@
-/point_cloud_publisher:
+/navigation_mode_point_cloud_publisher:
   ros__parameters:
     azimuth_offset: 0
+    bins_to_operate_on: 10
     end_azimuth: 400
     end_bin: 2856
-    power_threshold: 70
+    max_peaks_per_azimuth: 5
+    min_bin: 100
+    power_threshold: 40.0
     qos_overrides:
       /parameter_events:
         publisher:
