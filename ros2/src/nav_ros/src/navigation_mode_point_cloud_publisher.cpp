@@ -20,8 +20,12 @@ Navigation_mode_point_cloud_publisher::Navigation_mode_point_cloud_publisher() :
     declare_parameter("end_azimuth", 0);
     declare_parameter("start_bin", 0);
     declare_parameter("end_bin", 0);
-    declare_parameter("power_threshold", 0);
     declare_parameter("azimuth_offset", 0);
+
+    declare_parameter("bins_to_operate_on", 0);
+    declare_parameter("min_bin", 0);
+    declare_parameter("power_threshold", 0.0);
+    declare_parameter("max_peaks_per_azimuth", 0);
 
     radar_ip = get_parameter("radar_ip").as_string();
     radar_port = get_parameter("radar_port").as_int();
@@ -29,8 +33,12 @@ Navigation_mode_point_cloud_publisher::Navigation_mode_point_cloud_publisher() :
     end_azimuth = get_parameter("end_azimuth").as_int();
     start_bin = get_parameter("start_bin").as_int();
     end_bin = get_parameter("end_bin").as_int();
-    power_threshold = get_parameter("power_threshold").as_int();
     azimuth_offset = get_parameter("azimuth_offset").as_int();
+
+    bins_to_operate_on = get_parameter("bins_to_operate_on").as_int();
+    min_bin = get_parameter("min_bin").as_int();
+    power_threshold = get_parameter("power_threshold").as_double();
+    max_peaks_per_azimuth = get_parameter("max_peaks_per_azimuth").as_int();
 
     rclcpp::QoS qos_radar_configuration_publisher(radar_configuration_queue_size);
     qos_radar_configuration_publisher.reliable();
@@ -120,6 +128,24 @@ std::vector<uint8_t> Navigation_mode_point_cloud_publisher::floats_to_uint8_t_ve
         chars_intensity[0], chars_intensity[1], chars_intensity[2], chars_intensity[3]};
 }
 
+void Navigation_mode_point_cloud_publisher::update_navigation_config() {
+    RCLCPP_INFO(Node::get_logger(), "Updating navigation config on radar");
+    auto navigation_config = Navtech::Navigation_config();
+    navigation_config.bins_to_operate_on = bins_to_operate_on;
+    navigation_config.min_bin = min_bin;
+    navigation_config.navigation_threshold = power_threshold;
+    navigation_config.max_peaks_per_azimuth = max_peaks_per_azimuth;
+    radar_client->set_navigation_configuration(navigation_config);
+}
+
+void Navigation_mode_point_cloud_publisher::navigation_config_data_handler(const Navtech::Navigation_config::Pointer& data) {
+    RCLCPP_INFO(Node::get_logger(), "Received navigation config from radar");
+    RCLCPP_INFO(Node::get_logger(), "Bins to operate on: %i", data->bins_to_operate_on);
+    RCLCPP_INFO(Node::get_logger(), "Min bin: %i", data->min_bin);
+    RCLCPP_INFO(Node::get_logger(), "Power threshold: %f", data->navigation_threshold);
+    RCLCPP_INFO(Node::get_logger(), "Max peaks per azimuth: %i", data->max_peaks_per_azimuth);
+}
+
 void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtech::Navigation_data::Pointer& data) {
 
     int azimuth_index = static_cast<int>(data->angle / (360.0 / azimuth_samples));
@@ -135,8 +161,6 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
     int adjusted_range = adjusted_azimuth_index * range_in_bins;
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
 
-        RCLCPP_INFO(Node::get_logger(), "Num of peaks: %i", data->peaks.size());
-
         for (int peak_index = 0; peak_index < data->peaks.size(); peak_index++) {
             float target_range = std::get<float>(data->peaks[peak_index]);
             int bin_index = (int)(target_range / bin_size);
@@ -145,7 +169,6 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
                     azimuth_values.push_back(adjusted_azimuth_index);
                     bin_values.push_back(bin_index);
                     intensity_values.push_back(target_power);
-                    RCLCPP_INFO(Node::get_logger(), "Target power: %i", target_power);
             }
         }
     }
@@ -161,14 +184,41 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
     last_azimuth = data->azimuth;
 
     if (rotation_count >= config_publish_count) {
-        azimuth_offset = get_parameter("azimuth_offset").as_int();
-        power_threshold = get_parameter("power_threshold").as_int();
+
+        // These params mean a new config has to be sent to the radar
+        bool update_radar_navigation_config = false;
+        if (get_parameter("bins_to_operate_on").as_int() != bins_to_operate_on)
+        {
+            bins_to_operate_on = get_parameter("bins_to_operate_on").as_int();
+            update_radar_navigation_config = true;
+        }
+        if (get_parameter("min_bin").as_int() != min_bin)
+        {
+            min_bin = get_parameter("min_bin").as_int();
+            update_radar_navigation_config = true;
+        }
+        if (get_parameter("power_threshold").as_double() != power_threshold)
+        {
+            power_threshold = get_parameter("power_threshold").as_double();
+            update_radar_navigation_config = true;
+        }
+        if (get_parameter("max_peaks_per_azimuth").as_int() != max_peaks_per_azimuth)
+        {
+            max_peaks_per_azimuth = get_parameter("max_peaks_per_azimuth").as_int();
+            update_radar_navigation_config = true;
+        }
+
         start_azimuth = get_parameter("start_azimuth").as_int();
         end_azimuth = get_parameter("end_azimuth").as_int();
         start_bin = get_parameter("start_bin").as_int();
         end_bin = get_parameter("end_bin").as_int();
         configuration_data_publisher->publish(config_message);
         rotation_count = 0;
+
+        if (update_radar_navigation_config) {
+            Navigation_mode_point_cloud_publisher::update_navigation_config();
+            radar_client->request_navigation_configuration();
+        }
     }
 
     if (!rotated_once) {
@@ -196,20 +246,14 @@ void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Nav
     config_message.expected_rotation_rate = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->expected_rotation_rate));
     configuration_data_publisher->publish(config_message);
 
-    RCLCPP_INFO(Node::get_logger(), "Starting point cloud publisher");
+    RCLCPP_INFO(Node::get_logger(), "Starting navigation mode point cloud publisher");
     RCLCPP_INFO(Node::get_logger(), "Start azimuth: %i", start_azimuth);
     RCLCPP_INFO(Node::get_logger(), "End azimuth: %i", end_azimuth);
     RCLCPP_INFO(Node::get_logger(), "Start bin: %i", start_bin);
     RCLCPP_INFO(Node::get_logger(), "End bin: %i", end_bin);
-    RCLCPP_INFO(Node::get_logger(), "Power threshold: %i", power_threshold);
     RCLCPP_INFO(Node::get_logger(), "Azimuth offset: %i", azimuth_offset);
 
-    auto navigation_config = Navtech::Navigation_config();
-    navigation_config.bins_to_operate_on = 10;
-    navigation_config.min_bin = 100;
-    navigation_config.navigation_threshold = 25;
-    navigation_config.max_peaks_per_azimuth = 2;
+    Navigation_mode_point_cloud_publisher::update_navigation_config();
 
-    radar_client->set_navigation_configuration(navigation_config);
     radar_client->start_navigation_data();
 }

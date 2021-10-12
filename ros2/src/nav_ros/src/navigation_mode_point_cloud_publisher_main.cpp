@@ -16,6 +16,7 @@ int main(int argc, char* argv[])
     RCLCPP_INFO(node->get_logger(), "Starting radar client");
     node->radar_client = Navtech::allocate_owned<Navtech::Radar_client>(Navtech::Utility::IP_address { node->radar_ip }, node->radar_port);
     node->radar_client->set_configuration_data_callback(std::bind(&Navigation_mode_point_cloud_publisher::configuration_data_handler, node.get(), std::placeholders::_1));
+    node->radar_client->set_navigation_config_callback(std::bind(&Navigation_mode_point_cloud_publisher::navigation_config_data_handler, node.get(), std::placeholders::_1));
     node->radar_client->set_navigation_data_callback(std::bind(&Navigation_mode_point_cloud_publisher::navigation_data_handler, node.get(), std::placeholders::_1));
 
     node->radar_client->start();
@@ -24,10 +25,8 @@ int main(int argc, char* argv[])
         spin(node);
     }
 
-    node->radar_client->stop_fft_data();
     node->radar_client->stop_navigation_data();
     node->radar_client->set_configuration_data_callback();
-    node->radar_client->set_fft_data_callback();
     node->radar_client->set_navigation_data_callback();
     node->radar_client->stop();
     rclcpp::shutdown();

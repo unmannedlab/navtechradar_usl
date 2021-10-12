@@ -355,7 +355,7 @@ namespace Navtech {
         navigation_data->angle             = (nav_data->azimuth() * 360.0f) / encoder_size;
 
         auto peaks_count = targets.size() / nav_data_record_length;
-        for (auto i = 0u; i < (10 + (peaks_count * nav_data_record_length)); i += nav_data_record_length) {
+        for (auto i = 0u; i < (peaks_count * nav_data_record_length); i += nav_data_record_length) {
             std::uint32_t peak_resolve = 0;
             std::memcpy(&peak_resolve, &targets[i], sizeof(peak_resolve));
             std::uint16_t power = 0;
