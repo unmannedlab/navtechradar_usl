@@ -67,8 +67,8 @@ void Navigation_mode_point_cloud_publisher::publish_point_cloud(const Navtech::N
 
     message.height = 1;
     message.width = intensity_values.size();
-    const uint8_t data_type = 7;
-    const uint8_t num_bytes = 4; //float32 as bytes
+    constexpr uint8_t data_type = 7;
+    constexpr uint8_t num_bytes = 4; //float32 as bytes
 
     auto x_field = sensor_msgs::msg::PointField();
     x_field.name = "x";
@@ -111,7 +111,7 @@ void Navigation_mode_point_cloud_publisher::publish_point_cloud(const Navtech::N
         auto vec = Navigation_mode_point_cloud_publisher::floats_to_uint8_t_vector(point_x, point_y, 0, intensity_values[i]);
         data_vector.insert(data_vector.end(), vec.begin(), vec.end());
     }
-    message.data = data_vector;
+    message.data = std::move(data_vector);
     message.is_dense = true;
 
     point_cloud_publisher->publish(message);
