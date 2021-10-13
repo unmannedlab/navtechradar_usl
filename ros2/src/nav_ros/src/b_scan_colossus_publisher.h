@@ -19,6 +19,8 @@ public:
     uint16_t end_bin{ 0 };
     uint16_t azimuth_offset{ 0 };
 
+    std::vector <uint8_t> intensity_values;
+
     void fft_data_handler(const Navtech::Fft_data::Pointer& data);
     void configuration_data_handler(const Navtech::Configuration_data::Pointer& data);
     void image_data_handler(const Navtech::Fft_data::Pointer& data);

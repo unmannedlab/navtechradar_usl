@@ -12,7 +12,6 @@
 #include "net_conversion.h"
 #include "sensor_msgs/msg/image.hpp"
 #include "std_msgs/msg/header.hpp"
-#include <opencv2/opencv.hpp>
 #include <vector>
 
 B_scan_colossus_publisher::B_scan_colossus_publisher():Node{ "b_scan_colossus_publisher" }
@@ -44,8 +43,9 @@ B_scan_colossus_publisher::B_scan_colossus_publisher():Node{ "b_scan_colossus_pu
 
 void B_scan_colossus_publisher::image_data_handler(const Navtech::Fft_data::Pointer& data) {
 
-    auto buffer_length = azimuth_samples * range_in_bins * sizeof(uint8_t);
-    std::vector<uint8_t> vector_buffer(buffer_length);
+    if (intensity_values.size() != azimuth_samples * range_in_bins) {
+        return;
+    }
 
     auto message = sensor_msgs::msg::Image();
     message.header = std_msgs::msg::Header();
@@ -58,7 +58,7 @@ void B_scan_colossus_publisher::image_data_handler(const Navtech::Fft_data::Poin
     message.encoding = "8UC1";
     message.is_bigendian = false;
     message.step = message.width;
-    message.data = std::move(vector_buffer);
+    message.data = std::move(intensity_values);
 
     b_scan_image_publisher->publish(message);
 }
@@ -75,18 +75,26 @@ void B_scan_colossus_publisher::fft_data_handler(const Navtech::Fft_data::Pointe
         adjusted_azimuth_index = adjusted_azimuth_index - azimuth_samples;
     }
 
-    //if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
-    //    for (int bin_index = 0; bin_index < data->data.size(); bin_index++) {
-    //        if ((bin_index >= start_bin) && (bin_index < end_bin)) {
-    //            RCLCPP_INFO(Node::get_logger(), "Intensity values length: %i", intensity_values.size());
-    //            intensity_values.push_back(data->data[bin_index]);
-    //        }
-    //    }
-    //}
+    if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
+        for (int y = 0; y < range_in_bins; y++) {
+            if ((y >= start_bin) && (y < end_bin)) {
+                intensity_values.push_back(data->data[y]);
+            }
+            else {
+                intensity_values.push_back(0);
+            }
+        }
+    }
+    else {
+        for (int y = 0; y < range_in_bins; y++) {
+            intensity_values.push_back(0);
+        }
+    }
 
     if (data->azimuth < last_azimuth) {
         rotated_once = true;
         B_scan_colossus_publisher::image_data_handler(data);
+        intensity_values.clear();
     }
     last_azimuth = data->azimuth;
 
@@ -106,6 +114,7 @@ void B_scan_colossus_publisher::configuration_data_handler(const Navtech::Config
 
     azimuth_samples = data->azimuth_samples;
     range_in_bins = data->range_in_bins;
+    buffer_length = azimuth_samples * range_in_bins * sizeof(uint8_t);
 
     RCLCPP_INFO(Node::get_logger(), "Starting b scan publisher");
     RCLCPP_INFO(Node::get_logger(), "Start azimuth: %i", start_azimuth);
