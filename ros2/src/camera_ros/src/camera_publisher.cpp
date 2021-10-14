@@ -61,7 +61,7 @@ void Camera_publisher::camera_image_handler(cv::Mat image, int fps)
     message.height = image.rows;
     message.width = image.cols;
     message.encoding = "8UC3";
-    message.is_bigendian = true;
+    message.is_bigendian = false;
     message.step = image.step;
     message.data = std::move(vector_buffer);
 
