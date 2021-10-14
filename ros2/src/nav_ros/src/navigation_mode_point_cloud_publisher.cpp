@@ -185,33 +185,112 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
 
     if (rotation_count >= config_publish_count) {
 
+        int temp_azimuth_offset = get_parameter("azimuth_offset").as_int();
+        if (temp_azimuth_offset > azimuth_samples) {
+            RCLCPP_INFO(Node::get_logger(), "Azimuth offset of %i is invalid, must be less than or equal to %i", temp_azimuth_offset, azimuth_samples);
+            RCLCPP_INFO(Node::get_logger(), "Setting azimuth offset to %i", azimuth_samples);
+            set_parameter(rclcpp::Parameter("azimuth_offset", azimuth_samples));
+        }
+        else {
+            azimuth_offset = temp_azimuth_offset;
+        }
+
+        int temp_start_azimuth = get_parameter("start_azimuth").as_int();
+        if (temp_start_azimuth < 0 || temp_start_azimuth > azimuth_samples) {
+            RCLCPP_INFO(Node::get_logger(), "Start azimuth of %i is invalid, must be between 0 and %i", temp_start_azimuth, azimuth_samples);
+            RCLCPP_INFO(Node::get_logger(), "Setting start azimuth to %i", 0);
+            set_parameter(rclcpp::Parameter("start_azimuth", 0));
+        }
+        else {
+            start_azimuth = temp_start_azimuth;
+        }
+
+        int temp_end_azimuth = get_parameter("end_azimuth").as_int();
+        if (temp_end_azimuth < 0 || temp_end_azimuth > azimuth_samples) {
+            RCLCPP_INFO(Node::get_logger(), "End azimuth of %i is invalid, must be between 0 and %i", temp_end_azimuth, azimuth_samples);
+            RCLCPP_INFO(Node::get_logger(), "Setting end azimuth to %i", azimuth_samples);
+            set_parameter(rclcpp::Parameter("end_azimuth", azimuth_samples));
+        }
+        else {
+            end_azimuth = temp_end_azimuth;
+        }
+
+        int temp_start_bin = get_parameter("start_bin").as_int();
+        if (temp_start_bin < 0 || temp_start_bin > range_in_bins) {
+            RCLCPP_INFO(Node::get_logger(), "Start bin of %i is invalid, must be between 0 and %i", temp_start_bin, range_in_bins);
+            RCLCPP_INFO(Node::get_logger(), "Setting start bin to %i", 0);
+            set_parameter(rclcpp::Parameter("start_bin", 0));
+        }
+        else {
+            start_bin = temp_start_bin;
+        }
+
+        int temp_end_bin = get_parameter("end_bin").as_int();
+        if (temp_end_bin < 0 || temp_end_bin > range_in_bins) {
+            RCLCPP_INFO(Node::get_logger(), "End bin of %i is invalid, must be between 0 and %i", temp_end_bin, range_in_bins);
+            RCLCPP_INFO(Node::get_logger(), "Setting end bin to %i", range_in_bins);
+            set_parameter(rclcpp::Parameter("end_bin", range_in_bins));
+        }
+        else {
+            end_bin = temp_end_azimuth;
+        }
+
         // These params mean a new config has to be sent to the radar
         bool update_radar_navigation_config = false;
         if (get_parameter("bins_to_operate_on").as_int() != bins_to_operate_on)
         {
-            bins_to_operate_on = get_parameter("bins_to_operate_on").as_int();
+            int temp_bins_to_operate_on = get_parameter("bins_to_operate_on").as_int();
+            if (temp_bins_to_operate_on < 0 || temp_bins_to_operate_on > 10) {
+                RCLCPP_INFO(Node::get_logger(), "Bins to operate on of %i is invalid, must be between 0 and %i", temp_bins_to_operate_on, 10);
+                RCLCPP_INFO(Node::get_logger(), "Setting bins to operate on to %i", 10);
+                set_parameter(rclcpp::Parameter("bins_to_operate_on", bins_to_operate_on));
+            }
+            else {
+                bins_to_operate_on = temp_bins_to_operate_on;
+            }
             update_radar_navigation_config = true;
         }
         if (get_parameter("min_bin").as_int() != min_bin)
         {
-            min_bin = get_parameter("min_bin").as_int();
+            int temp_min_bin = get_parameter("min_bin").as_int();
+            if (temp_min_bin < 0 || temp_min_bin > range_in_bins) {
+                RCLCPP_INFO(Node::get_logger(), "Min bin of %i is invalid, must be between 0 and %i", temp_min_bin, range_in_bins);
+                RCLCPP_INFO(Node::get_logger(), "Setting min bin to %i", range_in_bins);
+                set_parameter(rclcpp::Parameter("min_bin", min_bin));
+            }
+            else {
+                min_bin = temp_min_bin;
+            }
             update_radar_navigation_config = true;
         }
+
         if (get_parameter("power_threshold").as_double() != power_threshold)
         {
-            power_threshold = get_parameter("power_threshold").as_double();
+            double temp_power_threshold = get_parameter("power_threshold").as_double();
+            if (temp_power_threshold < 0 || temp_power_threshold > std::numeric_limits<uint8_t>::max() * 10) {
+                RCLCPP_INFO(Node::get_logger(), "Power threshold of %i is invalid, must be between 0 and %i", temp_power_threshold, std::numeric_limits<uint8_t>::max() * 10);
+                RCLCPP_INFO(Node::get_logger(), "Setting power threshold to %i", std::numeric_limits<uint8_t>::max() * 10 / 2);
+                set_parameter(rclcpp::Parameter("power_threshold", std::numeric_limits<uint8_t>::max() * 10 / 2));
+            }
+            else {
+                power_threshold = temp_power_threshold;
+            }
             update_radar_navigation_config = true;
         }
         if (get_parameter("max_peaks_per_azimuth").as_int() != max_peaks_per_azimuth)
         {
-            max_peaks_per_azimuth = get_parameter("max_peaks_per_azimuth").as_int();
+            int temp_max_peaks_per_azimuth = get_parameter("max_peaks_per_azimuth").as_int();
+            if (temp_max_peaks_per_azimuth < 0 || temp_max_peaks_per_azimuth > 5) {
+                RCLCPP_INFO(Node::get_logger(), "Max peaks per azimuth of %i is invalid, must be between 0 and %i", temp_max_peaks_per_azimuth, 5);
+                RCLCPP_INFO(Node::get_logger(), "Setting max peaks per azimuth to %i", 5);
+                set_parameter(rclcpp::Parameter("max_peaks_per_azimuth", 5));
+            }
+            else {
+                max_peaks_per_azimuth = temp_max_peaks_per_azimuth;
+            }
             update_radar_navigation_config = true;
         }
 
-        start_azimuth = get_parameter("start_azimuth").as_int();
-        end_azimuth = get_parameter("end_azimuth").as_int();
-        start_bin = get_parameter("start_bin").as_int();
-        end_bin = get_parameter("end_bin").as_int();
         configuration_data_publisher->publish(config_message);
         rotation_count = 0;
 
