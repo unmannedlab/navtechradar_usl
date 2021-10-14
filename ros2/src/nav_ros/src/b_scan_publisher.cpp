@@ -37,7 +37,7 @@ B_scan_colossus_publisher::B_scan_colossus_publisher():Node{ "b_scan_publisher" 
 
     b_scan_image_publisher =
     Node::create_publisher<sensor_msgs::msg::Image>(
-    "radar_data/b_scan_image_data",
+    "radar_data/b_scan_image",
     qos_b_scan_image_publisher);
 }
 
