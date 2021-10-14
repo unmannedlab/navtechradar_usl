@@ -7,7 +7,7 @@
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "interfaces/msg/fft_data_message.hpp"
 #include "radar_client.h"
-#include "b_scan_colossus_publisher.h"
+#include "b_scan_publisher.h"
 
 int main(int argc, char* argv[])
 {

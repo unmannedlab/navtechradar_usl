@@ -34,6 +34,8 @@ private:
     int last_azimuth{ 0 };
     bool rotated_once{ false };
     int buffer_length{ 0 };
+    int rotation_count{ 0 };
+    int config_publish_count{ 4 };
 
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr b_scan_image_publisher{};
 };

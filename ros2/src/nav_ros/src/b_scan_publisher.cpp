@@ -8,13 +8,13 @@
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "interfaces/msg/fft_data_message.hpp"
 #include "radar_client.h"
-#include "b_scan_colossus_publisher.h"
+#include "b_scan_publisher.h"
 #include "net_conversion.h"
 #include "sensor_msgs/msg/image.hpp"
 #include "std_msgs/msg/header.hpp"
 #include <vector>
 
-B_scan_colossus_publisher::B_scan_colossus_publisher():Node{ "b_scan_colossus_publisher" }
+B_scan_colossus_publisher::B_scan_colossus_publisher():Node{ "b_scan_publisher" }
 {
     declare_parameter("radar_ip", "");
     declare_parameter("radar_port", 0);
@@ -76,27 +76,43 @@ void B_scan_colossus_publisher::fft_data_handler(const Navtech::Fft_data::Pointe
     }
 
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
-        for (int y = 0; y < range_in_bins; y++) {
+        for (int y = 0; y < data->data.size(); y++) {
+            int adjusted_intensity_index = (adjusted_azimuth_index * range_in_bins) + y;
             if ((y >= start_bin) && (y < end_bin)) {
-                intensity_values.push_back(data->data[y]);
+                intensity_values[adjusted_intensity_index] = data->data[y];
             }
             else {
-                intensity_values.push_back(0);
+                intensity_values[adjusted_intensity_index] = 0;
             }
         }
     }
     else {
         for (int y = 0; y < range_in_bins; y++) {
-            intensity_values.push_back(0);
+            intensity_values[(adjusted_azimuth_index * range_in_bins) + y] = 0;
         }
     }
 
     if (data->azimuth < last_azimuth) {
         rotated_once = true;
+        rotation_count++;
         B_scan_colossus_publisher::image_data_handler(data);
-        intensity_values.clear();
+
+        for (int x = 0; x < azimuth_samples; x++) {
+            for (int y = 0; y < range_in_bins; y++) {
+                intensity_values.push_back(0);
+            }
+        }
     }
     last_azimuth = data->azimuth;
+
+    if (rotation_count >= config_publish_count) {
+        azimuth_offset = get_parameter("azimuth_offset").as_int();
+        start_azimuth = get_parameter("start_azimuth").as_int();
+        end_azimuth = get_parameter("end_azimuth").as_int();
+        start_bin = get_parameter("start_bin").as_int();
+        end_bin = get_parameter("end_bin").as_int();
+        rotation_count = 0;
+    }
 
     if (!rotated_once) {
         return;
@@ -115,6 +131,12 @@ void B_scan_colossus_publisher::configuration_data_handler(const Navtech::Config
     azimuth_samples = data->azimuth_samples;
     range_in_bins = data->range_in_bins;
     buffer_length = azimuth_samples * range_in_bins * sizeof(uint8_t);
+
+    for (int x = 0; x < azimuth_samples; x++) {
+        for (int y = 0; y < range_in_bins; y++) {
+                intensity_values.push_back(0);
+            }
+        }
 
     RCLCPP_INFO(Node::get_logger(), "Starting b scan publisher");
     RCLCPP_INFO(Node::get_logger(), "Start azimuth: %i", start_azimuth);

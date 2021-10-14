@@ -1,4 +1,4 @@
-/b_scan_colossus_publisher:
+/b_scan_publisher:
   ros__parameters:
     azimuth_offset: 0
     end_azimuth: 400
