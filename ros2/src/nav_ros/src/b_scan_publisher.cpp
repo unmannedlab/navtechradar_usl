@@ -37,7 +37,7 @@ B_scan_colossus_publisher::B_scan_colossus_publisher():Node{ "b_scan_publisher" 
 
     b_scan_image_publisher =
     Node::create_publisher<sensor_msgs::msg::Image>(
-    "radar_data/b_scan_image_data",
+    "radar_data/b_scan_image",
     qos_b_scan_image_publisher);
 }
 
@@ -106,11 +106,57 @@ void B_scan_colossus_publisher::fft_data_handler(const Navtech::Fft_data::Pointe
     last_azimuth = data->azimuth;
 
     if (rotation_count >= config_publish_count) {
-        azimuth_offset = get_parameter("azimuth_offset").as_int();
-        start_azimuth = get_parameter("start_azimuth").as_int();
-        end_azimuth = get_parameter("end_azimuth").as_int();
-        start_bin = get_parameter("start_bin").as_int();
-        end_bin = get_parameter("end_bin").as_int();
+
+        int temp_azimuth_offset = get_parameter("azimuth_offset").as_int();
+        if (temp_azimuth_offset > azimuth_samples){
+            RCLCPP_INFO(Node::get_logger(), "Azimuth offset of %i is invalid, must be less than or equal to %i", temp_azimuth_offset, azimuth_samples);
+            RCLCPP_INFO(Node::get_logger(), "Setting azimuth offset to %i", azimuth_samples);
+            set_parameter(rclcpp::Parameter("azimuth_offset", azimuth_samples));
+        }
+        else {
+            azimuth_offset = temp_azimuth_offset;
+        }
+
+        int temp_start_azimuth = get_parameter("start_azimuth").as_int();
+        if (temp_start_azimuth < 0 || temp_start_azimuth > azimuth_samples) {
+            RCLCPP_INFO(Node::get_logger(), "Start azimuth of %i is invalid, must be between 0 and %i", temp_start_azimuth, azimuth_samples);
+            RCLCPP_INFO(Node::get_logger(), "Setting start azimuth to %i", 0);
+            set_parameter(rclcpp::Parameter("start_azimuth", 0));
+        }
+        else {
+            start_azimuth = temp_start_azimuth;
+        }
+
+        int temp_end_azimuth = get_parameter("end_azimuth").as_int();
+        if (temp_end_azimuth < 0 || temp_end_azimuth > azimuth_samples) {
+            RCLCPP_INFO(Node::get_logger(), "End azimuth of %i is invalid, must be between 0 and %i", temp_end_azimuth, azimuth_samples);
+            RCLCPP_INFO(Node::get_logger(), "Setting end azimuth to %i", azimuth_samples);
+            set_parameter(rclcpp::Parameter("end_azimuth", azimuth_samples));
+        }
+        else {
+            end_azimuth = temp_end_azimuth;
+        }
+
+        int temp_start_bin = get_parameter("start_bin").as_int();
+        if (temp_start_bin < 0 || temp_start_bin > range_in_bins) {
+            RCLCPP_INFO(Node::get_logger(), "Start bin of %i is invalid, must be between 0 and %i", temp_start_bin, range_in_bins);
+            RCLCPP_INFO(Node::get_logger(), "Setting start bin to %i", 0);
+            set_parameter(rclcpp::Parameter("start_bin", 0));
+        }
+        else {
+            start_bin = temp_start_bin;
+        }
+
+        int temp_end_bin = get_parameter("end_bin").as_int();
+        if (temp_end_bin < 0 || temp_end_bin > range_in_bins) {
+            RCLCPP_INFO(Node::get_logger(), "End bin of %i is invalid, must be between 0 and %i", temp_end_bin, range_in_bins);
+            RCLCPP_INFO(Node::get_logger(), "Setting end bin to %i", range_in_bins);
+            set_parameter(rclcpp::Parameter("end_bin", range_in_bins));
+        }
+        else {
+            end_bin = temp_end_bin;
+        }
+
         rotation_count = 0;
     }
 

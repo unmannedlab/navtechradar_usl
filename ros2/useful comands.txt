@@ -4,8 +4,8 @@ colcon build
 // To install built packages
 . install/setup.bash
 
-// Launch radar and camera with paramaters from yaml file
-ros2 launch launch_ros launch_radar_and_camera.launch.py
+// Launch radar laser scan publisher with paramaters from yaml file
+ros2 launch launch_laser_scan_publisher.launch.py
 
 // Record camera data and radar data to user defined folder and file
 ros2 bag record -o recordings/record_test /radar_data/configuration_data /radar_data/fft_data camera_data/image_data
@@ -14,21 +14,15 @@ ros2 bag record -o recordings/record_test /radar_data/configuration_data /radar_
 ros2 bag play recordings/record_test/record_test_0.db3
 
 // Run a tranform publisher to visulaise laser_scan data
-ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 1 map laser_frame
+// Note - Automatically handled if using launch script
 ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 1 map point_cloud
 
-// Get a parameter
+// Get the power_threshold parameter from the laser_scan_publisher node
 ros2 param get laser_scan_publisher power_threshold
-ros2 param get laser_scan_publisher azimuth_offset
-ros2 param get laser_scan_publisher start_azimuth
-ros2 param get laser_scan_publisher end_azimuth
-ros2 param get laser_scan_publisher start_bin
-ros2 param get laser_scan_publisher end_bin
 
-// Set a parameter
+// Set the power_threshold parameter on the laser_scan_publisher node
 ros2 param set laser_scan_publisher power_threshold 110
-ros2 param set laser_scan_publisher azimuth_offset 200
-ros2 param set laser_scan_publisher start_azimuth 0
-ros2 param set laser_scan_publisher end_azimuth 400
-ros2 param set laser_scan_publisher start_bin 0
-ros2 param set laser_scan_publisher end_bin 2856
+
+// To open RVIZ to visulaise data
+// Note - Automatically handled if using launch script
+rviz2
