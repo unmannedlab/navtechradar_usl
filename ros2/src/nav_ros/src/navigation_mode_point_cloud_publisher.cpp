@@ -158,7 +158,6 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
         adjusted_azimuth_index = adjusted_azimuth_index - azimuth_samples;
     }
 
-    int adjusted_range = adjusted_azimuth_index * range_in_bins;
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
 
         for (int peak_index = 0; peak_index < data->peaks.size(); peak_index++) {
@@ -268,7 +267,7 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
         {
             double temp_power_threshold = get_parameter("power_threshold").as_double();
             if (temp_power_threshold < 0 || temp_power_threshold > std::numeric_limits<uint8_t>::max() * 10) {
-                RCLCPP_INFO(Node::get_logger(), "Power threshold of %i is invalid, must be between 0 and %i", temp_power_threshold, std::numeric_limits<uint8_t>::max() * 10);
+                RCLCPP_INFO(Node::get_logger(), "Power threshold of %f is invalid, must be between 0 and %i", temp_power_threshold, std::numeric_limits<uint8_t>::max() * 10);
                 RCLCPP_INFO(Node::get_logger(), "Setting power threshold to %i", std::numeric_limits<uint8_t>::max() * 10 / 2);
                 set_parameter(rclcpp::Parameter("power_threshold", std::numeric_limits<uint8_t>::max() * 10 / 2));
             }
