@@ -63,7 +63,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /radar_data/b_scan_image_data
+        Value: /radar_data/b_scan_image
       Value: true
   Enabled: true
   Global Options:

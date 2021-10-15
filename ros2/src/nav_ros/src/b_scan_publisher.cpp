@@ -154,7 +154,7 @@ void B_scan_colossus_publisher::fft_data_handler(const Navtech::Fft_data::Pointe
             set_parameter(rclcpp::Parameter("end_bin", range_in_bins));
         }
         else {
-            end_bin = temp_end_azimuth;
+            end_bin = temp_end_bin;
         }
 
         rotation_count = 0;
