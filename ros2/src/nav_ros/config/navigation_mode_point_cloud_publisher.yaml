@@ -7,6 +7,7 @@
     max_peaks_per_azimuth: 5
     min_bin: 100
     power_threshold: 40.0
+    process_locally: true
     qos_overrides:
       /parameter_events:
         publisher:
@@ -14,7 +15,7 @@
           durability: volatile
           history: keep_last
           reliability: reliable
-    radar_ip: 192.168.0.1
+    radar_ip: 10.77.2.211
     radar_port: 6317
     start_azimuth: 0
     start_bin: 0

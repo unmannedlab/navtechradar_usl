@@ -9,6 +9,7 @@
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "radar_client.h"
+#include "navigation/peak_finder.h"
 #include "navigation_mode_point_cloud_publisher.h"
 #include "net_conversion.h"
 
@@ -26,6 +27,7 @@ Navigation_mode_point_cloud_publisher::Navigation_mode_point_cloud_publisher() :
     declare_parameter("min_bin", 0);
     declare_parameter("power_threshold", 0.0);
     declare_parameter("max_peaks_per_azimuth", 0);
+    declare_parameter("process_locally", false);
 
     radar_ip = get_parameter("radar_ip").as_string();
     radar_port = get_parameter("radar_port").as_int();
@@ -39,6 +41,7 @@ Navigation_mode_point_cloud_publisher::Navigation_mode_point_cloud_publisher() :
     min_bin = get_parameter("min_bin").as_int();
     power_threshold = get_parameter("power_threshold").as_double();
     max_peaks_per_azimuth = get_parameter("max_peaks_per_azimuth").as_int();
+    process_locally = get_parameter("process_locally").as_bool();
 
     rclcpp::QoS qos_radar_configuration_publisher(radar_configuration_queue_size);
     qos_radar_configuration_publisher.reliable();
@@ -144,6 +147,10 @@ void Navigation_mode_point_cloud_publisher::navigation_config_data_handler(const
     RCLCPP_INFO(Node::get_logger(), "Min bin: %i", data->min_bin);
     RCLCPP_INFO(Node::get_logger(), "Power threshold: %f", data->navigation_threshold);
     RCLCPP_INFO(Node::get_logger(), "Max peaks per azimuth: %i", data->max_peaks_per_azimuth);
+}
+
+void Navigation_mode_point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data) {
+    RCLCPP_INFO(Node::get_logger(), "Received FFT data");
 }
 
 void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtech::Navigation_data::Pointer& data) {
@@ -304,7 +311,7 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
     }
 }
 
-void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Navtech::Configuration_data::Pointer& data) {
+void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Navtech::Configuration_data::Pointer& data, const Navtech::Configuration_data::ProtobufPointer& protobuf_data) {
     RCLCPP_INFO(Node::get_logger(), "Configuration Data Received");
     RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", data->azimuth_samples);
     RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", data->encoder_size);
@@ -330,8 +337,39 @@ void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Nav
     RCLCPP_INFO(Node::get_logger(), "Start bin: %i", start_bin);
     RCLCPP_INFO(Node::get_logger(), "End bin: %i", end_bin);
     RCLCPP_INFO(Node::get_logger(), "Azimuth offset: %i", azimuth_offset);
+    RCLCPP_INFO(Node::get_logger(), "Processing locally: %s", process_locally ? "true" : "false");
 
-    Navigation_mode_point_cloud_publisher::update_navigation_config();
+    if (process_locally) {
 
-    radar_client->start_navigation_data();
+        double threshold = 80.0;             // Threshold in dB
+        std::uint8_t bins_to_operate_on = 4;                // Radar bins window size to search for peaks in
+        std::uint16_t start_bin = 50;               // Start Bin
+        Navtech::BufferModes buffer_mode = Navtech::BufferModes::off; // Buffer mode should only be used with a staring radar
+        std::size_t buffer_length = 10;               // Buffer Length
+        std::uint32_t max_peaks_per_azimuth = 10;               // Maximum number of peaks to find in a single azimuth
+
+        peak_finder->configure(data,
+            protobuf_data,
+            threshold,
+            bins_to_operate_on,
+            start_bin,
+            buffer_mode,
+            buffer_length,
+            max_peaks_per_azimuth);
+
+        //peak_finder->configure(data,
+        //    protobuf_data,
+        //    power_threshold,
+        //    bins_to_operate_on,
+        //    min_bin,
+        //    Navtech::BufferModes::off,
+        //    10,
+        //    max_peaks_per_azimuth);
+
+        radar_client->start_fft_data();
+    }
+    else {
+        Navigation_mode_point_cloud_publisher::update_navigation_config();
+        radar_client->start_navigation_data();
+    }
 }

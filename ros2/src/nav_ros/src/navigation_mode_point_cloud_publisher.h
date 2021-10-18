@@ -1,5 +1,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include "radar_client.h"
+#include "navigation/peak_finder.h"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "interfaces/msg/configuration_data_message.hpp"
 #include <vector>
@@ -10,6 +11,7 @@ public:
     Navigation_mode_point_cloud_publisher();
 
     std::shared_ptr<Navtech::Radar_client> radar_client{};
+    std::shared_ptr<Navtech::Peak_finder> peak_finder{};
     std::string radar_ip{ "" };
     uint16_t radar_port{ 0 };
     uint16_t start_azimuth{ 0 };
@@ -22,12 +24,14 @@ public:
     uint16_t min_bin{ 0 };
     double power_threshold{ 0 };
     uint32_t max_peaks_per_azimuth{ 0 };
+    bool process_locally{ false };
 
     std::vector <float> azimuth_values;
     std::vector <float> bin_values;
     std::vector <float> intensity_values;
 
-    void configuration_data_handler(const Navtech::Configuration_data::Pointer& data);
+    void fft_data_handler(const Navtech::Fft_data::Pointer& data);
+    void configuration_data_handler(const Navtech::Configuration_data::Pointer& data, const Navtech::Configuration_data::ProtobufPointer& protobuf_data);
     void navigation_data_handler(const Navtech::Navigation_data::Pointer& data);
     void navigation_config_data_handler(const Navtech::Navigation_config::Pointer& data);
     void publish_point_cloud(const Navtech::Navigation_data::Pointer& data);
