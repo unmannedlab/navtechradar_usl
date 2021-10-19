@@ -187,8 +187,7 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
         for (int peak_index = 0; peak_index < data->peaks.size(); peak_index++) {
             float target_range = std::get<float>(data->peaks[peak_index]);
             int bin_index = (int)(target_range / bin_size);
-            // TODO - use float not uint16_t, divide power by 10
-            uint16_t target_power = std::get<uint16_t>(data->peaks[peak_index]);
+            float target_power = (std::get<uint16_t>(data->peaks[peak_index]) / 10.0);
             if ((bin_index >= start_bin) && (bin_index < end_bin)) {
                     azimuth_values.push_back(adjusted_azimuth_index);
                     bin_values.push_back(bin_index);
