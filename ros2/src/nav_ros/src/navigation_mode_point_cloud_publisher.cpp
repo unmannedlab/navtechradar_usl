@@ -318,8 +318,22 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
         rotation_count = 0;
 
         if (update_radar_navigation_config) {
-            Navigation_mode_point_cloud_publisher::update_navigation_config();
-            radar_client->request_navigation_configuration();
+
+            if (process_locally) {
+
+                peak_finder->configure(data,
+                    protobuf_config_data,
+                    power_threshold,
+                    bins_to_operate_on,
+                    min_bin,
+                    Navtech::BufferModes::off,
+                    10,
+                    max_peaks_per_azimuth);
+            }
+            else {
+                Navigation_mode_point_cloud_publisher::update_navigation_config();
+                radar_client->request_navigation_configuration();
+            }
         }
     }
 
@@ -356,10 +370,11 @@ void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Nav
     RCLCPP_INFO(Node::get_logger(), "Azimuth offset: %i", azimuth_offset);
     RCLCPP_INFO(Node::get_logger(), "Processing locally: %s", process_locally ? "true" : "false");
 
+    protobuf_config_data = protobuf_data;
     if (process_locally) {
 
         peak_finder->configure(data,
-            protobuf_data,
+            protobuf_config_data,
             power_threshold,
             bins_to_operate_on,
             min_bin,
@@ -367,6 +382,7 @@ void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Nav
             10,
             max_peaks_per_azimuth);
 
+        // peak_finding does not currently work with contoured data
         radar_client->start_non_contour_fft_data();
     }
     else {
