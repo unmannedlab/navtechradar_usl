@@ -31,6 +31,7 @@ public:
     std::vector <float> intensity_values;
 
     void fft_data_handler(const Navtech::Fft_data::Pointer& data);
+    void target_data_handler(const Navtech::Azimuth_target& target_data);
     void configuration_data_handler(const Navtech::Configuration_data::Pointer& data, const Navtech::Configuration_data::ProtobufPointer& protobuf_data);
     void navigation_data_handler(const Navtech::Navigation_data::Pointer& data);
     void navigation_config_data_handler(const Navtech::Navigation_config::Pointer& data);

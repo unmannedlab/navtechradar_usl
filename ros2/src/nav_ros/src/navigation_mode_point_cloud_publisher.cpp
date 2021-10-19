@@ -150,7 +150,24 @@ void Navigation_mode_point_cloud_publisher::navigation_config_data_handler(const
 }
 
 void Navigation_mode_point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data) {
-    RCLCPP_INFO(Node::get_logger(), "Received FFT data");
+    peak_finder->fft_data_handler(data);
+}
+
+void Navigation_mode_point_cloud_publisher::target_data_handler(const Navtech::Azimuth_target& target_data) {
+
+    auto data = std::make_shared<Navtech::Navigation_data>();
+
+    data->angle = target_data.angle;
+    data->azimuth = target_data.azimuth;
+    data->ntp_seconds = target_data.ntp_seconds;
+    data->ntp_split_seconds = target_data.ntp_split_seconds;
+
+    for (int t = 0; t < target_data.targets.size(); t++) {
+        std::tuple<float, std::uint16_t> peak(target_data.targets[t].range, (std::uint16_t)(target_data.targets[t].power * 10.0));
+        data->peaks.push_back(peak);
+    }
+
+    navigation_data_handler(data);
 }
 
 void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtech::Navigation_data::Pointer& data) {
@@ -170,6 +187,7 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
         for (int peak_index = 0; peak_index < data->peaks.size(); peak_index++) {
             float target_range = std::get<float>(data->peaks[peak_index]);
             int bin_index = (int)(target_range / bin_size);
+            // TODO - use float not uint16_t, divide power by 10
             uint16_t target_power = std::get<uint16_t>(data->peaks[peak_index]);
             if ((bin_index >= start_bin) && (bin_index < end_bin)) {
                     azimuth_values.push_back(adjusted_azimuth_index);
@@ -341,32 +359,16 @@ void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Nav
 
     if (process_locally) {
 
-        double threshold = 80.0;             // Threshold in dB
-        std::uint8_t bins_to_operate_on = 4;                // Radar bins window size to search for peaks in
-        std::uint16_t start_bin = 50;               // Start Bin
-        Navtech::BufferModes buffer_mode = Navtech::BufferModes::off; // Buffer mode should only be used with a staring radar
-        std::size_t buffer_length = 10;               // Buffer Length
-        std::uint32_t max_peaks_per_azimuth = 10;               // Maximum number of peaks to find in a single azimuth
-
         peak_finder->configure(data,
             protobuf_data,
-            threshold,
+            power_threshold,
             bins_to_operate_on,
-            start_bin,
-            buffer_mode,
-            buffer_length,
+            min_bin,
+            Navtech::BufferModes::off,
+            10,
             max_peaks_per_azimuth);
 
-        //peak_finder->configure(data,
-        //    protobuf_data,
-        //    power_threshold,
-        //    bins_to_operate_on,
-        //    min_bin,
-        //    Navtech::BufferModes::off,
-        //    10,
-        //    max_peaks_per_azimuth);
-
-        radar_client->start_fft_data();
+        radar_client->start_non_contour_fft_data();
     }
     else {
         Navigation_mode_point_cloud_publisher::update_navigation_config();

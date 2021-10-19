@@ -6,6 +6,7 @@
 
 #include "interfaces/msg/configuration_data_message.hpp"
 #include "radar_client.h"
+#include "navigation/peak_finder.h"
 #include "navigation_mode_point_cloud_publisher.h"
 
 int main(int argc, char* argv[])
@@ -14,8 +15,10 @@ int main(int argc, char* argv[])
     auto node = std::make_shared<Navigation_mode_point_cloud_publisher>();
 
     RCLCPP_INFO(node->get_logger(), "Starting radar client");
-    node->radar_client = Navtech::allocate_owned<Navtech::Radar_client>(Navtech::Utility::IP_address { node->radar_ip }, node->radar_port);
-    //node->peak_finder->set_target_callback(std::bind(&Navigation_mode_point_cloud_publisher::navigation_data_handler, node.get(), std::placeholders::_1));
+    node->peak_finder = Navtech::allocate_owned<Navtech::Peak_finder>();
+    node->peak_finder->set_target_callback(std::bind(&Navigation_mode_point_cloud_publisher::target_data_handler, node.get(), std::placeholders::_1));
+
+    node->radar_client = Navtech::allocate_owned<Navtech::Radar_client>(Navtech::Utility::IP_address{ node->radar_ip }, node->radar_port);
     node->radar_client->set_fft_data_callback(std::bind(&Navigation_mode_point_cloud_publisher::fft_data_handler, node.get(), std::placeholders::_1));
     node->radar_client->set_configuration_data_callback(std::bind(&Navigation_mode_point_cloud_publisher::configuration_data_handler, node.get(), std::placeholders::_1, std::placeholders::_2));
     node->radar_client->set_navigation_config_callback(std::bind(&Navigation_mode_point_cloud_publisher::navigation_config_data_handler, node.get(), std::placeholders::_1));

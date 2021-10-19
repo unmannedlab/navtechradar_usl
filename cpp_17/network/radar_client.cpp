@@ -102,6 +102,13 @@ namespace Navtech {
         send_radar_data = true;
     }
 
+    void Radar_client::start_non_contour_fft_data()
+    {
+        Log("Radar_client - Start Non Contoured FFT Data");
+        send_simple_network_message(Network::Colossus_protocol::Message::Type::start_non_contour_fft_data);
+        send_radar_data = true;
+    }
+
     void Radar_client::stop_fft_data()
     {
         Log("Radar_client - Stop FFT Data");

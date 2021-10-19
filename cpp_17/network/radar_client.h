@@ -88,6 +88,7 @@ namespace Navtech {
 
         void update_contour_map(const std::vector<std::uint8_t>& contourData);
         void start_fft_data();
+        void start_non_contour_fft_data();
         void stop_fft_data();
         void start_health_data();
         void stop_health_data();
