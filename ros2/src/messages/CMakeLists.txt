@@ -21,8 +21,8 @@ find_package(ament_cmake REQUIRED)
 
 find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/ConfigurationDataMessage.msg"
-  "msg/FftDataMessage.msg"
+  "msg/RadarConfigurationMessage.msg"
+  "msg/RadarFftDataMessage.msg"
   "msg/CameraConfigurationMessage.msg"
  )
 

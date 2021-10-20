@@ -4,7 +4,7 @@
 #include <string>
 #include <rclcpp/rclcpp.hpp>
 
-#include "messages/msg/configuration_data_message.hpp"
+#include "messages/msg/radar_configuration_message.hpp"
 #include "radar_client.h"
 #include "laser_scan_publisher.h"
 

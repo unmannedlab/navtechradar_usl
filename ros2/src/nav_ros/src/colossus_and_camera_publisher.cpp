@@ -5,8 +5,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <opencv2/opencv.hpp>
 
-#include "messages/msg/configuration_data_message.hpp"
-#include "messages/msg/fft_data_message.hpp"
+#include "messages/msg/radar_configuration_message.hpp"
+#include "messages/msg/radar_fft_data_message.hpp"
 #include "messages/msg/camera_configuration_message.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "radar_client.h"
@@ -34,7 +34,7 @@ Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_a
     qos_radar_configuration_publisher.reliable();
 
     configuration_data_publisher =
-    Node::create_publisher<messages::msg::ConfigurationDataMessage>(
+    Node::create_publisher<messages::msg::RadarConfigurationMessage>(
     "radar_data/configuration_data",
     qos_radar_configuration_publisher);
 
@@ -42,7 +42,7 @@ Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_a
     qos_radar_fft_publisher.reliable();
 
     fft_data_publisher =
-    Node::create_publisher<messages::msg::FftDataMessage>(
+    Node::create_publisher<messages::msg::RadarFftDataMessage>(
     "radar_data/fft_data",
     qos_radar_fft_publisher);
 
@@ -65,7 +65,7 @@ Colossus_and_camera_publisher::Colossus_and_camera_publisher():Node{ "colossus_a
 
 void Colossus_and_camera_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data)
 {
-    auto message = messages::msg::FftDataMessage();
+    auto message = messages::msg::RadarFftDataMessage();
     message.angle = Navtech::Utility::to_vector(Navtech::Utility::to_uint64_host(data->angle));
     message.azimuth = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->azimuth));
     message.sweep_counter = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->sweep_counter));

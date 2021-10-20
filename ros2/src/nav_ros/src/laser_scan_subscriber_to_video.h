@@ -21,10 +21,10 @@ private:
     cv::Mat blank_image{ cv::Size(400, 400), CV_8UC1, cv::Scalar(0, 0) };
     int last_azimuth{ 0 };
 
-    void configuration_data_callback(const messages::msg::ConfigurationDataMessage::SharedPtr msg) const;
+    void configuration_data_callback(const messages::msg::RadarConfigurationMessage::SharedPtr msg) const;
     void laser_scan_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) const;
 
-    rclcpp::Subscription<messages::msg::ConfigurationDataMessage>::SharedPtr configuration_data_subscriber;
+    rclcpp::Subscription<messages::msg::RadarConfigurationMessage>::SharedPtr configuration_data_subscriber;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_scan_subscriber;
 };
 

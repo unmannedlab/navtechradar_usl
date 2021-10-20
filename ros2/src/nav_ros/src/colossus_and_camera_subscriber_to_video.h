@@ -34,17 +34,17 @@ private:
     int rotation_count{ 0 };
     int config_publish_count{ 4 };
 
-    messages::msg::ConfigurationDataMessage config_message = messages::msg::ConfigurationDataMessage();
+    messages::msg::RadarConfigurationMessage config_message = messages::msg::RadarConfigurationMessage();
 
-    void configuration_data_callback(const messages::msg::ConfigurationDataMessage::SharedPtr msg) const;
-    void fft_data_callback(const messages::msg::FftDataMessage::SharedPtr msg) const;
+    void configuration_data_callback(const messages::msg::RadarConfigurationMessage::SharedPtr msg) const;
+    void fft_data_callback(const messages::msg::RadarFftDataMessage::SharedPtr msg) const;
     void camera_configuration_data_callback(const messages::msg::CameraConfigurationMessage::SharedPtr data) const;
     void camera_image_callback(const sensor_msgs::msg::Image::SharedPtr data) const;
 
     rclcpp::Subscription<messages::msg::CameraConfigurationMessage>::SharedPtr camera_configuration_subscriber;
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr camera_data_subscriber;
-    rclcpp::Subscription<messages::msg::ConfigurationDataMessage>::SharedPtr configuration_data_subscriber;
-    rclcpp::Subscription<messages::msg::FftDataMessage>::SharedPtr fft_data_subscriber;
+    rclcpp::Subscription<messages::msg::RadarConfigurationMessage>::SharedPtr configuration_data_subscriber;
+    rclcpp::Subscription<messages::msg::RadarFftDataMessage>::SharedPtr fft_data_subscriber;
 };
 
 extern std::shared_ptr<Colossus_and_camera_subscriber_to_video> node;

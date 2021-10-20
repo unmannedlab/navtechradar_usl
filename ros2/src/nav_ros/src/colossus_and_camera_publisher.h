@@ -36,13 +36,13 @@ private:
     int config_publish_count{ 4 };
     bool configuration_sent{ false };
 
-    messages::msg::ConfigurationDataMessage config_message = messages::msg::ConfigurationDataMessage();
+    messages::msg::RadarConfigurationMessage config_message = messages::msg::RadarConfigurationMessage();
 
     rclcpp::Publisher<messages::msg::CameraConfigurationMessage>::SharedPtr camera_configuration_publisher{};
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr camera_image_publisher{};
     sensor_msgs::msg::Image camera_message = sensor_msgs::msg::Image();
-    rclcpp::Publisher<messages::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher{};
-    rclcpp::Publisher<messages::msg::FftDataMessage>::SharedPtr fft_data_publisher{};
+    rclcpp::Publisher<messages::msg::RadarConfigurationMessage>::SharedPtr configuration_data_publisher{};
+    rclcpp::Publisher<messages::msg::RadarFftDataMessage>::SharedPtr fft_data_publisher{};
 };
 
 extern std::shared_ptr<Colossus_and_camera_publisher> node;

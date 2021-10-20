@@ -5,8 +5,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/qos.hpp>
 
-#include "messages/msg/configuration_data_message.hpp"
-#include "messages/msg/fft_data_message.hpp"
+#include "messages/msg/radar_configuration_message.hpp"
+#include "messages/msg/radar_fft_data_message.hpp"
 #include "radar_client.h"
 #include "b_scan_publisher.h"
 #include "net_conversion.h"
