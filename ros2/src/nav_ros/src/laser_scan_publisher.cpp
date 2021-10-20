@@ -6,7 +6,7 @@
 #include <rclcpp/qos.hpp>
 #include <math.h>
 
-#include "interfaces/msg/configuration_data_message.hpp"
+#include "messages/msg/configuration_data_message.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "radar_client.h"
 #include "laser_scan_publisher.h"
@@ -36,7 +36,7 @@ Laser_scan_publisher::Laser_scan_publisher():Node{ "laser_scan_publisher" }
     qos_radar_configuration_publisher.reliable();
 
     configuration_data_publisher =
-    Node::create_publisher<interfaces::msg::ConfigurationDataMessage>(
+    Node::create_publisher<messages::msg::ConfigurationDataMessage>(
         "radar_data/configuration_data",
         qos_radar_configuration_publisher);
 

@@ -1,7 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include "radar_client.h"
 #include "sensor_msgs/msg/point_cloud2.hpp"
-#include "interfaces/msg/configuration_data_message.hpp"
+#include "messages/msg/configuration_data_message.hpp"
 #include <vector>
 
 class Point_cloud_publisher : public ::rclcpp::Node
@@ -41,8 +41,8 @@ private:
     int rotation_count{ 0 };
     int config_publish_count{ 4 };
 
-    interfaces::msg::ConfigurationDataMessage config_message = interfaces::msg::ConfigurationDataMessage{};
+    messages::msg::ConfigurationDataMessage config_message = messages::msg::ConfigurationDataMessage{};
 
-    rclcpp::Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher{};
+    rclcpp::Publisher<messages::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher{};
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr point_cloud_publisher{};
 };

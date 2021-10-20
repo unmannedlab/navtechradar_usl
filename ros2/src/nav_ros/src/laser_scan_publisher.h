@@ -1,7 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include "radar_client.h"
 #include "sensor_msgs/msg/laser_scan.hpp"
-#include "interfaces/msg/configuration_data_message.hpp"
+#include "messages/msg/configuration_data_message.hpp"
 #include <vector>
 
 class Laser_scan_publisher : public ::rclcpp::Node
@@ -39,8 +39,8 @@ private:
     int rotation_count{ 0 };
     int config_publish_count{ 4 };
 
-    interfaces::msg::ConfigurationDataMessage config_message = interfaces::msg::ConfigurationDataMessage{};
+    messages::msg::ConfigurationDataMessage config_message = messages::msg::ConfigurationDataMessage{};
 
-    rclcpp::Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher{};
+    rclcpp::Publisher<messages::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher{};
     rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr laser_scan_publisher{};
 };

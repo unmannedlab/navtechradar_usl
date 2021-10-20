@@ -3,7 +3,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/qos.hpp>
 
-#include "interfaces/msg/camera_configuration_message.hpp"
+#include "messages/msg/camera_configuration_message.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "opencv2/opencv.hpp"
 #include "camera_subscriber.h"
@@ -15,7 +15,7 @@ Camera_subscriber::Camera_subscriber():rclcpp::Node{ "camera_subscriber" }{
     qos_camera_configuration_subscriber.reliable();
 
     camera_configuration_subscriber =
-    Node::create_subscription<interfaces::msg::CameraConfigurationMessage>(
+    Node::create_subscription<messages::msg::CameraConfigurationMessage>(
     "camera_data/camera_configuration_data",
     qos_camera_configuration_subscriber,
     std::bind(&Camera_subscriber::configuration_data_callback, this, _1));
@@ -30,7 +30,7 @@ Camera_subscriber::Camera_subscriber():rclcpp::Node{ "camera_subscriber" }{
     std::bind(&Camera_subscriber::camera_image_callback, this, _1));
 }
 
-void Camera_subscriber::configuration_data_callback(const interfaces::msg::CameraConfigurationMessage::SharedPtr data) const
+void Camera_subscriber::configuration_data_callback(const messages::msg::CameraConfigurationMessage::SharedPtr data) const
 {
     RCLCPP_INFO(Node::get_logger(), "Camera Configuration received");
     RCLCPP_INFO(Node::get_logger(), "Image Width: %i", data->width);

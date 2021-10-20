@@ -20,7 +20,7 @@ rclcpp::Node{ "camera_subscriber_to_video" }
     qos_camera_configuration_subscriber.reliable();
 
     camera_configuration_subscriber =
-    Node::create_subscription<interfaces::msg::CameraConfigurationMessage>(
+    Node::create_subscription<messages::msg::CameraConfigurationMessage>(
     "camera_data/camera_configuration_data",
     qos_camera_configuration_subscriber,
     std::bind(&Camera_subscriber_to_video::configuration_data_callback, this, _1));
@@ -35,7 +35,7 @@ rclcpp::Node{ "camera_subscriber_to_video" }
     std::bind(&Camera_subscriber_to_video::camera_image_callback, this, _1));
 }
 
-void Camera_subscriber_to_video::configuration_data_callback(const interfaces::msg::CameraConfigurationMessage::SharedPtr data) const
+void Camera_subscriber_to_video::configuration_data_callback(const messages::msg::CameraConfigurationMessage::SharedPtr data) const
 {
     if (config_data_received) {
         return;

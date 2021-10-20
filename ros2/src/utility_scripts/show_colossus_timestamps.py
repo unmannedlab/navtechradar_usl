@@ -5,7 +5,7 @@ import struct
 import datetime
 from rosidl_runtime_py.utilities import get_message
 from rclpy.serialization import deserialize_message
-#from interfaces.msg import FftDataMessage
+#from messages.msg import FftDataMessage
 from datetime import timezone
 import math
 

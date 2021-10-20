@@ -1,6 +1,6 @@
 #include <rclcpp/rclcpp.hpp>
 
-#include "interfaces/msg/configuration_data_message.hpp"
+#include "messages/msg/configuration_data_message.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "laser_scan_subscriber.h"
 

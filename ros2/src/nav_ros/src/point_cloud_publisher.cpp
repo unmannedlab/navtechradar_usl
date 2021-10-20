@@ -6,7 +6,7 @@
 #include <rclcpp/qos.hpp>
 #include <math.h>
 
-#include "interfaces/msg/configuration_data_message.hpp"
+#include "messages/msg/configuration_data_message.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "radar_client.h"
 #include "point_cloud_publisher.h"
@@ -36,7 +36,7 @@ Point_cloud_publisher::Point_cloud_publisher():Node{ "point_cloud_publisher" }
     qos_radar_configuration_publisher.reliable();
 
     configuration_data_publisher =
-    Node::create_publisher<interfaces::msg::ConfigurationDataMessage>(
+    Node::create_publisher<messages::msg::ConfigurationDataMessage>(
         "radar_data/configuration_data",
         qos_radar_configuration_publisher);
 

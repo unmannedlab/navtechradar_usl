@@ -7,7 +7,7 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 
-#include "interfaces/msg/camera_configuration_message.hpp"
+#include "messages/msg/camera_configuration_message.hpp"
 #include "camera_publisher.h"
 
 std::shared_ptr<Camera_publisher> node{};

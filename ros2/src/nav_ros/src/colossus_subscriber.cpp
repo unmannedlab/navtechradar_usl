@@ -5,8 +5,8 @@
 #include <exception>
 #include <cassert>
 
-#include "interfaces/msg/configuration_data_message.hpp"
-#include "interfaces/msg/fft_data_message.hpp"
+#include "messages/msg/configuration_data_message.hpp"
+#include "messages/msg/fft_data_message.hpp"
 #include "colossus_subscriber.h"
 #include "net_conversion.h"
 
@@ -18,7 +18,7 @@ Colossus_subscriber::Colossus_subscriber() : Node{ "colossus_subscriber" }
     qos_radar_configuration_subscriber.reliable();
 
     configuration_data_subscriber = 
-    Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
+    Node::create_subscription<messages::msg::ConfigurationDataMessage>(
         "radar_data/configuration_data",
         qos_radar_configuration_subscriber,
         std::bind(&Colossus_subscriber::configuration_data_callback, this, _1));
@@ -27,13 +27,13 @@ Colossus_subscriber::Colossus_subscriber() : Node{ "colossus_subscriber" }
     qos_radar_fft_subscriber.reliable();
 
     fft_data_subscriber =
-    Node::create_subscription<interfaces::msg::FftDataMessage>(
+    Node::create_subscription<messages::msg::FftDataMessage>(
         "radar_data/fft_data",
         qos_radar_fft_subscriber,
         std::bind(&Colossus_subscriber::fft_data_callback, this, _1));
 }
 
-void Colossus_subscriber::configuration_data_callback(const interfaces::msg::ConfigurationDataMessage::SharedPtr msg) const
+void Colossus_subscriber::configuration_data_callback(const messages::msg::ConfigurationDataMessage::SharedPtr msg) const
 {
     RCLCPP_INFO(Node::get_logger(), "Configuration Data recieved");
 
@@ -78,7 +78,7 @@ void Colossus_subscriber::configuration_data_callback(const interfaces::msg::Con
     }
 }
 
-void Colossus_subscriber::fft_data_callback(const interfaces::msg::FftDataMessage::SharedPtr msg) const
+void Colossus_subscriber::fft_data_callback(const messages::msg::FftDataMessage::SharedPtr msg) const
 {
     RCLCPP_INFO(Node::get_logger(), "FFT Data Received");
 

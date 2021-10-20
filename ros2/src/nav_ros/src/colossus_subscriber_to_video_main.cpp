@@ -1,7 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 
-#include "interfaces/msg/configuration_data_message.hpp"
-#include "interfaces/msg/fft_data_message.hpp"
+#include "messages/msg/configuration_data_message.hpp"
+#include "messages/msg/fft_data_message.hpp"
 #include "colossus_subscriber_to_video.h"
 
 int main(int argc, char* argv[]){
