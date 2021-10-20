@@ -126,3 +126,109 @@ Contains examples of publishers and subscribers to handle the connection to, and
 Contains helpful utility scripts, for manipulating camera data, radar data and bag files.
 
 **See the README.md under 'utility_scripts', for more detialed instructions**
+
+
+
+# ROS2 Example install procedure
+
+## Update Ubuntu 20.04
+
+	sudo apt update
+	
+	sudo apt upgrade
+	
+## Install IASDK prerequisites
+
+	sudo apt install build-essential clang g++ protobuf-compiler libprotobuf-dev cmake
+	
+## Install ROS2 prerequisites
+
+	sudo apt install -y build-essential libssl-dev libffi-dev python3-dev python3 python3-pip software-properties-common
+
+## Install ROS2
+
+	sudo apt update && sudo apt install curl gnupg lsb-release
+
+	sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key  -o /usr/share/keyrings/ros-archive-keyring.gpg
+
+	echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu 
+
+	$(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+	sudo apt install ros-galactic-desktop
+
+	source /opt/ros/galactic/setup.bash
+
+	ros2 run demo_nodes_cpp talker
+	
+## Check install by running examples
+
+	source /opt/ros/galactic/setup.bash
+	
+	ros2 run demo_nodes_py listener
+
+check that the talker and listener are connected
+
+## Install OpenCV
+	sudo apt install git
+
+	git clone https://github.com/opencv/opencv.git
+
+	git clone https://github.com/opencv/opencv_contrib.git
+
+	sudo apt install build-essential cmake git pkg-config libpng-dev libtiff-dev gfortran openexr libgtk-3-dev libavcodec-dev libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libjpeg-dev libatlas-base-dev python3-dev python3-numpy libtbb2 libtbb-dev libdc1394-22-dev libopenexr-devls
+
+	cd opencv
+
+	mkdir build
+
+	cd build
+
+	cmake -D CMAKE_BUILD_TYPE=RELEASE    -D CMAKE_INSTALL_PREFIX=/usr/local          -D WITH_CUDA=OFF        -D INSTALL_PYTHON_EXAMPLES=ON          -D OPENCV_GENERATE_PKGCONFIG=ON         -D  OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules  -D OPENCV_ENABLE_NONFREE=ON         -D BUILD_EXAMPLES=ON ..
+
+	make -j8  // (replace the 8 by the number of usable cores on your machine)
+
+	sudo make install
+
+	sudo apt install python3-opencv libopencv-dev
+
+## Check OpenCV is installed
+
+	python3 -c "import cv2; print(cv2.__version__)"^C
+
+check that version >=4.5.3 is reported
+	
+	pkg-config --modversion opencv4
+	
+check that version >=4.5.3 is reported
+	
+## Install the Navtech Radar IASDK
+
+	git clone IASDK-from-some-link
+
+## Install Colcon (the ROS2 build tool)
+
+	sudo apt install python3-colcon-common-extensions
+
+	cd ~/iasdk/cpp_17
+
+	colcon build
+
+Check the above command does not produce any errors
+
+
+## Build the ROS2 IASDK pacakges
+
+	cd ~/iasdk/ros2/
+
+	source /opt/ros/galactic/setup.bash
+
+	colcon build
+
+	. install/setup.bash
+
+**Note - The following commands must be run in each new terminal opened, or add to bashrc**
+
+	source /opt/ros/galactic/setup.bash
+	
+	. install/setup.bash
