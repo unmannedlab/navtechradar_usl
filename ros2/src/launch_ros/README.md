@@ -3,7 +3,8 @@
 The launch_ros ROS package contains example **launch files**, which will **launch all required components** for running some of the main ROS SDK functionality. For example running the laser scan publisher, along with rviz (with rviz config) and the laser scan to rviz transform. The launch files have been designed so that running them will provide almost instant visual output.
 
 ## launch_ros/launch
-The launch folder contains examples of the **actual .launch files**. These can be run like so:
+The launch folder contains examples of the **actual .launch files**. These can be run (from the launch directory) like so:
+
     ros2 launch launch_b_scan_publisher.launch.py
 
 ### launch_b_scan_publisher.launch
