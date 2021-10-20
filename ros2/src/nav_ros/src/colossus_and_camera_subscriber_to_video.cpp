@@ -181,6 +181,6 @@ void Colossus_and_camera_subscriber_to_video::camera_image_callback(const sensor
         return;
     }
 
-    cv::Mat camera_image = cv::Mat{ data->height, data->width, CV_8UC3, data->data.data() }.clone();
+    cv::Mat camera_image = cv::Mat{ (int)data->height, (int)data->width, CV_8UC3, data->data.data() }.clone();
     node->video_writer_camera.write(camera_image);
 }

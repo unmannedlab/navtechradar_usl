@@ -102,7 +102,7 @@ void Navigation_mode_point_cloud_publisher::publish_point_cloud(const Navtech::N
 
     std::vector<uint8_t> data_vector;
     data_vector.reserve(intensity_values.size());
-    for (int i = 0; i < intensity_values.size(); i++) {
+    for (unsigned i = 0; i < intensity_values.size(); i++) {
 
         float current_azimuth = (azimuth_values[i] * 0.9) * (M_PI / 180.0);
         float point_x = bin_values[i] * cos(current_azimuth);
@@ -160,7 +160,7 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
 
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
 
-        for (int peak_index = 0; peak_index < data->peaks.size(); peak_index++) {
+        for (unsigned peak_index = 0; peak_index < data->peaks.size(); peak_index++) {
             float target_range = std::get<float>(data->peaks[peak_index]);
             int bin_index = (int)(target_range / bin_size);
             uint16_t target_power = std::get<uint16_t>(data->peaks[peak_index]);
