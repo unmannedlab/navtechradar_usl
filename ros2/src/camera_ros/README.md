@@ -1,12 +1,12 @@
-# camera ros
+# **camera_ros**
 
 The camera_ros ROS package contains example publishers and subscribers which interface to an RTSP camera.
 
-## camera_ros/config
+## **camera_ros/config**
 
 The config folder contains an example configuration YAML file, which contains the basic settings needed to interface to an RTSP camera.
 
-## camera_ros/src
+## **camera_ros/src**
 
 The src folder contains the actual cpp and header source files which define the publisher and subscriber examples. The files define the following execeutbales:
 
@@ -26,10 +26,10 @@ Contains a basic example of receiving camera configuration data and camera image
 
 Contains some helper code to manage the connection to an RTSP camera.
 
-## CMakeLists
+## **CMakeLists**
 
 This is the build file which defines how the camera_ros ROS package is built and installed.
 
-## package
+## **package**
 
 This file contains properties of the camera_ros package, such as package name, versions, authors etc.
