@@ -12,26 +12,36 @@ The ROS2 folder contains the ROS2 project files, for the publishers and subscrib
 
 * C++17 Compiler
 Install with the following commands:
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-sudo apt-get update
-sudo apt install gcc-9 gcc-9-base gcc-9-doc g++-9
-sudo apt install libstdc++-9-dev libstdc++-9-doc 
+
+    sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+	
+    sudo apt-get update
+	
+    sudo apt install gcc-9 gcc-9-base gcc-9-doc g++-9
+
+    sudo apt install libstdc++-9-dev libstdc++-9-doc 
 
 * GCC 9.x and above
 Install with the following commands:
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-sudo apt update
-sudo apt install gcc-9
+
+    sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+
+    sudo apt update
+
+    sudo apt install gcc-9
 
 * Clang 10 and above
-sudo apt-get install clang-10
+Install with the following command:
+
+    sudo apt-get install clang-10
 
 ### Microsoft .NET
 * .NET 4.8 and above
 
 ## Linux Requirements
 To use the shell scripts provided in the 'utility scripts' folder we require bash on Ubuntu. The safest thing to do is execute:
-sudo dpkg-reconfigure -p critical dash
+
+    sudo dpkg-reconfigure -p critical dash
 
 ## ROS2 Requirements
 As above and:
@@ -71,65 +81,48 @@ All ROS2 packages must be built and installed before being run
 Build with: colcon build
 Install with: . install/setup.bash
 
-Packages can be run like so: ros2 run <package_name> <executable_name>
-For example: ros2 run nav_ros colossus_publisher
+Packages can be run like so:
+
+    ros2 run <package_name> <executable_name>
+
+For example:
+
+    ros2 run nav_ros colossus_publisher
 
 Packages can be run with their corresponding paramater files like so:
-ros2 run <package_name> <executable_name> --ros-args --params-file <params_file_path>
+
+    ros2 run <package_name> <executable_name> --ros-args --params-file <params_file_path>
+
 For example:
-ros2 run nav_ros colossus_publisher --ros-args --params-file ./src/nav_ros/config/colossus_publisher.yaml
+
+    ros2 run nav_ros colossus_publisher --ros-args --params-file ./src/nav_ros/config/colossus_publisher.yaml
 
 ## camera_ros
 
-Contains examples of publishers and subscribers to handle the connection to, and delivery of data from, an RTSP video stream
-Also contains a subscriber to consume a published RTSP stream, and to convert it to a video file
+Contains examples of publishers and subscribers to handle the connection to, and delivery of data from, an RTSP video stream.
 
-## interfaces
-
-Contains the custom message types used within the ROS2 Navtech driver
-
-CameraConfigurationDataMessage
-A ROS message to represent some of the key attributes used in setting up an image stream - e.g. width, height, channels, fps
-
-ConfigurationDataMessage
-A ROS representation of the configuration data coming from the radar sensor. All values are presented as byte arrays, in network order.
-Subscribers will need to convert these byte arrays to language types in the appropriate host order.
-
-FftDataMessage
-A ROS representation of the fft data coming from the radar sensor. All values are presented as byte arrays, in network order.
-Subscribers will need to convert these byte arrays to language types in the appropriate host order.
+**See the README.md under 'camera_ros', for more detialed instructions**
 
 ## launch_ros
 
-Contains examples of launch files which can be used with the ROS2 Navtech driver
+Contains examples of launch files which can be used with the ROS2 Navtech driver.
+
+**See the README.md under 'launch_ros', for more detialed instructions**
+
+## messages
+
+Contains the custom message types used within the ROS2 Navtech driver.
+
+**See the README.md under 'messages', for more detialed instructions**
 
 ## nav_ros
 
-Contains examples of publishers and subscribers to handle the connection to, and delivery of data from, a Navtech radar, using the Navtech IASDK
-Also contains a subscriber to consume a published radar fft data stream, and to convert it to a (cartesian coordinate) video file
+Contains examples of publishers and subscribers to handle the connection to, and delivery of data from, an Navtech radar.
 
-## oxb_ros
-
-Contains custom publishers and subscribers for a partner company
+**See the README.md under 'nav_ros', for more detialed instructions**
 
 ## utility_scripts
 
-## join_radar_camera_videos
+Contains helpful utility scripts, for manipulating camera data, radar data and bag files.
 
-A bash script to scale and stack together (side by side) a camera and a radar video, which have been generated using the scripts above. This code uses ffmpeg commands to achieve the video conversion.
-
-Firstly, allow the script to be executable: sudo chmod +x join_radar_camera_videos
-
-Then run with: ./join_radar_camera_videos
-
-## join_radar_camera_videos.py
-
-A Python script to scale and stack together (side by side) a camera and a radar video, which have been generated using the scripts above. This code uses numpy and OpenCV to achieve the video conversion.
-
-Run like so: python3 join_radar_camera_videos.py
-
-## show_colossus_timestamps
-
-A python script to examine a ROS bag file, and to print out the azimuth, sweep counter, timestamp, and time difference, between radar FFT messages from the bag file.
-
-Run like so: python3 show_colossus_timestamps.py
+**See the README.md under 'utility_scripts', for more detialed instructions**
