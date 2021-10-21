@@ -237,7 +237,7 @@ check that version >=4.5.3 is reported
 ## Install the Navtech Radar IASDK
 
 ```bash
-git clone IASDK-from-some-link
+git clone https://bitbucket.org/navtechradar/iasdk-public.git
 ```
 
 ## Install Colcon (the ROS2 build tool)
