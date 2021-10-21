@@ -1,47 +1,94 @@
 # Navtech IA SDK
 
-The Navtech IA SDK provides a simple interface to communicate with the IA sensor. The SDK provides the source code for C++ and a simple .NET DLL that can easily be integrated into applications running on Windows and Linux.
+The Navtech IA SDK provides a basic interface to communicate with the IA sensor. The SDK provides the source code for C++ and a .NET DLL that can easily be integrated into applications running on Windows and Linux.
 
-The IA sensor operates in two modes, native data and plot extraction. The SDK provides support for both modes, allowing developers to receive either type of data from the sensor and also send control messages back.
+The IA sensor operates in two modes:
 
-Communication between the sensor and the software is over Ethernet and utilises a proprietary binary communication protocol called _Colossus Network Protocol_. The SDK abstracts this protocol to avoid having to develop the low level socket and messaging processing code. The [Colossus Protocol documentation can be found here](https://navtechradar.atlassian.net/wiki/display/PROD/Colossus+Network+Data+Protocol).
+native data - Used to receive the raw fft data from the sensor
+
+plot extraction - Used to receive only points where an object is present
+
+The SDK provides support for both modes, allowing developers to receive either type of data from the sensor and also provides an interface to send control and configuration messages to the sensor.
+
+Communication between the sensor and the software SDK is over Ethernet and utilises a proprietary binary communication protocol called _Colossus Network Protocol_. The SDK abstracts this protocol to avoid having to develop the low-level socket and messaging processing code. The [Colossus Protocol documentation can be found here](https://navtechradar.atlassian.net/wiki/display/PROD/Colossus+Network+Data+Protocol).
+
+## Directory Overview
+
+### .kateproject.d
+
+The project file for the Kate editor
+
+### .vscode
+
+The VSCode workspace is a collection of one or more folders and settings used by VSCode
+
+### cpp
+
+Contains the old (depreciated) version of the IASDK, built using the c++11 standard. No further cahnges will be made to this version of the SDK
+
+### cpp_17
+
+Contains the new version of the IASDK, built using the c++17 standard. This folder is configured to use VS Code Build Task and CMake Extensions to enable fast development setup times.
+
+### csharp
+
+Contains a C# version of the IASDK
+
+### iasdk
+
+Contains the IASDK Visual Studio solution files
+
+### protobuf
+
+Contains the protobuf files used in the IASDK
+
+### ros1
+
+Contains the (now depreciated) ROS1 implementation of the IASDK
+
+### ros2
+
+Contains the new ROS2 implementation of the IASDK
 
 ## SDK Requirements
 
 ### C++ 11
 
-In the cpp folder is a C++11 version of the IASDK, this now deprecated, meaning no further changes will be made to his SDK.
-
-* C++11 Compiler
-* GCC 4.8 and above
-* Clang 3.5 and above
-* Visual Studio 2019 (VC++ 2019 runtime libraries)
+#### C++11 Compiler
+#### GCC 4.8 and above
+#### Clang 3.5 and above
+#### Visual Studio 2019 (VC++ 2019 runtime libraries)
 
 ### C++ 17
 
-In the cpp_17 folder is a C++17 version of the IASDK.
-This folder is configured to use VS Code Build Task and CMake Extensions to enable fast development setup times.
-
-* C++17 Compiler
-* GCC 9.x and above
-* Clang 10 and above
+#### C++17 Compiler
+#### GCC 9.x and above
+#### Clang 10 and above
 
 ### Microsoft .NET
 
-* .NET 4.8 and above
+.NET 4.8 and above
 
-## Linux Requirements
+## Linux Specific Requirements
 
-To use the shell scripts provided we require bash on Ubuntu. The safest thing to do is execute:
+The SDK uses a number of shell scripts as part of its functionality. To use the shell scripts we require bash on Ubuntu. To ensure the necessary shell facilities are available we recommend executing the following command:
 
-```bash
-sudo dpkg-reconfigure -p critical dash
-```
+    sudo dpkg-reconfigure -p critical dash
+
 
 ## License
 
-The iasdk which is released under The MIT License (MIT).
 See file LICENSE.txt or go to <https://opensource.org/licenses/MIT> for full license details.
+
+## Building the SDK
+
+### C++ Linux
+
+### C++ Windows
+
+### C# Windows
+
+## SDK API Overview
 
 ## C# Radar Client API
 
@@ -51,69 +98,124 @@ There are two project within the repro:
 1. **IASDK** - The API DLL for use within any 3rd party projects to assist with connecting to the radar
 1. **TestClient** - This is a very simple console application that runs up, connects to a radar and then displays some information before auto-disconnecting and closing. This provides a simple example of the recommended steps to connect and consume data from the radar.
 
+### Usage of the SDK
 
 The steps involved in connecting and getting data are as follows:
 
 Setup your radar client and hook up the message and connection events:
+	
+    _radarTcpClient = new RadarTcpClient();
+	
+	_radarTcpClient.OnConfigurationData += ConfigurationDataHandler;
+	
+	_radarTcpClient.OnFftData += FftDataHandler;
+	
+	_radarTcpClient.OnConnectionChanged += ConnectionChangedHandler;
 
-```csharp
-//Create the radar client and hook-up events
-_radarTcpClient = new RadarTcpClient();
-_radarTcpClient.OnConfigurationData += ConfigurationDataHandler;
-_radarTcpClient.OnFftData += FftDataHandler;
-_radarTcpClient.OnConnectionChanged += ConnectionChangedHandler;
-```
 
 Connect to the radar:
 
-```csharp
-//Connect to the radar
-_radarTcpClient.Connect("192.168.0.1");
-```
+	_radarTcpClient.Connect("192.168.0.1");
 
-On successful connection you will receive a Configuration message with details of the radar's current configuration. So ensure you have the handler setup before you connect.
 
-```csharp
-//Configuration message handler
-private void ConfigurationDataHandler(object sender, GenericEventArgs<TcpConfigurationDataMessage> configurationMessage)
-{
-   //Configure you client code to handle data based on the radar's configuration details
-   //you receive here. i.e. getting rotation speed in Hz:
-   var rotationHz = configurationMessage.Payload.RotationSpeed / 1000.0
-}
-```
+On successful connection you will receive a Configuration message with details of the radar's current configuration. So you must have the handler setup before you connect.
+
+	private void ConfigurationDataHandler(object sender, GenericEventArgs<TcpConfigurationDataMessage> configurationMessage)
+	
+	{
+
+	   var rotationHz = configurationMessage.Payload.RotationSpeed / 1000.0
+	   
+	}
 
 Once connected and you have the config data, tell the radar to start sending FFT Data:
 
-```csharp
-//Tell the radar to start sending FFT Data
-_radarTcpClient.StartFftData();
-```
 
-Ensure you handle incoming FFT Data:
+	_radarTcpClient.StartFftData();
 
-```csharp
-//FFT Data message handler
-private static void FftDataHandler(object sender, GenericEventArgs<FftData> fftEventArgs)
-{
-   //Handle the FFT Data and do what you need. Each packet includes the azimuth and the signal amplitude for each range bin.
-   //For example to get access to azimuth:
-   var azimuth = fftEventArgs.Payload.Message.Azimuth;
-   //Note that the azimuth is reported in encoder counts. The total encoder count is included in the radar config data. This can be used to convert the 
-   //azimuth encoder reading to a bearing
-}
-```
+
+You must handle incoming FFT Data:
+
+	private static void FftDataHandler(object sender, GenericEventArgs<FftData> fftEventArgs)
+	
+	{
+	
+	   var azimuth = fftEventArgs.Payload.Message.Azimuth;
+	   
+	}
 
 When you need to disconnect, firstly stop the FFT Data:
 
-```csharp
-//Tell radar to stop sending FFT Data
-_radarTcpClient.StopFftData();
-```
+
+	_radarTcpClient.StopFftData();
+
 
 Then disconnect:
 
-```csharp
-//Disconnect the client from the radar
-_radarTcpClient.Disconnect();
-```
+	_radarTcpClient.Disconnect();
+
+
+## C++ Radar Client API
+
+The c++ API is based on c++17 and was developed in Visual Studio 2019.
+There are two project within the repro:
+
+1. **IASDK** - The API DLL for use within any 3rd party projects to assist with connecting to the radar
+1. **TestClient** - This is a very simple console application that runs up, connects to a radar and then displays some information before auto-disconnecting and closing. This provides a simple example of the recommended steps to connect and consume data from the radar.
+
+### Usage of the SDK
+
+The steps involved in connecting and getting data are as follows:
+
+Setup your radar client and hook up the message and connection events:
+	
+    _radarTcpClient = new RadarTcpClient();
+	
+	_radarTcpClient.OnConfigurationData += ConfigurationDataHandler;
+	
+	_radarTcpClient.OnFftData += FftDataHandler;
+	
+	_radarTcpClient.OnConnectionChanged += ConnectionChangedHandler;
+
+
+Connect to the radar:
+
+	_radarTcpClient.Connect("192.168.0.1");
+
+
+On successful connection you will receive a Configuration message with details of the radar's current configuration. So you must have the handler setup before you connect.
+
+	private void ConfigurationDataHandler(object sender, GenericEventArgs<TcpConfigurationDataMessage> configurationMessage)
+	
+	{
+
+	   var rotationHz = configurationMessage.Payload.RotationSpeed / 1000.0
+	   
+	}
+
+Once connected and you have the config data, tell the radar to start sending FFT Data:
+
+
+	_radarTcpClient.StartFftData();
+
+
+You must handle incoming FFT Data:
+
+	private static void FftDataHandler(object sender, GenericEventArgs<FftData> fftEventArgs)
+	
+	{
+	
+	   var azimuth = fftEventArgs.Payload.Message.Azimuth;
+	   
+	}
+
+When you need to disconnect, firstly stop the FFT Data:
+
+
+	_radarTcpClient.StopFftData();
+
+
+Then disconnect:
+
+	_radarTcpClient.Disconnect();
+
