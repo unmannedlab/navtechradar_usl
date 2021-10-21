@@ -82,13 +82,48 @@ See file LICENSE.txt or go to <https://opensource.org/licenses/MIT> for full lic
 
 ## Building the SDK
 
-### C++ Linux
+The SDK is written in C++ and must be compiled prior to use. The SDK is designed to be compiled by a standard C++ compiler installation; that is, no external libraries (beyond the standard and/or Posix libraries) are required. The SDK may be built using either: * Command line * From Visual Studio Code * From Visual Studio
 
-### C++ Windows
+To build the SDK outside Visual Studio, your platform must have the CMake tools installed. To check if CMake is present, run:
 
-### C# Windows
+cmake --version
+Building from the command line
+Cmake can be invoked directly from the command line to build the SDK, as follows:
+
+cd <IA SDK install path>/iasdk/build
+cmake .
+make
+The build can be removed by running:
+
+make clean
+The build process will generate two executables by default:
+
+/iasdk/build/testclient
+/iasdk/build/navigationclient
+Building from VS Code
+The project is configured to work with the Microsoft CMake Tools. If the CMake Tools are installed, opening the project in VSCode should detect the make files and configure the project accordingly. The first time a build is selected you will need to select a compiler kit. This will present a list of possible compiler configurations.
+
+Using the VS Code build task
+The .vscode folder contains a build task configuration for invoking CMake. To build: * hit ctrl-shift-b * select Build
+
+(Note: you can also select Clean as one of the build options)
+
+The build process will (again) generate two executables by default:
+
+/iasdk/build/testclient
+/iasdk/build/navigationclient
+Building from Visual Studio
+If the Microsoft C++ compiler (msvc) is used, the SDK provides a Visual Studio solution (.sln) file.
+
+Double-clicking on the .sln file will launch Visual Studio. In Visual Studio select:
+
+Build -> Build Solution
+
+(Alternatively, use crtl-shift-b)
 
 ## SDK API Overview
+
+(TODO - add info on callbacks etc)
 
 ## C# Radar Client API
 
@@ -158,7 +193,7 @@ Then disconnect:
 ## C++ Radar Client API
 
 The c++ API is based on c++17 and was developed in Visual Studio 2019.
-There are two project within the repro:
+There are two project within the repo:
 
 1. **IASDK** - The API DLL for use within any 3rd party projects to assist with connecting to the radar
 1. **TestClient** - This is a very simple console application that runs up, connects to a radar and then displays some information before auto-disconnecting and closing. This provides a simple example of the recommended steps to connect and consume data from the radar.
@@ -169,53 +204,49 @@ The steps involved in connecting and getting data are as follows:
 
 Setup your radar client and hook up the message and connection events:
 	
-    _radarTcpClient = new RadarTcpClient();
-	
-	_radarTcpClient.OnConfigurationData += ConfigurationDataHandler;
-	
-	_radarTcpClient.OnFftData += FftDataHandler;
-	
-	_radarTcpClient.OnConnectionChanged += ConnectionChangedHandler;
+    radar_client = allocate_owned<Radar_client>("127.0.0.1"_ipv4);
 
+    radar_client->set_configuration_data_callback(configuration_data_handler);
+	
+	radar_client->set_fft_data_callback(fft_data_handler);
 
 Connect to the radar:
 
-	_radarTcpClient.Connect("192.168.0.1");
+	radar_client->start();
 
 
 On successful connection you will receive a Configuration message with details of the radar's current configuration. So you must have the handler setup before you connect.
 
-	private void ConfigurationDataHandler(object sender, GenericEventArgs<TcpConfigurationDataMessage> configurationMessage)
-	
+	void configuration_data_handler(const Configuration_data::Pointer& data, const Configuration_data::ProtobufPointer& protobuf_configuration)
 	{
 
-	   var rotationHz = configurationMessage.Payload.RotationSpeed / 1000.0
-	   
 	}
 
 Once connected and you have the config data, tell the radar to start sending FFT Data:
 
 
-	_radarTcpClient.StartFftData();
+	radar_client->start_fft_data();
 
 
 You must handle incoming FFT Data:
 
-	private static void FftDataHandler(object sender, GenericEventArgs<FftData> fftEventArgs)
-	
+	void fft_data_handler(const Fft_data::Pointer& data)
+
 	{
-	
-	   var azimuth = fftEventArgs.Payload.Message.Azimuth;
-	   
+
 	}
 
 When you need to disconnect, firstly stop the FFT Data:
 
+	radar_client->stop();
 
-	_radarTcpClient.StopFftData();
+Then unbind the data handlers:
 
+    radar_client->set_fft_data_callback();
+
+    radar_client->set_configuration_data_callback();
 
 Then disconnect:
 
-	_radarTcpClient.Disconnect();
+	radar_client->stop();
 

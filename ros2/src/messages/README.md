@@ -82,3 +82,5 @@ This is the **build file** which defines how the camera_ros ROS package is built
 ## package
 
 This file contains **properties** of the camera_ros package, such as package name, versions, authors etc.
+
+Note - these properties are not intended to be edited by the user, these are *build related properties*

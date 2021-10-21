@@ -1,75 +1,444 @@
 # nav_ros
 
-The nav_ros ROS package contains example **publishers and subscribers** which interface to **Navtech Radar**.
+The nav_ros ROS package contains example *publishers and subscribers* which interface to *Navtech Radar*.
 
-The nav_ros ROS package also contains an example **publisher and subscriber** which interfaces to both a **Navtech Radar and RTSP camera** simultaneously, and in a synchronised mannor.
+The nav_ros ROS package also contains an example *publisher and subscriber* which interfaces to both a *Navtech Radar and RTSP camera* simultaneously, and in a synchronised mannor.
 
 ## nav_ros/config
 
-The config folder contains the example **configuration YAML files**, which define the basic **settings** needed to to run the package executables.
+The config folder contains the example *configuration YAML files*, which define the basic *settings* needed to to run the package executables.
 
 ## nav_ros/src
 
-The src folder contains the actual **cpp and header source files** which define the publisher and subscriber examples. The files define the following execeutbales:
+The src folder contains the actual *cpp and header source files* which define the publisher and subscriber examples. The files define the following executables:
 
 ### b_scan_publisher
 
-Contains a basic example of **connecting to a Navtech radar**, and **publishing** radar data as a b-scan image. With bins represented as pixels in the horizontal, and azimuths represented as pixels in the vertical.
+Contains a basic example of *connecting to a Navtech radar*, and *publishing* radar data as a b-scan image. With bins represented as pixels in the horizontal, and azimuths represented as pixels in the vertical.
+
+#### configuration options
+
+The following *configuration options* are included in the .yaml settings file in the config folder. These settings can be changed by *modifying* the values in the .yaml file, prior to launching the executable.
+
+The following options are shown for each of the settings:
+
+setting name
+
+data type
+
+setting description
+
+how to change during execution (if applicable)
+
+#####The following options can be changed during execution:
+
+azimuth_offset
+int
+<radar_azimuth_offset>
+The azimuth offset for which you want to 'shift' the radar data, in order to output easily interpretable data
+ros2 param set b_scan_publisher azimuth_offset 200
+
+end_azimuth
+int
+<radar_end_azimuth>
+The end azimuth for which you want to stop processing radar data, range is between 0 and the maximum number of azimuths produced by the radar
+ros2 param set b_scan_publisher end_azimuth 300
+
+end_bin
+int
+<radar_end_bin>
+The end bin for which you want to stop processing radar data, range is between 0 and the maximum number of bins produced by the radar
+ros2 param set b_scan_publisher end_bin 1000
+
+start_azimuth
+int
+<radar_start_azimuth>
+The start azimuth for which you want to start processing radar data, range is between 0 and the maximum number of azimuths produced by the radar
+ros2 param set b_scan_publisher start_azimuth 100
+
+start_bin
+int
+<radar_start_bin>
+The start bin for which you want to start processing radar data, range is between 0 and the maximum number of bins produced by the radar
+ros2 param set b_scan_publisher start_bin 500
+
+#####The following options cannot be changed during execution:
+
+radar_ip
+string
+<radar_ip_address>
+
+radar_port
+int
+<radar_port>
 
 ### colossus_and_camera_publisher
 
-Contains a basic example of **connecting to a Navtech radar and an RTSP camera**, and **publishing** radar fft data and camer image data, in a synchronised mannor.
+Contains a basic example of *connecting to a Navtech radar and an RTSP camera*, and *publishing* radar fft data and camer image data, in a synchronised mannor.
+
+#### configuration options
+
+The following *configuration options* are included in the .yaml settings file in the config folder. These settings can be changed by *modifying* the values in the .yaml file, prior to launching the executable.
+
+The following options are shown for each of the settings:
+
+setting name
+
+data type
+
+setting description
+
+how to change during execution (if applicable)
+
+#####The following options cannot be changed during execution:
+
+camera_url
+string
+rtsp://<stream_username>:<stream_password>@<stream_ip_address>:<stream_port><stream_url>
+*The complete URI which defines the stream, including username, password, ip address and port*
+
+radar_ip
+string
+<radar_ip_address>
+
+radar_port
+int
+<radar_port>
 
 ### colossus_and_camera_subscriber_to_video
 
-Contains a basic example of **subscribing to radar and camera topics**, and **saving** the published topics as video data.
+Contains a basic example of *subscribing to radar and camera topics*, and *saving* the published topics as video data.
+
+#### configuration options
+
+This executable currently has no configurable settings
 
 ### colossus_publisher
 
-Contains a basic example of **connecting to a Navtech radar**, and **publishing** radar configuration and radar fft data.
+Contains a basic example of *connecting to a Navtech radar*, and *publishing* radar configuration and radar fft data.
+
+#### configuration options
+
+The following *configuration options* are included in the .yaml settings file in the config folder. These settings can be changed by *modifying* the values in the .yaml file, prior to launching the executable.
+
+The following options are shown for each of the settings:
+
+setting name
+
+data type
+
+setting description
+
+how to change during execution (if applicable)
+
+#####The following options can be changed during execution:
+
+radar_ip
+string
+<radar_ip_address>
+
+radar_port
+int
+<radar_port>
 
 ### colossus_subscriber
 
-Contains a basic example of **subscribing to radar topics**, and **displaying** basic radar configurration information.
+Contains a basic example of *subscribing to radar topics*, and *displaying* basic radar configurration information.
+
+#### configuration options
+
+This executable currently has no configurable settings
 
 ### colossus_subscriber_to_video
 
-Contains a basic example of **subscribing to radar topics**, and **saving** the published topic as video data.
+Contains a basic example of *subscribing to radar topics*, and *saving* the published topic as video data.
+
+#### configuration options
+
+This executable currently has no configurable settings
 
 ### colossus_test_tool
 
-Contains a basic example of **connecting to a Navtech Radar**, and **testing** teh radar connection, and checking for any packet loss.
+Contains a basic example of *connecting to a Navtech Radar*, and *testing* teh radar connection, and checking for any packet loss.
+
+#### configuration options
+
+The following *configuration options* are included in the .yaml settings file in the config folder. These settings can be changed by *modifying* the values in the .yaml file, prior to launching the executable.
+
+The following options are shown for each of the settings:
+
+setting name
+
+data type
+
+setting description
+
+how to change during execution (if applicable)
+
+#####The following options can be changed during execution:
+
+radar_ip
+string
+<radar_ip_address>
+
+radar_port
+int
+<radar_port>
 
 ### laser_scan_publisher
 
-Contains a basic example of **connecting to a Navtech Radar**, and **publishing** radar data, as a ROS laser scan.
+Contains a basic example of *connecting to a Navtech Radar*, and *publishing* radar data, as a ROS laser scan.
 
 See the ROS laser scan message definition for information about the message type.
 
+#### configuration options
+
+The following *configuration options* are included in the .yaml settings file in the config folder. These settings can be changed by *modifying* the values in the .yaml file, prior to launching the executable.
+
+The following options are shown for each of the settings:
+
+setting name
+
+data type
+
+setting description
+
+how to change during execution (if applicable)
+
+#####The following options can be changed during execution:
+
+azimuth_offset
+int
+<radar_azimuth_offset>
+The azimuth offset for which you want to 'shift' the radar data, in order to output easily interpretable data
+ros2 param set laser_scan_publisher azimuth_offset 200
+
+end_azimuth
+int
+<radar_end_azimuth>
+The end azimuth for which you want to stop processing radar data, range is between 0 and the maximum number of azimuths produced by the radar
+ros2 param set laser_scan_publisher end_azimuth 300
+
+end_bin
+int
+<radar_end_bin>
+The end bin for which you want to stop processing radar data, range is between 0 and the maximum number of bins produced by the radar
+ros2 param set laser_scan_publisher end_bin 1000
+
+start_azimuth
+int
+<radar_start_azimuth>
+The start azimuth for which you want to start processing radar data, range is between 0 and the maximum number of azimuths produced by the radar
+ros2 param set laser_scan_publisher start_azimuth 100
+
+start_bin
+int
+<radar_start_bin>
+The start bin for which you want to start processing radar data, range is between 0 and the maximum number of bins produced by the radar
+ros2 param set laser_scan_publisher start_bin 500
+
+power_threshold
+int
+<radar_return_power_threshold>
+Any return power below this threshold is discarded, and any equal to or above is used to produce a laser scan point. Range is between 0 and the maximum return power (in half DB steps) of the radar
+ros2 param set laser_scan_publisher power_threshold 110
+
+#####The following options cannot be changed during execution:
+
+radar_ip
+string
+<radar_ip_address>
+
+radar_port
+int
+<radar_port>
+
 ### laser_scan_subscriber
 
-Contains a basic example of **subscribing to a ROS laser scan**, and **displaying** basic laser scan information.
+Contains a basic example of *subscribing to a ROS laser scan*, and *displaying* basic laser scan information.
+
+#### configuration options
+
+This executable currently has no configurable settings
 
 ### laser_scan_subscriber_to_video
 
-Contains a basic example of **subscribing to a ROS laser scan**, and **saving**  the published topic as video data.
+Contains a basic example of *subscribing to a ROS laser scan*, and *saving*  the published topic as video data.
+
+#### configuration options
+
+This executable currently has no configurable settings
 
 ### navigation_mode_point_cloud_publisher
 
-Contains a basic example of **connecting to a Navtech Radar**, running the radar in navigation mode, and **publishing** navigation radar data, as a ROS point cloud.
+Contains a basic example of *connecting to a Navtech Radar*, running the radar in navigation mode, and *publishing* navigation radar data, as a ROS point cloud.
 
 See the ROS point cloud message definition for information about the message type.
+
+#### configuration options
+
+The following *configuration options* are included in the .yaml settings file in the config folder. These settings can be changed by *modifying* the values in the .yaml file, prior to launching the executable.
+
+The following options are shown for each of the settings:
+
+setting name
+
+data type
+
+setting description
+
+how to change during execution (if applicable)
+
+#####The following options can be changed during execution:
+
+azimuth_offset
+int
+<radar_azimuth_offset>
+The azimuth offset for which you want to 'shift' the radar data, in order to output easily interpretable data
+ros2 param set navigation_mode_point_cloud_publisher azimuth_offset 200
+
+end_azimuth
+int
+<radar_end_azimuth>
+The end azimuth for which you want to stop processing radar data, range is between 0 and the maximum number of azimuths produced by the radar
+ros2 param set navigation_mode_point_cloud_publisher end_azimuth 300
+
+end_bin
+int
+<radar_end_bin>
+The end bin for which you want to stop processing radar data, range is between 0 and the maximum number of bins produced by the radar
+ros2 param set navigation_mode_point_cloud_publisher end_bin 1000
+
+start_azimuth
+int
+<radar_start_azimuth>
+The start azimuth for which you want to start processing radar data, range is between 0 and the maximum number of azimuths produced by the radar
+ros2 param set navigation_mode_point_cloud_publisher start_azimuth 100
+
+start_bin
+int
+<radar_start_bin>
+The start bin for which you want to start processing radar data, range is between 0 and the maximum number of bins produced by the radar
+ros2 param set navigation_mode_point_cloud_publisher start_bin 500
+
+power_threshold
+double
+<radar_return_power_threshold>
+Any return power below this threshold is discarded, and any equal to or above is used to produce a laser scan point. Range is between 0 and the maximum return power (in half DB steps) of the radar
+ros2 param set navigation_mode_point_cloud_publisher power_threshold 110.0
+
+bins_to_operate_on
+int
+<number_of_bins>
+The number of bins to run the peak finding algorithm on.
+
+max_peaks_per azimuth
+int
+<number_of_azimuths>
+The maximum number of peaks to return for any single azimuth that the peak finding algorithm is run on.
+
+#####The following options cannot be changed during execution:
+
+radar_ip
+string
+<radar_ip_address>
+
+radar_port
+int
+<radar_port>
 
 ### point_cloud_publisher
 
-Contains a basic example of **connecting to a Navtech Radar**, and **publishing** radar data, as a ROS point cloud.
+Contains a basic example of *connecting to a Navtech Radar*, and *publishing* radar data, as a ROS point cloud.
 
 See the ROS point cloud message definition for information about the message type.
 
-## CMakeLists
+#### configuration options
 
-This is the **build file** which defines how the nav_ros ROS package is built and installed.
+The following *configuration options* are included in the .yaml settings file in the config folder. These settings can be changed by *modifying* the values in the .yaml file, prior to launching the executable.
 
-## package
+The following options are shown for each of the settings:
 
-This file contains **properties** of the nav_ros package, such as package name, versions, authors etc.
+setting name
+
+data type
+
+setting description
+
+how to change during execution (if applicable)
+
+#####The following options can be changed during execution:
+
+azimuth_offset
+int
+<radar_azimuth_offset>
+The azimuth offset for which you want to 'shift' the radar data, in order to output easily interpretable data
+ros2 param set point_cloud_publisher azimuth_offset 200
+
+end_azimuth
+int
+<radar_end_azimuth>
+The end azimuth for which you want to stop processing radar data, range is between 0 and the maximum number of azimuths produced by the radar
+ros2 param set point_cloud_publisher end_azimuth 300
+
+end_bin
+int
+<radar_end_bin>
+The end bin for which you want to stop processing radar data, range is between 0 and the maximum number of bins produced by the radar
+ros2 param set point_cloud_publisher end_bin 1000
+
+start_azimuth
+int
+<radar_start_azimuth>
+The start azimuth for which you want to start processing radar data, range is between 0 and the maximum number of azimuths produced by the radar
+ros2 param set point_cloud_publisher start_azimuth 100
+
+start_bin
+int
+<radar_start_bin>
+The start bin for which you want to start processing radar data, range is between 0 and the maximum number of bins produced by the radar
+ros2 param set point_cloud_publisher start_bin 500
+
+power_threshold
+double
+<radar_return_power_threshold>
+Any return power below this threshold is discarded, and any equal to or above is used to produce a laser scan point. Range is between 0 and the maximum return power (in half DB steps) of the radar
+ros2 param set point_cloud_publisher power_threshold 110.0
+
+#####The following options cannot be changed during execution:
+
+radar_ip
+string
+<radar_ip_address>
+
+radar_port
+int
+<radar_port>
+
+## CMakeLists.txt
+
+This is the *cmake build file* which defines how the nav_ros ROS package is built and installed.
+
+## package.xml
+
+This file contains *properties* of the nav_ros package, such as package name, versions, authors etc.
+
+Note - these properties are not intended to be edited by the user, these are *build related properties*
+
+# Project Build instructions
+
+Both the IASDK and the ROS2 SDK, with all prerequisites, must be installed before building this package.
+
+See higher level README.md files for IASDK and ROS2 SDK install instructions
+
+To build and install all ROS2 pacakges, run the following commands from the ROS2 folder:
+
+	colcon build
+
+	. install/setup.bash
+
+To build and install this package only, run the following commands from the ROS2 folder:
+
+	colcon build --packages-select nav_ros
+
+	. install/setup.bash
