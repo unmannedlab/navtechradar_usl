@@ -1,6 +1,6 @@
 # rviz_views
 
-The rviz_views folder contains the **RVIZ configurations**, used to visualise the ROS executables in the accompanying ROS packages. The following view files are included:
+The rviz_views folder contains the *RVIZ configurations*, used to visualise the ROS executables in the accompanying ROS packages. The following view files are included:
 
 ## b_scan_view.rviz
 

@@ -205,63 +205,112 @@ Then disconnect:
 _radarTcpClient.Disconnect();
 ```
 
-## C++ Radar Client API
+### Using the SDK in C++
+The SDK C++ API provides an object-based interface for controlling/configuring the radar and for processing incoming data.
 
-The c++ API is based on c++17 and was developed in Visual Studio 2019.
-There are two project within the repo:
+Communication to the radar is asynchronous:
+* Outgoing messages are encapsulated within API calls.  The parameters provided to the functions are used to populate Colossus messages, which are sent to the sensor.
+* Incoming messages from the sensor invoke callbacks.  Each (supported) incoming message will have a callback function object associated with it.  The callback is passed a (shared) pointer to the received data.
 
-* **IASDK** - The API DLL for use within any 3rd party projects to assist with connecting to the radar
-* **TestClient** - This is a very simple console application that runs up, connects to a radar and then displays some information before auto-disconnecting and closing. This provides a simple example of the recommended steps to connect and consume data from the radar.
+The API handles all endianness and encoding required by the Colossus protocol; removing the need from the client.
 
-### Usage of the SDK
 
+#### Connecting to the sensor
 The steps involved in connecting and getting data are as follows:
 
 Setup your radar client and hook up the message and connection events:
-	
-    radar_client = allocate_owned<Radar_client>("127.0.0.1"_ipv4);
+```
+#include "radar_client.h"
 
-    radar_client->set_configuration_data_callback(configuration_data_handler);
-	
-	radar_client->set_fft_data_callback(fft_data_handler);
+int main()
+{
+    Navtech::Radar_client radar_client { "127.0.0.1"_ipv4 };
+
+    // See below for details on message handler callbacks
+    //
+    radar_client.set_configuration_data_callback(config_handler);
+	radar_client.set_fft_data_callback(fft_handler);
+
+    ...
+}
+```
 
 Connect to the radar:
+```
+int main()
+{
+    Navtech::Radar_client radar_client { "127.0.0.1"_ipv4 };
 
-	radar_client->start();
+    radar_client.set_configuration_data_callback(config_handler);
+	radar_client.set_fft_data_callback(fft_handler);
 
+    // Connect to the radar
+    //
+    radar_client.start();
+}
+```
 
 On successful connection you will receive a Configuration message with details of the radar's current configuration. So you must have the handler setup before you connect.
 
-	void configuration_data_handler(const Configuration_data::Pointer& data, const Configuration_data::ProtobufPointer& protobuf_configuration)
-	{
 
-	}
+#### Message handler callbacks
+An incoming Colossus message will be unmarshalled and stored in a message-specific structure.
+
+Each structure also defines a pointer type (usually a `std::shared_ptr`).  This pointer type is used to allocate, and then access, the structure object created from the incoming Colossus message.
+
+The message handler callback must be a _Callable Type_ - a function, a member-function, a function-object or a lambda expression.  
+
+The signature of the _Callable Type_ for a data item of type _`Message_Ty`_ depends on the type of the Colossus message being received; for example:
+```
+void (*callback_fn_ptr)(                                      // Configuration data
+    const Configuration_data::Pointer&,
+    const Configuration_data::ProtobufPointer&
+);
+
+void (*callback_fn_ptr)(const Fft_data::Pointer&);            // FFT data
+
+void (*callback_fn_ptr)(const std::vector<std::uint8_t>&);    // Raw FFT data      
+```
+Where `Pointer` is the message structure-specific pointer type.
+
+For example:
+```
+void config_handler(
+    const Configuration_data::Pointer& data, 
+    const Configuration_data::ProtobufPointer& protobuf_config
+)
+{
+    // Process incoming configuration...
+}
+```
 
 Once connected and you have the config data, tell the radar to start sending FFT Data:
+```
+radar_client.start_fft_data();
+```
 
-
-	radar_client->start_fft_data();
-
-
-You must handle incoming FFT Data:
-
-	void fft_data_handler(const Fft_data::Pointer& data)
-
-	{
-
-	}
+You must provide a incoming FFT Data:
+```
+void fft_handler(const Fft_data::Pointer& data)
+{
+    // Process incoming FFT data...
+}
+```
 
 When you need to disconnect, firstly stop the FFT Data:
-
-	radar_client->stop();
+```
+radar_client.stop();
+```
 
 Then unbind the data handlers:
-
-    radar_client->set_fft_data_callback();
-
-    radar_client->set_configuration_data_callback();
+```
+radar_client.set_fft_data_callback();
+radar_client.set_configuration_data_callback();
+```
 
 Then disconnect:
+```
+radar_client.stop();
+```
 
-	radar_client->stop();
-
+The file `testclient_main.cpp` contains an example of basic configuration and FFT data processing operations.  It can be used as the basis for more complex applications.

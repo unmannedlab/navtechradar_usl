@@ -9,7 +9,9 @@ For configuration settings, please see the README for the specific project to wh
 ## launch_ros/launch
 The launch folder contains examples of the *actual .launch files*. These can be run (from the launch directory) like so:
 
-    ros2 launch launch_b_scan_publisher.launch.py
+```
+ros2 launch launch_b_scan_publisher.launch.py
+```
 
 ### launch_b_scan_publisher.launch
 
@@ -57,12 +59,16 @@ See higher level README.md files for IASDK and ROS2 SDK install instructions
 
 To build and install all ROS2 pacakges, run the following commands from the ROS2 folder:
 
-	colcon build
+```bash
+colcon build
 
-	. install/setup.bash
+. install/setup.bash
+```
 
 To build and install this package only, run the following commands from the ROS2 folder:
 
-	colcon build --packages-select launch_ros
+```
+colcon build --packages-select launch_ros
 
-	. install/setup.bash
+. install/setup.bash
+```

@@ -20,20 +20,21 @@ The following *configuration options* are included in the .yaml settings file in
 
 The following options are shown for each of the settings:
 
-setting name
+* setting name
 
-data type
+* data type
 
-setting description
+* data example
 
-how to change during execution (if applicable)
+* setting description
+
+* how to change during execution (if applicable)
 
 #####The following options cannot be changed during execution:
 
-camera_url
-string
-rtsp://<stream_username>:<stream_password>@<stream_ip_address>:<stream_port><stream_url>
-*The complete URI which defines the stream, including username, password, ip address and port*
+| Name           | Type      | Example                  |Description                    | How to change                                |
+| :------------- | :-------: | :----------------------: | :---------------------------: |--------------------------------------------: |
+| camera_url        | string        | rtsp://<stream_username>:<stream_password>@<stream_ip_address>:<stream_port><stream_url> | *The complete URI which defines the stream, including username, password, ip address and port*| N/A |
 
 ### camera_subscriber
 
@@ -77,12 +78,16 @@ See higher level README.md files for IASDK and ROS2 SDK install instructions
 
 To build and install all ROS2 pacakges, run the following commands from the ROS2 folder:
 
-	colcon build
+```
+colcon build
 
-	. install/setup.bash
+. install/setup.bash
+```
 
 To build and install this package only, run the following commands from the ROS2 folder:
 
-	colcon build --packages-select camera_ros
+```
+colcon build --packages-select camera_ros
 
-	. install/setup.bash
+. install/setup.bash
+```

@@ -13,35 +13,42 @@ The ROS2 folder contains the ROS2 project files, for the publishers and subscrib
 * C++17 Compiler
 Install with the following commands:
 
-    sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-	
-    sudo apt-get update
-	
-    sudo apt install gcc-9 gcc-9-base gcc-9-doc g++-9
+```bash
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 
-    sudo apt install libstdc++-9-dev libstdc++-9-doc 
+sudo apt-get update
+
+sudo apt install gcc-9 gcc-9-base gcc-9-doc g++-9
+
+sudo apt install libstdc++-9-dev libstdc++-9-doc
+```
 
 * GCC 9.x and above
 Install with the following commands:
 
-    sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+```bash
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 
-    sudo apt update
+sudo apt update
 
-    sudo apt install gcc-9
+sudo apt install gcc-9
+```
 
 * Clang 10 and above
 Install with the following command:
 
-    sudo apt-get install clang-10
+```bash
+sudo apt-get install clang-10
+```
 
 ### Microsoft .NET
 * .NET 4.8 and above
 
 ## Linux Requirements
-To use the shell scripts provided in the 'utility scripts' folder we require bash on Ubuntu. The safest thing to do is execute:
-
-    sudo dpkg-reconfigure -p critical dash
+To use the shell scripts provided in the 'utility scripts' folder we require bash on Ubuntu. First you must execute:
+```bash
+sudo dpkg-reconfigure -p critical dash
+```
 
 ## ROS2 Requirements
 As above and:
@@ -83,19 +90,27 @@ Install with: . install/setup.bash
 
 Packages can be run like so:
 
-    ros2 run <package_name> <executable_name>
+```bash
+ros2 run <package_name> <executable_name>
+```
 
 For example:
 
-    ros2 run nav_ros colossus_publisher
+```bash
+ros2 run nav_ros colossus_publisher
+```
 
 Packages can be run with their corresponding paramater files like so:
 
-    ros2 run <package_name> <executable_name> --ros-args --params-file <params_file_path>
+```bash
+ros2 run <package_name> <executable_name> --ros-args --params-file <params_file_path>
+```
 
 For example:
 
-    ros2 run nav_ros colossus_publisher --ros-args --params-file ./src/nav_ros/config/colossus_publisher.yaml
+```bash
+ros2 run nav_ros colossus_publisher --ros-args --params-file ./src/nav_ros/config/colossus_publisher.yaml
+```
 
 ## camera_ros
 
@@ -133,102 +148,127 @@ Contains helpful utility scripts, for manipulating camera data, radar data and b
 
 ## Update Ubuntu 20.04
 
-	sudo apt update
-	
-	sudo apt upgrade
+```bash
+sudo apt update
+
+sudo apt upgrade
+```
 	
 ## Install IASDK prerequisites
 
-	sudo apt install build-essential clang g++ protobuf-compiler libprotobuf-dev cmake
+```bash
+sudo apt install build-essential clang g++ protobuf-compiler libprotobuf-dev cmake
+```
 	
 ## Install ROS2 prerequisites
 
-	sudo apt install -y build-essential libssl-dev libffi-dev python3-dev python3 python3-pip software-properties-common
+```bash
+sudo apt install -y build-essential libssl-dev libffi-dev python3-dev python3 python3-pip software-properties-common
+```
 
 ## Install ROS2
 
-	sudo apt update && sudo apt install curl gnupg lsb-release
+```bash
+sudo apt update && sudo apt install curl gnupg lsb-release
 
-	sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key  -o /usr/share/keyrings/ros-archive-keyring.gpg
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key  -o /usr/share/keyrings/ros-archive-keyring.gpg
 
-	echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu 
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu 
 
-	$(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+$(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
-	sudo apt install ros-galactic-desktop
+sudo apt install ros-galactic-desktop
 
-	source /opt/ros/galactic/setup.bash
+source /opt/ros/galactic/setup.bash
 
-	ros2 run demo_nodes_cpp talker
+ros2 run demo_nodes_cpp talker
+```
 	
 ## Check install by running examples
 
-	source /opt/ros/galactic/setup.bash
-	
-	ros2 run demo_nodes_py listener
+```bash
+source /opt/ros/galactic/setup.bash
+
+ros2 run demo_nodes_py listener
+```
 
 check that the talker and listener are connected
 
 ## Install OpenCV
-	sudo apt install git
 
-	git clone https://github.com/opencv/opencv.git
+```bash
+sudo apt install git
 
-	git clone https://github.com/opencv/opencv_contrib.git
+git clone https://github.com/opencv/opencv.git
 
-	sudo apt install build-essential cmake git pkg-config libpng-dev libtiff-dev gfortran openexr libgtk-3-dev libavcodec-dev libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libjpeg-dev libatlas-base-dev python3-dev python3-numpy libtbb2 libtbb-dev libdc1394-22-dev libopenexr-devls
+git clone https://github.com/opencv/opencv_contrib.git
 
-	cd opencv
+sudo apt install build-essential cmake git pkg-config libpng-dev libtiff-dev gfortran openexr libgtk-3-dev libavcodec-dev libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libjpeg-dev libatlas-base-dev python3-dev python3-numpy libtbb2 libtbb-dev libdc1394-22-dev libopenexr-devls
 
-	mkdir build
+cd opencv
 
-	cd build
+mkdir build
 
-	cmake -D CMAKE_BUILD_TYPE=RELEASE    -D CMAKE_INSTALL_PREFIX=/usr/local          -D WITH_CUDA=OFF        -D INSTALL_PYTHON_EXAMPLES=ON          -D OPENCV_GENERATE_PKGCONFIG=ON         -D  OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules  -D OPENCV_ENABLE_NONFREE=ON         -D BUILD_EXAMPLES=ON ..
+cd build
 
-	make -j8  // (replace the 8 by the number of usable cores on your machine)
+cmake -D CMAKE_BUILD_TYPE=RELEASE    -D CMAKE_INSTALL_PREFIX=/usr/local          -D WITH_CUDA=OFF        -D INSTALL_PYTHON_EXAMPLES=ON          -D OPENCV_GENERATE_PKGCONFIG=ON         -D  OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules  -D OPENCV_ENABLE_NONFREE=ON         -D BUILD_EXAMPLES=ON ..
 
-	sudo make install
+make -j8  // (replace the 8 by the number of usable cores on your machine)
 
-	sudo apt install python3-opencv libopencv-dev
+sudo make install
+
+sudo apt install python3-opencv libopencv-dev
+```
 
 ## Check OpenCV is installed
 
-	python3 -c "import cv2; print(cv2.__version__)"^C
+```bash
+python3 -c "import cv2; print(cv2.__version__)"^C
+```
 
 check that version >=4.5.3 is reported
 	
-	pkg-config --modversion opencv4
+```bash
+pkg-config --modversion opencv4
+```
 	
 check that version >=4.5.3 is reported
 	
 ## Install the Navtech Radar IASDK
 
-	git clone IASDK-from-some-link
+```bash
+git clone IASDK-from-some-link
+```
 
 ## Install Colcon (the ROS2 build tool)
 
-	sudo apt install python3-colcon-common-extensions
+```bash
+sudo apt install python3-colcon-common-extensions
 
-	cd ~/iasdk/cpp_17
+cd ~/iasdk/cpp_17
 
-	colcon build
+colcon build
+```
 
 Check the above command does not produce any errors
 
 
 ## Build the ROS2 IASDK pacakges
 
-	cd ~/iasdk/ros2/
+```bash
+cd ~/iasdk/ros2/
 
-	source /opt/ros/galactic/setup.bash
+source /opt/ros/galactic/setup.bash
 
-	colcon build
+colcon build
 
-	. install/setup.bash
+. install/setup.bash
+```
 
 **Note - The following commands must be run in each new terminal opened, or add to bashrc**
 
-	source /opt/ros/galactic/setup.bash
-	
-	. install/setup.bash
+```bash
+source /opt/ros/galactic/setup.bash
+
+. install/setup.bash
+```
