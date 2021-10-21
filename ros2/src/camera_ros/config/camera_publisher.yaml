@@ -1,6 +1,6 @@
 /camera_publisher:
   ros__parameters:
-    camera_url: rtsp://admin:Navtech Radar.1@10.77.3.103:554/cam/realmonitor?channel=1&subtype=1&unicast=true&proto=Onvif
+    camera_url: rtsp://<username>:<password>@<ip_address><url>
     qos_overrides:
       /parameter_events:
         publisher:
