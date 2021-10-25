@@ -29,8 +29,10 @@ sudo apt-get install clang-10
 
 ## Linux Requirements
 To use the shell scripts provided in the 'utility scripts' folder we require bash on Ubuntu. The safest thing to do is execute:
-sudo dpkg-reconfigure -p critical dash
 
+```bash
+sudo dpkg-reconfigure -p critical dash
+```
 ## ROS2 Requirements
 As above and:
 ROS2 Galactic Geoclone - CPP and Python bindings
