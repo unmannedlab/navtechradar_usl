@@ -4,7 +4,6 @@
 #include <rclcpp/qos.hpp>
 #include <opencv2/opencv.hpp>
 
-#include "interfaces/msg/camera_image_message.hpp"
 #include "camera_subscriber_to_video.h"
 
 namespace{

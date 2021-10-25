@@ -8,6 +8,17 @@ This version of the SDK was developed on Ubuntu 20.04
 sudo apt install build-essential clang g++ protobuf-compiler libprotobuf-dev cmake
 ```
 
+## Building using CMAKE
+
+This assumes that the SDK has been cloned into ~/iasdk
+
+```shell
+mkdir ~/build_iasdk
+cd build_iasdk
+cmake -DCMAKE_BUILD_TYPE=Release ~/iasdk/cpp_17
+make -j
+```
+
 ## Notes
 
 Preferred compiler for bulding is Clang V10 but GCC 9.3.x should work

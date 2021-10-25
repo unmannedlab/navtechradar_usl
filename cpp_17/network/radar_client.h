@@ -91,7 +91,7 @@ namespace Navtech {
         void stop_fft_data();
         void start_health_data();
         void stop_health_data();
-        void Start_navigation_data();
+        void start_navigation_data();
         void stop_navigation_data();
         void set_navigation_threshold(std::uint16_t threshold);
         void set_navigation_gain_and_offset(float gain, float offset);

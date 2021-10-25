@@ -4,4 +4,4 @@ add_library(
     sector_blanking.cpp
 )
 
-target_link_libraries(iasdk_navigation iasdk_utility)
+target_link_libraries(iasdk_navigation iasdk_utility iasdk_protobuf)

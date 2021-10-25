@@ -1,5 +1,9 @@
-/colossus_and_camera_subscriber_to_video:
+/point_cloud_publisher:
   ros__parameters:
+    azimuth_offset: 0
+    end_azimuth: 400
+    end_bin: 2856
+    power_threshold: 70
     qos_overrides:
       /parameter_events:
         publisher:
@@ -7,4 +11,8 @@
           durability: volatile
           history: keep_last
           reliability: reliable
+    radar_ip: 192.168.0.1
+    radar_port: 6317
+    start_azimuth: 0
+    start_bin: 0
     use_sim_time: false

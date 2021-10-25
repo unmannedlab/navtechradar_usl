@@ -56,11 +56,12 @@ void Camera_publisher::camera_image_handler(cv::Mat image, int fps)
     auto message = sensor_msgs::msg::Image();
     message.header = std_msgs::msg::Header();
     message.header.stamp = node->get_clock()->now();
+    message.header.frame_id = "camera_image";
 
     message.height = image.rows;
     message.width = image.cols;
     message.encoding = "8UC3";
-    message.is_bigendian = true;
+    message.is_bigendian = false;
     message.step = image.step;
     message.data = std::move(vector_buffer);
 
