@@ -1,6 +1,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include "radar_client.h"
-#include "interfaces/msg/configuration_data_message.hpp"
+#include "messages/msg/radar_configuration_message.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "std_msgs/msg/header.hpp"
 #include <vector>

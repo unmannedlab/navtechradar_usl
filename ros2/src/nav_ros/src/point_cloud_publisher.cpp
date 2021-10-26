@@ -6,7 +6,7 @@
 #include <rclcpp/qos.hpp>
 #include <math.h>
 
-#include "interfaces/msg/configuration_data_message.hpp"
+#include "messages/msg/radar_configuration_message.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "radar_client.h"
 #include "point_cloud_publisher.h"
@@ -36,7 +36,7 @@ Point_cloud_publisher::Point_cloud_publisher():Node{ "point_cloud_publisher" }
     qos_radar_configuration_publisher.reliable();
 
     configuration_data_publisher =
-    Node::create_publisher<interfaces::msg::ConfigurationDataMessage>(
+    Node::create_publisher<messages::msg::RadarConfigurationMessage>(
         "radar_data/configuration_data",
         qos_radar_configuration_publisher);
 
@@ -94,7 +94,7 @@ void Point_cloud_publisher::publish_point_cloud(const Navtech::Fft_data::Pointer
 
     std::vector<uint8_t> data_vector;
     data_vector.reserve(intensity_values.size());
-    for (int i = 0; i < intensity_values.size(); i++) {
+    for (unsigned i = 0; i < intensity_values.size(); i++) {
 
         float current_azimuth = (azimuth_values[i] * 0.9) * (M_PI / 180.0);
         float point_x = bin_values[i] * cos(current_azimuth);
@@ -132,9 +132,8 @@ void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& d
         adjusted_azimuth_index = adjusted_azimuth_index - azimuth_samples;
     }
 
-    int adjusted_range = adjusted_azimuth_index * range_in_bins;
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
-        for (int bin_index = 0; bin_index < data->data.size(); bin_index++) {
+        for (unsigned bin_index = 0; bin_index < data->data.size(); bin_index++) {
             if ((bin_index >= start_bin) && (bin_index < end_bin)) {
                 if (data->data[bin_index] > power_threshold) {
                     azimuth_values.push_back(adjusted_azimuth_index);

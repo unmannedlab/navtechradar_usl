@@ -24,8 +24,11 @@ using namespace Navtech::Utility;
 
 std::uint64_t Now()
 {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())
-        .count();
+    using std::chrono::milliseconds;
+    using std::chrono::duration_cast;
+    using std::chrono::system_clock;
+
+    return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
 
 std::uint16_t last_azimuth        = 0;
@@ -70,8 +73,9 @@ void configuration_data_handler(const Configuration_data::Pointer& data,
     packet_count = 0;
     last_azimuth = 0;
 
-    radar_client->start_fft_data();
     radar_client->request_navigation_configuration();
+    radar_client->start_navigation_data();
+    // radar_client->start_fft_data();
 
     // Set-up blanking sectors
     //
@@ -100,11 +104,18 @@ void navigation_config_handler(const Navigation_config::Pointer& cfg)
     // Now, change the configuration and send back to the
     // radar.
     //
-    nav_config.bins_to_operate_on   = 10;
-    nav_config.min_bin              = 100;
-    nav_config.navigation_threshold = 75.6;
+    nav_config.bins_to_operate_on    = 12;
+    nav_config.min_bin               = 34;
+    nav_config.navigation_threshold  = 560;
+    nav_config.max_peaks_per_azimuth = 78;
 
-    radar_client->set_navigation_configuration(nav_config);
+    // radar_client->set_navigation_configuration(nav_config);
+}
+
+
+void navigation_data_handler(const Navigation_data::Pointer& data)
+{
+    Log("Navigation data - number of peaks [" + std::to_string(data->peaks.size()) + "]");
 }
 
 
@@ -126,8 +137,13 @@ int main(int argc, char** argv)
     radar_client->set_fft_data_callback(fft_data_handler);
     radar_client->set_configuration_data_callback(configuration_data_handler);
     radar_client->set_navigation_config_callback(navigation_config_handler);
+    radar_client->set_navigation_data_callback(navigation_data_handler);
 
     radar_client->start();
+
+    radar_client->request_navigation_configuration();
+    radar_client->request_navigation_configuration();
+
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10'000));
 

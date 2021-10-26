@@ -24,11 +24,11 @@ private:
     uint8_t* image_ptr = { (uint8_t*)radar_image.data };
     int last_azimuth{ 0 };
 
-    void configuration_data_callback(const interfaces::msg::ConfigurationDataMessage::SharedPtr msg) const;
-    void fft_data_callback(const interfaces::msg::FftDataMessage::SharedPtr msg) const;
+    void configuration_data_callback(const messages::msg::RadarConfigurationMessage::SharedPtr msg) const;
+    void fft_data_callback(const messages::msg::RadarFftDataMessage::SharedPtr msg) const;
 
-    rclcpp::Subscription<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_subscriber;
-    rclcpp::Subscription<interfaces::msg::FftDataMessage>::SharedPtr fft_data_subscriber;
+    rclcpp::Subscription<messages::msg::RadarConfigurationMessage>::SharedPtr configuration_data_subscriber;
+    rclcpp::Subscription<messages::msg::RadarFftDataMessage>::SharedPtr fft_data_subscriber;
 };
 
 extern std::shared_ptr<Colossus_subscriber_to_video> node;

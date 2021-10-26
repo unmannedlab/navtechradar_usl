@@ -3,8 +3,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <opencv2/opencv.hpp>
 
-#include "interfaces/msg/configuration_data_message.hpp"
-#include "interfaces/msg/fft_data_message.hpp"
+#include "messages/msg/radar_configuration_message.hpp"
+#include "messages/msg/radar_fft_data_message.hpp"
 #include "colossus_subscriber_to_video.h"
 #include "net_conversion.h"
 
@@ -18,7 +18,7 @@ Colossus_subscriber_to_video::Colossus_subscriber_to_video() :Node{ "colossus_su
     qos_radar_configuration_subscriber.reliable();
 
     configuration_data_subscriber =
-    Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
+    Node::create_subscription<messages::msg::RadarConfigurationMessage>(
         "radar_data/configuration_data",
         qos_radar_configuration_subscriber,
         std::bind(&Colossus_subscriber_to_video::configuration_data_callback, this, _1));
@@ -27,13 +27,13 @@ Colossus_subscriber_to_video::Colossus_subscriber_to_video() :Node{ "colossus_su
     qos_radar_fft_subscriber.reliable();
 
     fft_data_subscriber =
-    Node::create_subscription<interfaces::msg::FftDataMessage>(
+    Node::create_subscription<messages::msg::RadarFftDataMessage>(
         "radar_data/fft_data",
         qos_radar_fft_subscriber,
         std::bind(&Colossus_subscriber_to_video::fft_data_callback, this, _1));
 }
 
-void Colossus_subscriber_to_video::configuration_data_callback(const interfaces::msg::ConfigurationDataMessage::SharedPtr msg) const
+void Colossus_subscriber_to_video::configuration_data_callback(const messages::msg::RadarConfigurationMessage::SharedPtr msg) const
 {
     if (node->config_data_received) {
         return;
@@ -88,7 +88,7 @@ void Colossus_subscriber_to_video::configuration_data_callback(const interfaces:
     node->video_writer.open("output_videos/radar_output.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), node->expected_rotation_rate, cv::Size(node->azimuth_samples, node->azimuth_samples), true);
     node->config_data_received = true;
 }
-void Colossus_subscriber_to_video::fft_data_callback(const interfaces::msg::FftDataMessage::SharedPtr msg) const
+void Colossus_subscriber_to_video::fft_data_callback(const messages::msg::RadarFftDataMessage::SharedPtr msg) const
 {
     if (!node->config_data_received) {
         RCLCPP_INFO(Node::get_logger(), "Configuration data not yet received");

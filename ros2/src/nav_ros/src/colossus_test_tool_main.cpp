@@ -3,10 +3,10 @@
 #include <memory>
 #include <string>
 
-#include "../../../cpp_17/network/radar_client.h"
+#include "radar_client.h"
 #include "colossus_test_tool.h"
 
-int main(int argc, char* argv[])
+int main(int, char**)
 {
     auto test_tool = new Colossus_test_tool();
 

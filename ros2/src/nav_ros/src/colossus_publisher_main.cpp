@@ -4,8 +4,8 @@
 #include <string>
 #include <rclcpp/rclcpp.hpp>
 
-#include "interfaces/msg/configuration_data_message.hpp"
-#include "interfaces/msg/fft_data_message.hpp"
+#include "messages/msg/radar_configuration_message.hpp"
+#include "messages/msg/radar_fft_data_message.hpp"
 #include "radar_client.h"
 #include "colossus_publisher.h"
 
