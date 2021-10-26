@@ -6,7 +6,7 @@
 #include <rclcpp/qos.hpp>
 #include <math.h>
 
-#include "interfaces/msg/configuration_data_message.hpp"
+#include "messages/msg/radar_configuration_message.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "radar_client.h"
 #include "navigation_mode_point_cloud_publisher.h"
@@ -44,7 +44,7 @@ Navigation_mode_point_cloud_publisher::Navigation_mode_point_cloud_publisher() :
     qos_radar_configuration_publisher.reliable();
 
     configuration_data_publisher =
-        Node::create_publisher<interfaces::msg::ConfigurationDataMessage>(
+        Node::create_publisher<messages::msg::RadarConfigurationMessage>(
             "radar_data/configuration_data",
             qos_radar_configuration_publisher);
 
@@ -102,7 +102,7 @@ void Navigation_mode_point_cloud_publisher::publish_point_cloud(const Navtech::N
 
     std::vector<uint8_t> data_vector;
     data_vector.reserve(intensity_values.size());
-    for (int i = 0; i < intensity_values.size(); i++) {
+    for (unsigned i = 0; i < intensity_values.size(); i++) {
 
         float current_azimuth = (azimuth_values[i] * 0.9) * (M_PI / 180.0);
         float point_x = bin_values[i] * cos(current_azimuth);
@@ -160,7 +160,7 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
 
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
 
-        for (int peak_index = 0; peak_index < data->peaks.size(); peak_index++) {
+        for (unsigned peak_index = 0; peak_index < data->peaks.size(); peak_index++) {
             float target_range = std::get<float>(data->peaks[peak_index]);
             int bin_index = (int)(target_range / bin_size);
             uint16_t target_power = std::get<uint16_t>(data->peaks[peak_index]);

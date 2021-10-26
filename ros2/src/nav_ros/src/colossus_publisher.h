@@ -1,6 +1,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include "radar_client.h"
-#include "interfaces/msg/configuration_data_message.hpp"
+#include "messages/msg/radar_configuration_message.hpp"
 
 class Colossus_publisher : public ::rclcpp::Node
 {
@@ -24,8 +24,8 @@ private:
     int rotation_count{ 0 };
     int config_publish_count{ 4 };
 
-    interfaces::msg::ConfigurationDataMessage config_message = interfaces::msg::ConfigurationDataMessage{};
+    messages::msg::RadarConfigurationMessage config_message = messages::msg::RadarConfigurationMessage{};
 
-    rclcpp::Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher{};
-    rclcpp::Publisher<interfaces::msg::FftDataMessage>::SharedPtr fft_data_publisher{};
+    rclcpp::Publisher<messages::msg::RadarConfigurationMessage>::SharedPtr configuration_data_publisher{};
+    rclcpp::Publisher<messages::msg::RadarFftDataMessage>::SharedPtr fft_data_publisher{};
 };

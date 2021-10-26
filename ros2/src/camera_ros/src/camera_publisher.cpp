@@ -8,7 +8,7 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 
-#include "interfaces/msg/camera_configuration_message.hpp"
+#include "messages/msg/camera_configuration_message.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "std_msgs/msg/header.hpp"
 #include "camera_publisher.h"
@@ -22,7 +22,7 @@ Camera_publisher::Camera_publisher():rclcpp::Node{ "camera_publisher" }
     qos_camera_configuration_publisher.reliable();
 
     camera_configuration_publisher =
-    Node::create_publisher<interfaces::msg::CameraConfigurationMessage>(
+    Node::create_publisher<messages::msg::CameraConfigurationMessage>(
     "camera_data/camera_configuration_data",
     qos_camera_configuration_publisher);
 
@@ -41,7 +41,7 @@ void Camera_publisher::camera_image_handler(cv::Mat image, int fps)
     std::vector<uint8_t> vector_buffer(image.ptr(0), image.ptr(0) + buffer_length);
 
     if ((!configuration_sent) || (frame_count >= config_publish_count)) {
-        auto config_message = interfaces::msg::CameraConfigurationMessage();
+        auto config_message = messages::msg::CameraConfigurationMessage();
         config_message.width = image.cols;
         config_message.height = image.rows;
         config_message.channels = image.channels();
