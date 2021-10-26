@@ -1,6 +1,6 @@
 # Navtech ROS2 Driver
 
-The Navtech ROS2 Driver contains examples of ROS2 publishers, which connect to and publish data from an RTSP camera, and a Navtech radar. The Driver also contains examples of subscribers which subscribe to the camera and radar topics, and can convert the data from them into video files which are more easily interpreted than thee raw data.
+The Navtech ROS2 Driver contains examples of ROS2 publishers, which connect to and publish data from an RTSP camera, and a Navtech radar. The driver also contains examples of subscribers which subscribe to the camera and radar topics, and can convert the data into video files which are more easily interpreted than the raw data.
 
 ## SDK Requirements
 
@@ -29,7 +29,10 @@ sudo apt-get install clang-10
 
 ## Linux Requirements
 To use the shell scripts provided in the 'utility scripts' folder we require bash on Ubuntu. The safest thing to do is execute:
+
+```bash
 sudo dpkg-reconfigure -p critical dash
+```
 
 ## ROS2 Requirements
 As above and:
@@ -38,11 +41,17 @@ Installation instructions can be found here: https://docs.ros.org/en/galactic/In
 
 ## Python Requirements
 Python3.0+
+
+```bash
 sudo apt install python3.8
+```
 
 Numpy 1.17.4
 Can be installed with the following command:
+
+```bash
 sudo apt install python3-numpy
+```
 
 ## OpenCV Requirements
 OpenCV 4.5.3 - CPP and Python bindings
@@ -51,7 +60,10 @@ Installation instructions here: https://www.linuxfromscratch.org/blfs/view/svn/g
 ## FFMPEG Requirements
 ffmpeg version 4.2.4-1ubuntu0.1
 Can be installed with the following command:
+
+```bash
 sudo apt install ffmpeg
+```
 
 ## License
 
@@ -67,15 +79,25 @@ This will source ROS for every newly opened terminal window
 
 All ROS2 packages must be built and installed before being run
 Build with: colcon build
-Install with: . install/setup.bash
+Install with: 
+
+```bash
+. install/setup.bash
+```
 
 Packages can be run like so: ros2 run <package_name> <executable_name>
 For example: ros2 run nav_ros colossus_publisher
 
 Packages can be run with their corresponding paramater files like so:
+
+```bash
 ros2 run <package_name> <executable_name> --ros-args --params-file <params_file_path>
+```
 For example:
+
+```bash
 ros2 run nav_ros colossus_publisher --ros-args --params-file ./src/nav_ros/config/colossus_publisher.yaml
+```
 
 ## camera_ros
 
@@ -116,18 +138,34 @@ Contains custom publishers and subscribers for a partner company
 
 A bash script to scale and stack together (side by side) a camera and a radar video, which have been generated using the scripts above. This code uses ffmpeg commands to achieve the video conversion.
 
-Firstly, allow the script to be executable: sudo chmod +x join_radar_camera_videos
+Firstly, allow the script to be executable: 
 
-Then run with: ./join_radar_camera_videos
+```bash
+sudo chmod +x join_radar_camera_videos
+```
+
+Then run with: 
+
+```bash
+./join_radar_camera_videos
+```
 
 ## join_radar_camera_videos.py
 
 A Python script to scale and stack together (side by side) a camera and a radar video, which have been generated using the scripts above. This code uses numpy and OpenCV to achieve the video conversion.
 
-Run like so: python3 join_radar_camera_videos.py
+Run like so: 
+
+```bash
+python3 join_radar_camera_videos.py
+```
 
 ## show_colossus_timestamps
 
 A python script to examine a ROS bag file, and to print out the azimuth, sweep counter, timestamp, and time difference, between radar FFT messages from the bag file.
 
-Run like so: python3 show_colossus_timestamps.py
+Run like so: 
+
+```bash
+python3 show_colossus_timestamps.py
+```
