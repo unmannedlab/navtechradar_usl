@@ -132,7 +132,7 @@ std::vector<uint8_t> Navigation_mode_point_cloud_publisher::floats_to_uint8_t_ve
 }
 
 void Navigation_mode_point_cloud_publisher::update_navigation_config() {
-    RCLCPP_INFO(Node::get_logger(), "Updating navigation config on radar");
+    RCLCPP_INFO(Node::get_logger(), "Updating navigation config on radar\n");
     auto navigation_config = Navtech::Navigation_config();
     navigation_config.bins_to_operate_on = bins_to_operate_on;
     navigation_config.min_bin = min_bin;
@@ -142,7 +142,7 @@ void Navigation_mode_point_cloud_publisher::update_navigation_config() {
 }
 
 void Navigation_mode_point_cloud_publisher::update_local_navigation_config() {
-    RCLCPP_INFO(Node::get_logger(), "Updating local navigation config");
+    RCLCPP_INFO(Node::get_logger(), "Updating local navigation config\n");
     peak_finder->configure(config_data,
         protobuf_config_data,
         power_threshold,
@@ -302,10 +302,10 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
         if (get_parameter("power_threshold").as_double() != power_threshold)
         {
             double temp_power_threshold = get_parameter("power_threshold").as_double();
-            if (temp_power_threshold < 0 || temp_power_threshold > std::numeric_limits<uint8_t>::max() * 10) {
-                RCLCPP_INFO(Node::get_logger(), "Power threshold of %f is invalid, must be between 0 and %i", temp_power_threshold, std::numeric_limits<uint8_t>::max() * 10);
-                RCLCPP_INFO(Node::get_logger(), "Setting power threshold to %i", std::numeric_limits<uint8_t>::max() * 10 / 2);
-                set_parameter(rclcpp::Parameter("power_threshold", std::numeric_limits<uint8_t>::max() * 10 / 2));
+            if (temp_power_threshold < 0 || temp_power_threshold > std::numeric_limits<uint8_t>::max()) {
+                RCLCPP_INFO(Node::get_logger(), "Power threshold of %f is invalid, must be between 0 and %f", temp_power_threshold, (double)std::numeric_limits<uint8_t>::max());
+                RCLCPP_INFO(Node::get_logger(), "Setting power threshold to %f", (double)std::numeric_limits<uint8_t>::max() / 4);
+                set_parameter(rclcpp::Parameter("power_threshold", (double)std::numeric_limits<uint8_t>::max() / 4));
             }
             else {
                 power_threshold = temp_power_threshold;
@@ -332,7 +332,6 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
         if (update_radar_navigation_config) {
 
             if (process_locally) {
-
                 Navigation_mode_point_cloud_publisher::update_local_navigation_config();
             }
             else {
@@ -379,12 +378,12 @@ void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Nav
     protobuf_config_data = protobuf_data;
     if (process_locally) {
 
+        RCLCPP_INFO(Node::get_logger(), "Processing navigation data locally");
         Navigation_mode_point_cloud_publisher::update_local_navigation_config();
-
-        // peak_finding does not currently work with contoured data
-        radar_client->start_non_contour_fft_data();
+        radar_client->start_non_contour_fft_data(); // peak_finding does not currently work with contoured data
     }
     else {
+        RCLCPP_INFO(Node::get_logger(), "Processing navigation data on radar");
         Navigation_mode_point_cloud_publisher::update_navigation_config();
         radar_client->start_navigation_data();
     }
