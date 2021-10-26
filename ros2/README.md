@@ -1,6 +1,6 @@
 # Navtech ROS2 Driver
 
-The Navtech ROS2 Driver repository contains examples of ROS2 publishers and subscribers, which interface with RTSP cameras and Navtech Radar. Both basic and complete examples are provided which allow simple publishing of data, simple subscribing to data, and also immediate viewing of radar/camera data, using the ROS2 visulaisation tool, RVIZ. The Navtech ROS2 driver is dependent on the Navtech SDK.
+The Navtech ROS2 Driver contains examples of ROS2 publishers, which connect to and publish data from an RTSP camera, and a Navtech radar. The driver also contains examples of subscribers which subscribe to the camera and radar topics, and can convert the data into video files which are more easily interpreted than the raw data.
 
 Please see lower level README.md files, for more specific information on the ROS project folders.
 
@@ -57,11 +57,17 @@ Installation instructions can be found here: https://docs.ros.org/en/galactic/In
 
 ## Python Requirements
 Python3.0+
+
+```bash
 sudo apt install python3.8
+```
 
 Numpy 1.17.4
 Can be installed with the following command:
+
+```bash
 sudo apt install python3-numpy
+```
 
 ## OpenCV Requirements
 OpenCV 4.5.3 - CPP and Python bindings
@@ -70,7 +76,10 @@ Installation instructions here: https://www.linuxfromscratch.org/blfs/view/svn/g
 ## FFMPEG Requirements
 ffmpeg version 4.2.4-1ubuntu0.1
 Can be installed with the following command:
+
+```bash
 sudo apt install ffmpeg
+```
 
 ## License
 
@@ -86,7 +95,7 @@ This will source ROS for every newly opened terminal window
 
 All ROS2 packages must be built and installed before being run
 Build with: colcon build
-Install with: . install/setup.bash
+Install with: 
 
 Packages can be run like so:
 
