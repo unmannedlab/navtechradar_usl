@@ -4,7 +4,7 @@
   <name>messages</name>
   <version>1.0.0</version>
   <description>The messages ROS package contains the custom message definitions, as used in the accompanying ROS packages</description>
-  <maintainer email="">Ben Guy</maintainer>
+  <maintainer email="sales@navtechradar.com">Ben Guy</maintainer>
   <license>See License file in repository</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
