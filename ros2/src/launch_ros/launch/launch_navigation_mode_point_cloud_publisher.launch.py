@@ -18,7 +18,7 @@ def generate_launch_description():
 
     Node(
         package="rviz2",
-        arguments=["-d../../rviz/navigation_mode_point_cloud_view.rviz"],
+        arguments=["-d../../rviz_views/navigation_mode_point_cloud_view.rviz"],
         executable="rviz2"
     )
   ])
