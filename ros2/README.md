@@ -116,25 +116,25 @@ ros2 run nav_ros colossus_publisher --ros-args --params-file ./src/nav_ros/confi
 
 Contains examples of publishers and subscribers to handle the connection to, and delivery of data from, an RTSP video stream.
 
-**See the README.md under 'camera_ros', for more detialed instructions**
+**See the README.md under 'camera_ros', for more detailed instructions**
 
 ## launch_ros
 
 Contains examples of launch files which can be used with the ROS2 Navtech driver.
 
-**See the README.md under 'launch_ros', for more detialed instructions**
+**See the README.md under 'launch_ros', for more detailed instructions**
 
 ## messages
 
 Contains the custom message types used within the ROS2 Navtech driver.
 
-**See the README.md under 'messages', for more detialed instructions**
+**See the README.md under 'messages', for more detailed instructions**
 
 ## nav_ros
 
 Contains examples of publishers and subscribers to handle the connection to, and delivery of data from, an Navtech radar.
 
-**See the README.md under 'nav_ros', for more detialed instructions**
+**See the README.md under 'nav_ros', for more detailed instructions**
 
 
 
