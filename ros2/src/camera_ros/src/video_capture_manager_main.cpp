@@ -8,7 +8,7 @@
 
 #include "video_capture_manager.h"
 
-int main(int argc, char* argv[]) {
+int main(int, char**) {
 
     std::shared_ptr<Video_capture_manager> vid_cap_manager = std::make_shared<Video_capture_manager>();
 

@@ -5,8 +5,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/qos.hpp>
 
-#include "interfaces/msg/configuration_data_message.hpp"
-#include "interfaces/msg/fft_data_message.hpp"
+#include "messages/msg/radar_configuration_message.hpp"
+#include "messages/msg/radar_fft_data_message.hpp"
 #include "radar_client.h"
 #include "b_scan_publisher.h"
 #include "net_conversion.h"
@@ -43,7 +43,7 @@ B_scan_colossus_publisher::B_scan_colossus_publisher():Node{ "b_scan_publisher" 
 
 void B_scan_colossus_publisher::image_data_handler(const Navtech::Fft_data::Pointer& data) {
 
-    if (intensity_values.size() != azimuth_samples * range_in_bins) {
+    if (intensity_values.size() != (unsigned)(azimuth_samples * range_in_bins)) {
         return;
     }
 
@@ -76,7 +76,7 @@ void B_scan_colossus_publisher::fft_data_handler(const Navtech::Fft_data::Pointe
     }
 
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
-        for (int y = 0; y < data->data.size(); y++) {
+        for (unsigned y = 0; y < data->data.size(); y++) {
             int adjusted_intensity_index = (adjusted_azimuth_index * range_in_bins) + y;
             if ((y >= start_bin) && (y < end_bin)) {
                 intensity_values[adjusted_intensity_index] = data->data[y];

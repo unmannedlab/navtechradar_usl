@@ -3,7 +3,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <math.h>
 
-#include "interfaces/msg/configuration_data_message.hpp"
+#include "messages/msg/radar_configuration_message.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "laser_scan_subscriber.h"
 #include "net_conversion.h"
@@ -16,7 +16,7 @@ Laser_scan_subscriber::Laser_scan_subscriber() : Node{ "laser_scan_subscriber" }
     qos_radar_configuration_subscriber.reliable();
 
     configuration_data_subscriber = 
-    Node::create_subscription<interfaces::msg::ConfigurationDataMessage>(
+    Node::create_subscription<messages::msg::RadarConfigurationMessage>(
         "radar_data/configuration_data",
         qos_radar_configuration_subscriber,
         std::bind(&Laser_scan_subscriber::configuration_data_callback, this, _1));
@@ -31,7 +31,7 @@ Laser_scan_subscriber::Laser_scan_subscriber() : Node{ "laser_scan_subscriber" }
         std::bind(&Laser_scan_subscriber::laser_scan_callback, this, _1));
 }
 
-void Laser_scan_subscriber::configuration_data_callback(const interfaces::msg::ConfigurationDataMessage::SharedPtr msg) const
+void Laser_scan_subscriber::configuration_data_callback(const messages::msg::RadarConfigurationMessage::SharedPtr msg) const
 {
     RCLCPP_INFO(Node::get_logger(), "Configuration Data recieved");
 

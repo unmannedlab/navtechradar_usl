@@ -2,7 +2,7 @@
 #include "radar_client.h"
 #include "navigation/peak_finder.h"
 #include "sensor_msgs/msg/point_cloud2.hpp"
-#include "interfaces/msg/configuration_data_message.hpp"
+#include "messages/msg/radar_configuration_message.hpp"
 #include <vector>
 
 class Navigation_mode_point_cloud_publisher : public ::rclcpp::Node
@@ -53,8 +53,8 @@ private:
     int rotation_count{ 0 };
     int config_publish_count{ 4 };
 
-    interfaces::msg::ConfigurationDataMessage config_message = interfaces::msg::ConfigurationDataMessage{};
+    messages::msg::RadarConfigurationMessage config_message = messages::msg::RadarConfigurationMessage{};
 
-    rclcpp::Publisher<interfaces::msg::ConfigurationDataMessage>::SharedPtr configuration_data_publisher{};
+    rclcpp::Publisher<messages::msg::RadarConfigurationMessage>::SharedPtr configuration_data_publisher{};
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr point_cloud_publisher{};
 };

@@ -15,7 +15,7 @@ endif()
 ## Find required packages for build
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(interfaces REQUIRED) 
+find_package(messages REQUIRED) 
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(OpenCV 4.5.3 REQUIRED)
@@ -53,52 +53,62 @@ target_link_libraries(iasdk_protobuf ${PROTOBUF_LIBRARY})
 ## Build executable for Colossus test tool
 add_executable(colossus_test_tool src/colossus_test_tool_main.cpp src/colossus_test_tool.cpp)
 target_link_libraries(colossus_test_tool iasdk_static iasdk_protobuf)
-ament_target_dependencies(colossus_test_tool rclcpp std_msgs interfaces)
+ament_target_dependencies(colossus_test_tool rclcpp std_msgs messages)
 
 ## Build executable for Colossus publisher
 add_executable(colossus_publisher src/colossus_publisher_main.cpp src/colossus_publisher.cpp)
 target_link_libraries(colossus_publisher iasdk_static iasdk_protobuf)
-ament_target_dependencies(colossus_publisher rclcpp std_msgs interfaces)
+ament_target_dependencies(colossus_publisher rclcpp std_msgs messages)
 
 ## Build executable for Colossus subscriber
 add_executable(colossus_subscriber src/colossus_subscriber_main.cpp src/colossus_subscriber.cpp)
 target_link_libraries(colossus_subscriber iasdk_static)
-ament_target_dependencies(colossus_subscriber rclcpp std_msgs interfaces)
+ament_target_dependencies(colossus_subscriber rclcpp std_msgs messages)
 
 ## Build executable for Colossus subscriber to video
 add_executable(colossus_subscriber_to_video src/colossus_subscriber_to_video_main.cpp src/colossus_subscriber_to_video.cpp)
 target_link_libraries(colossus_subscriber_to_video iasdk_static)
-ament_target_dependencies(colossus_subscriber_to_video rclcpp std_msgs interfaces OpenCV)
+ament_target_dependencies(colossus_subscriber_to_video rclcpp std_msgs messages OpenCV)
 
 ## Build executable for laser scan publisher
 add_executable(laser_scan_publisher src/laser_scan_publisher_main.cpp src/laser_scan_publisher.cpp)
 target_link_libraries(laser_scan_publisher iasdk_static iasdk_protobuf)
-ament_target_dependencies(laser_scan_publisher rclcpp std_msgs sensor_msgs interfaces)
+ament_target_dependencies(laser_scan_publisher rclcpp std_msgs sensor_msgs messages)
 
 ## Build executable for Laser scan subscriber
 add_executable(laser_scan_subscriber src/laser_scan_subscriber_main.cpp src/laser_scan_subscriber.cpp)
 target_link_libraries(laser_scan_subscriber iasdk_static)
-ament_target_dependencies(laser_scan_subscriber rclcpp std_msgs sensor_msgs interfaces)
+ament_target_dependencies(laser_scan_subscriber rclcpp std_msgs sensor_msgs messages)
 
 ## Build executable for Laser scan subscriber to video
 add_executable(laser_scan_subscriber_to_video src/laser_scan_subscriber_to_video_main.cpp src/laser_scan_subscriber_to_video.cpp)
 target_link_libraries(laser_scan_subscriber_to_video iasdk_static)
-ament_target_dependencies(laser_scan_subscriber_to_video rclcpp std_msgs sensor_msgs interfaces OpenCV)
+ament_target_dependencies(laser_scan_subscriber_to_video rclcpp std_msgs sensor_msgs messages OpenCV)
 
 ## Build executable for point cloud publisher
 add_executable(point_cloud_publisher src/point_cloud_publisher_main.cpp src/point_cloud_publisher.cpp)
 target_link_libraries(point_cloud_publisher iasdk_static iasdk_protobuf)
-ament_target_dependencies(point_cloud_publisher rclcpp std_msgs sensor_msgs interfaces)
+ament_target_dependencies(point_cloud_publisher rclcpp std_msgs sensor_msgs messages)
 
 ## Build executable for navigation mode point cloud publisher
 add_executable(navigation_mode_point_cloud_publisher src/navigation_mode_point_cloud_publisher_main.cpp src/navigation_mode_point_cloud_publisher.cpp)
 target_link_libraries(navigation_mode_point_cloud_publisher iasdk_static iasdk_protobuf)
-ament_target_dependencies(navigation_mode_point_cloud_publisher rclcpp std_msgs sensor_msgs interfaces)
+ament_target_dependencies(navigation_mode_point_cloud_publisher rclcpp std_msgs sensor_msgs messages)
 
 ## Build executable for B scan publisher
 add_executable(b_scan_publisher src/b_scan_publisher_main.cpp src/b_scan_publisher.cpp)
 target_link_libraries(b_scan_publisher iasdk_static iasdk_protobuf)
-ament_target_dependencies(b_scan_publisher rclcpp std_msgs sensor_msgs interfaces OpenCV)
+ament_target_dependencies(b_scan_publisher rclcpp std_msgs sensor_msgs messages OpenCV)
+
+## Build executable for Colossus and camera publisher
+add_executable(colossus_and_camera_publisher src/colossus_and_camera_publisher_main.cpp src/colossus_and_camera_publisher.cpp ../camera_ros/src/video_capture_manager.cpp)
+target_link_libraries(colossus_and_camera_publisher iasdk_static iasdk_protobuf)
+ament_target_dependencies(colossus_and_camera_publisher rclcpp std_msgs sensor_msgs messages OpenCV)
+
+## Build executable for Colossus and camera subscriber to video
+add_executable(colossus_and_camera_subscriber_to_video src/colossus_and_camera_subscriber_to_video_main.cpp src/colossus_and_camera_subscriber_to_video.cpp)
+target_link_libraries(colossus_and_camera_subscriber_to_video iasdk_static iasdk_protobuf)
+ament_target_dependencies(colossus_and_camera_subscriber_to_video rclcpp std_msgs sensor_msgs messages OpenCV)
 
 ## Install the built executables
 install(TARGETS
@@ -112,6 +122,8 @@ install(TARGETS
   point_cloud_publisher
   navigation_mode_point_cloud_publisher
   b_scan_publisher
+  colossus_and_camera_publisher
+  colossus_and_camera_subscriber_to_video
   DESTINATION lib/${PROJECT_NAME})
 
 ## Install the package

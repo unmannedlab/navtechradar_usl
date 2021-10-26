@@ -1,6 +1,6 @@
 #include <rclcpp/rclcpp.hpp>
 
-#include "interfaces/msg/camera_configuration_message.hpp"
+#include "messages/msg/camera_configuration_message.hpp"
 #include "camera_subscriber_to_video.h"
 
 int main(int argc, char* argv[]){
