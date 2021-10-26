@@ -136,12 +136,6 @@ Contains examples of publishers and subscribers to handle the connection to, and
 
 **See the README.md under 'nav_ros', for more detialed instructions**
 
-## utility_scripts
-
-Contains helpful utility scripts, for manipulating camera data, radar data and bag files.
-
-**See the README.md under 'utility_scripts', for more detialed instructions**
-
 
 
 # ROS2 Example install procedure
