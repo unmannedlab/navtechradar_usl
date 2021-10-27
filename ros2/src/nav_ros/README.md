@@ -246,6 +246,7 @@ The following options are shown for each of the settings:
 | :------------- | :-------: | :----------------------: | :---------------------------: |--------------------------------------------: |
 | radar_ip       | string    | <radar_ip_address>       | The IP address of the radar you are connecting to| N/A |
 | radar_port     | string    | <radar_port>             | The port number of the radar you are connecting to| N/A |
+| process_locally| bool      | <process_locally>        | false to process navigation data on the radar, true to process locally| N/A |
 
 ### point_cloud_publisher
 
