@@ -8,7 +8,8 @@
 #include "opencv2/opencv.hpp"
 #include "camera_subscriber.h"
 
-Camera_subscriber::Camera_subscriber():rclcpp::Node{ "camera_subscriber" }{
+Camera_subscriber::Camera_subscriber():rclcpp::Node{ "camera_subscriber" }
+{
     using std::placeholders::_1;
 
     rclcpp::QoS qos_camera_configuration_subscriber(camera_configuration_queue_size);

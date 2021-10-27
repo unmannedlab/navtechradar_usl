@@ -99,7 +99,7 @@ void B_scan_colossus_publisher::fft_data_handler(const Navtech::Fft_data::Pointe
 
         for (int x = 0; x < azimuth_samples; x++) {
             for (int y = 0; y < range_in_bins; y++) {
-                intensity_values.push_back(0);
+                intensity_values.emplace_back(0);
             }
         }
     }
@@ -180,7 +180,7 @@ void B_scan_colossus_publisher::configuration_data_handler(const Navtech::Config
 
     for (int x = 0; x < azimuth_samples; x++) {
         for (int y = 0; y < range_in_bins; y++) {
-                intensity_values.push_back(0);
+                intensity_values.emplace_back(0);
             }
         }
 

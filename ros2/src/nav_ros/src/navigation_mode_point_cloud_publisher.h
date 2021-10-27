@@ -12,8 +12,25 @@ public:
 
     std::shared_ptr<Navtech::Radar_client> radar_client{};
     std::shared_ptr<Navtech::Peak_finder> peak_finder{};
+
     std::string radar_ip{ "" };
     uint16_t radar_port{ 0 };
+
+    void fft_data_handler(const Navtech::Fft_data::Pointer& data);
+    void target_data_handler(const Navtech::Azimuth_target& target_data);
+    void configuration_data_handler(const Navtech::Configuration_data::Pointer& data, const Navtech::Configuration_data::ProtobufPointer& protobuf_data);
+    void navigation_data_handler(const Navtech::Navigation_data::Pointer& data);
+    void navigation_config_data_handler(const Navtech::Navigation_config::Pointer& data);
+    void publish_point_cloud(const Navtech::Navigation_data::Pointer& data);
+    std::vector<uint8_t> floats_to_uint8_t_vector(float x, float y, float z, float intensity);
+    void update_navigation_config();
+    void update_local_navigation_config();
+    void check_config_publish();
+
+private:
+    constexpr static int radar_configuration_queue_size{ 1 };
+    constexpr static int radar_point_cloud_queue_size{ 4 };
+
     uint16_t start_azimuth{ 0 };
     uint16_t end_azimuth{ 0 };
     uint16_t start_bin{ 0 };
@@ -31,20 +48,6 @@ public:
     std::vector <float> intensity_values;
     Navtech::Configuration_data::Pointer config_data;
     Navtech::Configuration_data::ProtobufPointer protobuf_config_data;
-
-    void fft_data_handler(const Navtech::Fft_data::Pointer& data);
-    void target_data_handler(const Navtech::Azimuth_target& target_data);
-    void configuration_data_handler(const Navtech::Configuration_data::Pointer& data, const Navtech::Configuration_data::ProtobufPointer& protobuf_data);
-    void navigation_data_handler(const Navtech::Navigation_data::Pointer& data);
-    void navigation_config_data_handler(const Navtech::Navigation_config::Pointer& data);
-    void publish_point_cloud(const Navtech::Navigation_data::Pointer& data);
-    std::vector<uint8_t> floats_to_uint8_t_vector(float x, float y, float z, float intensity);
-    void update_navigation_config();
-    void update_local_navigation_config();
-
-private:
-    constexpr static int radar_configuration_queue_size{ 1 };
-    constexpr static int radar_point_cloud_queue_size{ 4 };
 
     int azimuth_samples{ 0 };
     float bin_size{ 0 };

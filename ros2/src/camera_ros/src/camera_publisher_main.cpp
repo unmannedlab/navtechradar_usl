@@ -12,7 +12,8 @@
 
 std::shared_ptr<Camera_publisher> node{};
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     rclcpp::init(argc, argv);
     node = std::make_shared<Camera_publisher>();
 
