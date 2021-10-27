@@ -126,10 +126,6 @@ Contains a basic example of *subscribing to radar topics*, and *saving* the publ
 
 This executable currently has no configurable settings
 
-### colossus_test_tool
-
-Contains a basic example of *connecting to a Navtech Radar*, and *testing* teh radar connection, and checking for any packet loss.
-
 #### configuration options
 
 The following *configuration options* are included in the .yaml settings file in the config folder. These settings can be changed by *modifying* the values in the .yaml file, prior to launching the executable.
