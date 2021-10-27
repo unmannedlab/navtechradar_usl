@@ -1,6 +1,6 @@
 # Navtech ROS2 Driver
 
-The Navtech ROS2 Driver contains examples of ROS2 publishers, which connect to and publish data from an RTSP camera, and a Navtech radar. The driver also contains examples of subscribers which subscribe to the camera and radar topics, and can convert the data into video files which are more easily interpreted than the raw data.
+The Navtech ROS2 Driver repository contains examples of ROS2 publishers and subscribers, which interface with RTSP cameras and Navtech Radar. Both basic and complete examples are provided which allow simple publishing of data, simple subscribing to data, and also immediate viewing of radar/camera data, using the ROS2 visulaisation tool, RVIZ. The Navtech ROS2 driver is dependent on the Navtech SDK.
 
 Please see lower level README.md files, for more specific information on the ROS project folders.
 

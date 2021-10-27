@@ -118,7 +118,8 @@ void Colossus_and_camera_publisher::configuration_data_handler(const Navtech::Co
     fps = data->expected_rotation_rate;
     configuration_data_publisher->publish(config_message);
 
-    radar_client->start_fft_data();
+    // We only want to publish non contoured data
+    radar_client->start_non_contour_fft_data();
 }
 
 void Colossus_and_camera_publisher::camera_image_handler(cv::Mat image)

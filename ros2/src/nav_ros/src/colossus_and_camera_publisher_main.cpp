@@ -19,18 +19,18 @@ int main(int argc, char* argv[])
     node = std::make_shared<Colossus_and_camera_publisher>();
 
     RCLCPP_INFO(node->get_logger(), "Starting radar client");
-    node->radar_client = Navtech::allocate_owned<Navtech::Radar_client>(Navtech::Utility::IP_address { node->radar_ip }, node->radar_port);
-    node->radar_client->set_fft_data_callback(std::bind(&Colossus_and_camera_publisher::fft_data_handler, node.get(), std::placeholders::_1));
-    node->radar_client->set_configuration_data_callback(std::bind(&Colossus_and_camera_publisher::configuration_data_handler, node.get(), std::placeholders::_1));
-    node->radar_client->start();
+    node->set_radar_client(Navtech::allocate_owned<Navtech::Radar_client>(Navtech::Utility::IP_address { node->get_radar_ip() }, node->get_radar_port()));
+    node->get_radar_client()->set_fft_data_callback(std::bind(&Colossus_and_camera_publisher::fft_data_handler, node.get(), std::placeholders::_1));
+    node->get_radar_client()->set_configuration_data_callback(std::bind(&Colossus_and_camera_publisher::configuration_data_handler, node.get(), std::placeholders::_1));
+    node->get_radar_client()->start();
     RCLCPP_INFO(node->get_logger(), "Radar client started");
 
     RCLCPP_INFO(node->get_logger(), "Starting camera publisher");
-    RCLCPP_INFO(node->get_logger(), "URL: %s", node->camera_url.c_str());
+    RCLCPP_INFO(node->get_logger(), "URL: %s", node->get_camera_url().c_str());
 
     std::shared_ptr<Video_capture_manager> vid_cap_manager = std::make_shared<Video_capture_manager>();
 
-    auto ret = vid_cap_manager->connect_to_camera(node->camera_url);
+    auto ret = vid_cap_manager->connect_to_camera(node->get_camera_url());
 
     if (ret) {
 

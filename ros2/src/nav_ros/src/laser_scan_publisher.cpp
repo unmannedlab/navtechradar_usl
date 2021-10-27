@@ -189,7 +189,8 @@ void Laser_scan_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& da
     }
 }
 
-void Laser_scan_publisher::configuration_data_handler(const Navtech::Configuration_data::Pointer& data){
+void Laser_scan_publisher::configuration_data_handler(const Navtech::Configuration_data::Pointer& data)
+{
     RCLCPP_INFO(Node::get_logger(), "Configuration Data Received");
     RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", data->azimuth_samples);
     RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", data->encoder_size);

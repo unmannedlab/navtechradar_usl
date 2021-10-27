@@ -9,10 +9,11 @@
 #include "messages/msg/radar_configuration_message.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "radar_client.h"
+#include "navigation/peak_finder.h"
 #include "navigation_mode_point_cloud_publisher.h"
 #include "net_conversion.h"
 
-Navigation_mode_point_cloud_publisher::Navigation_mode_point_cloud_publisher() :Node{ "navigation_mode_point_cloud_publisher" }
+Navigation_mode_point_cloud_publisher::Navigation_mode_point_cloud_publisher() :Node { "navigation_mode_point_cloud_publisher" }
 {
     declare_parameter("radar_ip", "");
     declare_parameter("radar_port", 0);
@@ -26,6 +27,7 @@ Navigation_mode_point_cloud_publisher::Navigation_mode_point_cloud_publisher() :
     declare_parameter("min_bin", 0);
     declare_parameter("power_threshold", 0.0);
     declare_parameter("max_peaks_per_azimuth", 0);
+    declare_parameter("process_locally", false);
 
     radar_ip = get_parameter("radar_ip").as_string();
     radar_port = get_parameter("radar_port").as_int();
@@ -39,6 +41,7 @@ Navigation_mode_point_cloud_publisher::Navigation_mode_point_cloud_publisher() :
     min_bin = get_parameter("min_bin").as_int();
     power_threshold = get_parameter("power_threshold").as_double();
     max_peaks_per_azimuth = get_parameter("max_peaks_per_azimuth").as_int();
+    process_locally = get_parameter("process_locally").as_bool();
 
     rclcpp::QoS qos_radar_configuration_publisher(radar_configuration_queue_size);
     qos_radar_configuration_publisher.reliable();
@@ -108,7 +111,7 @@ void Navigation_mode_point_cloud_publisher::publish_point_cloud(const Navtech::N
         float point_x = bin_values[i] * cos(current_azimuth);
         float point_y = bin_values[i] * sin(current_azimuth);
 
-        auto vec = Navigation_mode_point_cloud_publisher::floats_to_uint8_t_vector(point_x, point_y, 0, intensity_values[i]);
+        auto vec = floats_to_uint8_t_vector(point_x, point_y, 0, intensity_values[i]);
         data_vector.insert(data_vector.end(), vec.begin(), vec.end());
     }
     message.data = std::move(data_vector);
@@ -117,7 +120,8 @@ void Navigation_mode_point_cloud_publisher::publish_point_cloud(const Navtech::N
     point_cloud_publisher->publish(message);
 }
 
-std::vector<uint8_t> Navigation_mode_point_cloud_publisher::floats_to_uint8_t_vector(float x, float y, float z, float intensity) {
+std::vector<uint8_t> Navigation_mode_point_cloud_publisher::floats_to_uint8_t_vector(float x, float y, float z, float intensity)
+{
     uint8_t* chars_x = reinterpret_cast<uint8_t*>(&x);
     uint8_t* chars_y = reinterpret_cast<uint8_t*>(&y);
     uint8_t* chars_z = reinterpret_cast<uint8_t*>(&z);
@@ -128,8 +132,9 @@ std::vector<uint8_t> Navigation_mode_point_cloud_publisher::floats_to_uint8_t_ve
         chars_intensity[0], chars_intensity[1], chars_intensity[2], chars_intensity[3]};
 }
 
-void Navigation_mode_point_cloud_publisher::update_navigation_config() {
-    RCLCPP_INFO(Node::get_logger(), "Updating navigation config on radar");
+void Navigation_mode_point_cloud_publisher::update_navigation_config()
+{
+    RCLCPP_INFO(Node::get_logger(), "Updating navigation config on radar\n");
     auto navigation_config = Navtech::Navigation_config();
     navigation_config.bins_to_operate_on = bins_to_operate_on;
     navigation_config.min_bin = min_bin;
@@ -138,7 +143,23 @@ void Navigation_mode_point_cloud_publisher::update_navigation_config() {
     radar_client->set_navigation_configuration(navigation_config);
 }
 
-void Navigation_mode_point_cloud_publisher::navigation_config_data_handler(const Navtech::Navigation_config::Pointer& data) {
+void Navigation_mode_point_cloud_publisher::update_local_navigation_config()
+{
+    RCLCPP_INFO(Node::get_logger(), "Updating local navigation config\n");
+    peak_finder->configure(
+        config_data,
+        protobuf_config_data,
+        power_threshold,
+        bins_to_operate_on,
+        min_bin,
+        Navtech::BufferModes::off,
+        10,
+        max_peaks_per_azimuth
+    );
+}
+
+void Navigation_mode_point_cloud_publisher::navigation_config_data_handler(const Navtech::Navigation_config::Pointer& data)
+{
     RCLCPP_INFO(Node::get_logger(), "Received navigation config from radar");
     RCLCPP_INFO(Node::get_logger(), "Bins to operate on: %i", data->bins_to_operate_on);
     RCLCPP_INFO(Node::get_logger(), "Min bin: %i", data->min_bin);
@@ -146,8 +167,30 @@ void Navigation_mode_point_cloud_publisher::navigation_config_data_handler(const
     RCLCPP_INFO(Node::get_logger(), "Max peaks per azimuth: %i", data->max_peaks_per_azimuth);
 }
 
-void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtech::Navigation_data::Pointer& data) {
+void Navigation_mode_point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data)
+{
+    peak_finder->fft_data_handler(data);
+}
 
+void Navigation_mode_point_cloud_publisher::target_data_handler(const Navtech::Azimuth_target& target_data)
+{
+
+    auto data = std::make_shared<Navtech::Navigation_data>();
+
+    data->angle = target_data.angle;
+    data->azimuth = target_data.azimuth;
+    data->ntp_seconds = target_data.ntp_seconds;
+    data->ntp_split_seconds = target_data.ntp_split_seconds;
+
+    for (unsigned t = 0; t < target_data.targets.size(); t++) {
+        data->peaks.emplace_back(target_data.targets[t].range, (std::uint16_t)(target_data.targets[t].power * 10.0));
+    }
+
+    navigation_data_handler(data);
+}
+
+void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtech::Navigation_data::Pointer& data)
+{
     int azimuth_index = static_cast<int>(data->angle / (360.0 / azimuth_samples));
 
     // To adjust radar start azimuth, for sake of visualisation
@@ -162,12 +205,12 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
 
         for (unsigned peak_index = 0; peak_index < data->peaks.size(); peak_index++) {
             float target_range = std::get<float>(data->peaks[peak_index]);
-            int bin_index = (int)(target_range / bin_size);
-            uint16_t target_power = std::get<uint16_t>(data->peaks[peak_index]);
+            int bin_index = static_cast<int>(target_range / bin_size);
+            float target_power = (std::get<uint16_t>(data->peaks[peak_index]) / 10.0);
             if ((bin_index >= start_bin) && (bin_index < end_bin)) {
-                    azimuth_values.push_back(adjusted_azimuth_index);
-                    bin_values.push_back(bin_index);
-                    intensity_values.push_back(target_power);
+                azimuth_values.push_back(adjusted_azimuth_index);
+                bin_values.push_back(bin_index);
+                intensity_values.push_back(target_power);
             }
         }
     }
@@ -175,13 +218,22 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
     if (data->azimuth < last_azimuth) {
         rotation_count++;
         rotated_once = true;
-        Navigation_mode_point_cloud_publisher::publish_point_cloud(data);
+        publish_point_cloud(data);
         bin_values.clear();
         azimuth_values.clear();
         intensity_values.clear();
     }
     last_azimuth = data->azimuth;
 
+    check_config_publish();
+
+    if (!rotated_once) {
+        return;
+    }
+}
+
+void Navigation_mode_point_cloud_publisher::check_config_publish()
+{
     if (rotation_count >= config_publish_count) {
 
         int temp_azimuth_offset = get_parameter("azimuth_offset").as_int();
@@ -266,10 +318,10 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
         if (get_parameter("power_threshold").as_double() != power_threshold)
         {
             double temp_power_threshold = get_parameter("power_threshold").as_double();
-            if (temp_power_threshold < 0 || temp_power_threshold > std::numeric_limits<uint8_t>::max() * 10) {
-                RCLCPP_INFO(Node::get_logger(), "Power threshold of %f is invalid, must be between 0 and %i", temp_power_threshold, std::numeric_limits<uint8_t>::max() * 10);
-                RCLCPP_INFO(Node::get_logger(), "Setting power threshold to %i", std::numeric_limits<uint8_t>::max() * 10 / 2);
-                set_parameter(rclcpp::Parameter("power_threshold", std::numeric_limits<uint8_t>::max() * 10 / 2));
+            if (temp_power_threshold < 0 || temp_power_threshold > std::numeric_limits<uint8_t>::max()) {
+                RCLCPP_INFO(Node::get_logger(), "Power threshold of %f is invalid, must be between 0 and %f", temp_power_threshold, static_cast<double>(std::numeric_limits<uint8_t>::max()));
+                RCLCPP_INFO(Node::get_logger(), "Setting power threshold to %f", static_cast<double>(std::numeric_limits<uint8_t>::max() / 4));
+                set_parameter(rclcpp::Parameter("power_threshold", static_cast<double>(std::numeric_limits<uint8_t>::max() / 4)));
             }
             else {
                 power_threshold = temp_power_threshold;
@@ -294,17 +346,20 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
         rotation_count = 0;
 
         if (update_radar_navigation_config) {
-            Navigation_mode_point_cloud_publisher::update_navigation_config();
-            radar_client->request_navigation_configuration();
-        }
-    }
 
-    if (!rotated_once) {
-        return;
+            if (process_locally) {
+                update_local_navigation_config();
+            }
+            else {
+                update_navigation_config();
+                radar_client->request_navigation_configuration();
+            }
+        }
     }
 }
 
-void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Navtech::Configuration_data::Pointer& data) {
+void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Navtech::Configuration_data::Pointer& data, const Navtech::Configuration_data::ProtobufPointer& protobuf_data)
+{
     RCLCPP_INFO(Node::get_logger(), "Configuration Data Received");
     RCLCPP_INFO(Node::get_logger(), "Azimuth Samples: %i", data->azimuth_samples);
     RCLCPP_INFO(Node::get_logger(), "Encoder Size: %i", data->encoder_size);
@@ -330,8 +385,19 @@ void Navigation_mode_point_cloud_publisher::configuration_data_handler(const Nav
     RCLCPP_INFO(Node::get_logger(), "Start bin: %i", start_bin);
     RCLCPP_INFO(Node::get_logger(), "End bin: %i", end_bin);
     RCLCPP_INFO(Node::get_logger(), "Azimuth offset: %i", azimuth_offset);
+    RCLCPP_INFO(Node::get_logger(), "Processing locally: %s", process_locally ? "true" : "false");
 
-    Navigation_mode_point_cloud_publisher::update_navigation_config();
+    config_data = data;
+    protobuf_config_data = protobuf_data;
+    if (process_locally) {
 
-    radar_client->start_navigation_data();
+        RCLCPP_INFO(Node::get_logger(), "Processing navigation data locally");
+        update_local_navigation_config();
+        radar_client->start_non_contour_fft_data(); // peak_finding does not currently work with contoured data
+    }
+    else {
+        RCLCPP_INFO(Node::get_logger(), "Processing navigation data on radar");
+        update_navigation_config();
+        radar_client->start_navigation_data();
+    }
 }
