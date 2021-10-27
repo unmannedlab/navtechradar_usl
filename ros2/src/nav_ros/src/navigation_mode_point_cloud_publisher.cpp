@@ -183,8 +183,7 @@ void Navigation_mode_point_cloud_publisher::target_data_handler(const Navtech::A
     data->ntp_split_seconds = target_data.ntp_split_seconds;
 
     for (unsigned t = 0; t < target_data.targets.size(); t++) {
-        std::tuple<float, std::uint16_t> peak(target_data.targets[t].range, (std::uint16_t)(target_data.targets[t].power * 10.0));
-        data->peaks.emplace_back(peak);
+        data->peaks.emplace_back(target_data.targets[t].range, (std::uint16_t)(target_data.targets[t].power * 10.0));
     }
 
     navigation_data_handler(data);
