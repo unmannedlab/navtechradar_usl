@@ -208,9 +208,9 @@ void Navigation_mode_point_cloud_publisher::navigation_data_handler(const Navtec
             int bin_index = static_cast<int>(target_range / bin_size);
             float target_power = (std::get<uint16_t>(data->peaks[peak_index]) / 10.0);
             if ((bin_index >= start_bin) && (bin_index < end_bin)) {
-                azimuth_values.emplace_back(adjusted_azimuth_index);
-                bin_values.emplace_back(bin_index);
-                intensity_values.emplace_back(target_power);
+                azimuth_values.push_back(adjusted_azimuth_index);
+                bin_values.push_back(bin_index);
+                intensity_values.push_back(target_power);
             }
         }
     }
