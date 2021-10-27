@@ -21,11 +21,6 @@ public:
     void configuration_data_handler(const Navtech::Configuration_data::Pointer& data, const Navtech::Configuration_data::ProtobufPointer& protobuf_data);
     void navigation_data_handler(const Navtech::Navigation_data::Pointer& data);
     void navigation_config_data_handler(const Navtech::Navigation_config::Pointer& data);
-    void publish_point_cloud(const Navtech::Navigation_data::Pointer& data);
-    std::vector<uint8_t> floats_to_uint8_t_vector(float x, float y, float z, float intensity);
-    void update_navigation_config();
-    void update_local_navigation_config();
-    void check_config_publish();
 
 private:
     constexpr static int radar_configuration_queue_size{ 1 };
@@ -57,6 +52,12 @@ private:
     bool rotated_once{ false };
     int rotation_count{ 0 };
     int config_publish_count{ 4 };
+
+    void publish_point_cloud(const Navtech::Navigation_data::Pointer& data);
+    std::vector<uint8_t> floats_to_uint8_t_vector(float x, float y, float z, float intensity);
+    void update_navigation_config();
+    void update_local_navigation_config();
+    void check_config_publish();
 
     messages::msg::RadarConfigurationMessage config_message = messages::msg::RadarConfigurationMessage{};
 
