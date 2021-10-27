@@ -10,11 +10,37 @@ class Navigation_mode_point_cloud_publisher : public ::rclcpp::Node
 public:
     Navigation_mode_point_cloud_publisher();
 
-    std::shared_ptr<Navtech::Radar_client> radar_client{};
-    std::shared_ptr<Navtech::Peak_finder> peak_finder{};
+    void set_peak_finder(std::shared_ptr<Navtech::Peak_finder> peak) {
+        peak_finder = peak;
+    }
 
-    std::string radar_ip{ "" };
-    uint16_t radar_port{ 0 };
+    std::shared_ptr<Navtech::Peak_finder> get_peak_finder() {
+        return peak_finder;
+    }
+
+    void set_radar_client(std::shared_ptr<Navtech::Radar_client> client) {
+        radar_client = client;
+    }
+
+    std::shared_ptr<Navtech::Radar_client> get_radar_client() {
+        return radar_client;
+    }
+
+    void set_radar_ip(std::string ip) {
+        radar_ip = ip;
+    }
+
+    std::string get_radar_ip() {
+        return radar_ip;
+    }
+
+    void get_radar_port(uint16_t port) {
+        radar_port = port;
+    }
+
+    uint16_t get_radar_port() {
+        return radar_port;
+    }
 
     void fft_data_handler(const Navtech::Fft_data::Pointer& data);
     void target_data_handler(const Navtech::Azimuth_target& target_data);
@@ -25,6 +51,12 @@ public:
 private:
     constexpr static int radar_configuration_queue_size{ 1 };
     constexpr static int radar_point_cloud_queue_size{ 4 };
+
+    std::shared_ptr<Navtech::Radar_client> radar_client{};
+    std::shared_ptr<Navtech::Peak_finder> peak_finder{};
+
+    std::string radar_ip{ "" };
+    uint16_t radar_port{ 0 };
 
     uint16_t start_azimuth{ 0 };
     uint16_t end_azimuth{ 0 };

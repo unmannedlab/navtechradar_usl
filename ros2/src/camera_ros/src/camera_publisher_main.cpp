@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 
     RCLCPP_INFO(node->get_logger(), "Starting camera publisher");
 
-    cv::VideoCapture capture{node->camera_url};
+    cv::VideoCapture capture{ node->get_camera_url()};
 
     if (!capture.isOpened()) {
         RCLCPP_INFO(node->get_logger(), "Unable to connect to camera");
