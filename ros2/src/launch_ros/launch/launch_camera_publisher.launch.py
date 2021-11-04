@@ -18,7 +18,7 @@ def generate_launch_description():
 
     Node(
         package="rviz2",
-        arguments=["-d../../rviz/camera_view.rviz"],
+        arguments=["-d../../rviz_views/camera_view.rviz"],
         executable="rviz2"
     )
   ])

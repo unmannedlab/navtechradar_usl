@@ -120,7 +120,7 @@ void Laser_scan_subscriber_to_video::laser_scan_callback(const sensor_msgs::msg:
     }
 
     cv::Mat recovered_lin_polar_img{};
-    cv::Point2f center{ (float)laser_scan_image.cols / 2, (float)laser_scan_image.rows / 2 };
+    cv::Point2f center{ static_cast<float>(laser_scan_image.cols / 2), static_cast<float>(laser_scan_image.rows / 2) };
     double max_radius{ std::min(center.y, center.x )};
     linearPolar(laser_scan_image, recovered_lin_polar_img, center, max_radius, cv::INTER_LINEAR + cv::WARP_FILL_OUTLIERS + cv::WARP_INVERSE_MAP);
     cv::Mat normalised_image{ cv::Size(azimuth_samples, azimuth_samples), CV_8UC1, cv::Scalar{0, 0} };

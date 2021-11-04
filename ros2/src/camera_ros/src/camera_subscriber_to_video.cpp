@@ -58,6 +58,6 @@ void Camera_subscriber_to_video::camera_image_callback(const sensor_msgs::msg::I
         return;
     }
 
-    cv::Mat camera_image = cv::Mat{ (int)data->height, (int)data->width, CV_8UC3, data->data.data() }.clone();
+    cv::Mat camera_image = cv::Mat{ static_cast<int>(data->height), static_cast<int>(data->width), CV_8UC3, data->data.data() }.clone();
     video_writer.write(camera_image);
 }

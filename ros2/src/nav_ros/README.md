@@ -126,10 +126,6 @@ Contains a basic example of *subscribing to radar topics*, and *saving* the publ
 
 This executable currently has no configurable settings
 
-### colossus_test_tool
-
-Contains a basic example of *connecting to a Navtech Radar*, and *testing* teh radar connection, and checking for any packet loss.
-
 #### configuration options
 
 The following *configuration options* are included in the .yaml settings file in the config folder. These settings can be changed by *modifying* the values in the .yaml file, prior to launching the executable.
@@ -250,6 +246,7 @@ The following options are shown for each of the settings:
 | :------------- | :-------: | :----------------------: | :---------------------------: |--------------------------------------------: |
 | radar_ip       | string    | <radar_ip_address>       | The IP address of the radar you are connecting to| N/A |
 | radar_port     | string    | <radar_port>             | The port number of the radar you are connecting to| N/A |
+| process_locally| bool      | <process_locally>        | false to process navigation data on the radar, true to process locally| N/A |
 
 ### point_cloud_publisher
 

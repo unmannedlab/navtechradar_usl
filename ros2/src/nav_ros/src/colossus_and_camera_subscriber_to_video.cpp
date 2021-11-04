@@ -130,9 +130,9 @@ void Colossus_and_camera_subscriber_to_video::fft_data_callback(const messages::
         RCLCPP_INFO(Node::get_logger(), "Failed to get value for: Data Length");
     }
 
-    node->current_bearing = ((double)node->azimuth / (double)node->encoder_size) * (double)node->azimuth_samples;
+    node->current_bearing = (static_cast<double>(node->azimuth) / static_cast<double>(node->encoder_size)) * static_cast<double>(node->azimuth_samples);
 
-    int max_index = std::min((int)node->data_length, (int)node->azimuth_samples);
+    int max_index = std::min(static_cast<int>(node->data_length), static_cast<int>(node->azimuth_samples));
     int matrix_max_index = radar_image.rows * radar_image.cols * radar_image.channels();
     for (int i{ 0 }; i < max_index; i++) {
         int index = i * 1 + node->current_bearing * radar_image.step + 1;
@@ -143,7 +143,7 @@ void Colossus_and_camera_subscriber_to_video::fft_data_callback(const messages::
 
     if (node->azimuth < node->last_azimuth) {
         cv::Mat recovered_lin_polar_img;
-        cv::Point2f center{ (float)radar_image.cols / 2, (float)radar_image.rows / 2 };
+        cv::Point2f center{ static_cast<float>(radar_image.cols / 2), static_cast<float>(radar_image.rows / 2) };
         double max_radius = std::min(center.y, center.x);
         linearPolar(radar_image, recovered_lin_polar_img, center, max_radius, cv::INTER_LINEAR + cv::WARP_FILL_OUTLIERS + cv::WARP_INVERSE_MAP);
         cv::Mat normalised_image(cv::Size{ azimuth_samples, azimuth_samples }, CV_8UC1, cv::Scalar{ 0, 0 });
@@ -181,6 +181,6 @@ void Colossus_and_camera_subscriber_to_video::camera_image_callback(const sensor
         return;
     }
 
-    cv::Mat camera_image = cv::Mat{ (int)data->height, (int)data->width, CV_8UC3, data->data.data() }.clone();
+    cv::Mat camera_image = cv::Mat{ static_cast<int>(data->height), static_cast<int>(data->width), CV_8UC3, data->data.data() }.clone();
     node->video_writer_camera.write(camera_image);
 }
