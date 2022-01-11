@@ -268,10 +268,24 @@ colcon build
 . install/setup.bash
 ```
 
-**Note - The following commands must be run in each new terminal opened, or add to bashrc**
+## Common errors and solutions
+
+# Ros executables cannot be found after build and execution attempt
+
+Run the following to source the newly build executables
 
 ```bash
 source /opt/ros/galactic/setup.bash
 
 . install/setup.bash
 ```
+
+# Unable to launch RVIZ due to missing library (libQt5Core.so.5)
+
+Run the following to source the newly build executables
+
+```bash
+rviz2: error while loading shared libraries: libQt5Core.so.5: cannot open shared object file: No such file or directory
+```
+
+In short - the above command removes a piece of code which is looking for something (renameat2 system call) that does not exist in kernels < 3.15

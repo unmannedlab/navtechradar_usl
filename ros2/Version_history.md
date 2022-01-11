@@ -27,7 +27,8 @@ Please see lower level README.md files, for further information regarding usage 
 | Version Number           | Release Date          | Change(s)                                                                         |
 | :----------------------- | :-------------------: | :-------------------------------------------------------------------------------: |
 | 1.0.0                    | 26/10/2021            | Initial release                                                                   |
-| 1.1.0                    | 27/10/2021            | Added ability to run *navigation mode point cloud publisher* with onboard or local processing                        |
+| 1.1.0                    | 27/10/2021            | Added ability to run *navigation mode point cloud publisher* with onboard or local processing|
+| 1.1.1                    | 11/01/2022            | Fixed issue where laser_scan_publisher and point_cloud_publisher would only use a maximumum end bin of 400|
 
 ## rviz_views
 
