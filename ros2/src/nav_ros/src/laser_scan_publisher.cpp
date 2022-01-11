@@ -167,7 +167,7 @@ void Laser_scan_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& da
             set_parameter(rclcpp::Parameter("end_bin", range_in_bins));
         }
         else {
-            end_bin = temp_end_azimuth;
+            end_bin = temp_end_bin;
         }
 
         int temp_power_threshold = get_parameter("power_threshold").as_int();
