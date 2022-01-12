@@ -74,15 +74,11 @@ void Laser_scan_publisher::publish_laser_scan(const Navtech::Fft_data::Pointer& 
 
 void Laser_scan_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data)
 {
-    auto itr = find_if(
-        data->data.begin(),
-        data->data.end(),
-        [this](const auto& value) { return value > power_threshold; }
-    );
-
-    auto first_peak_bin_index = distance(data->data.begin(), itr);
-    if (itr == data->data.end()) {
-        first_peak_bin_index = std::distance(data->data.begin(), itr - 1);
+    unsigned first_peak_bin_index;
+    for (first_peak_bin_index = 0; first_peak_bin_index < std::min((unsigned int)data->data.size(), (unsigned int)end_bin); first_peak_bin_index++) {
+                if (data->data[first_peak_bin_index] > power_threshold) {
+                    break;
+                }
     }
     float range = bin_size * first_peak_bin_index;
     float intensity = data->data[first_peak_bin_index];
@@ -97,14 +93,8 @@ void Laser_scan_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& da
     }
 
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
-        if ((first_peak_bin_index >= start_bin) && (first_peak_bin_index < end_bin)) {
-            range_values[adjusted_azimuth_index] = range;
-            intensity_values[adjusted_azimuth_index] = intensity;
-        }
-        else {
-            range_values[adjusted_azimuth_index] = 0;
-            intensity_values[adjusted_azimuth_index] = 0;
-        }
+        range_values[adjusted_azimuth_index] = range;
+        intensity_values[adjusted_azimuth_index] = intensity;
     }
     else{
         range_values[adjusted_azimuth_index] = 0;
@@ -167,7 +157,7 @@ void Laser_scan_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& da
             set_parameter(rclcpp::Parameter("end_bin", range_in_bins));
         }
         else {
-            end_bin = temp_end_azimuth;
+            end_bin = temp_end_bin;
         }
 
         int temp_power_threshold = get_parameter("power_threshold").as_int();
@@ -201,6 +191,7 @@ void Laser_scan_publisher::configuration_data_handler(const Navtech::Configurati
 
     azimuth_samples = data->azimuth_samples;
     bin_size = data->bin_size;
+    end_bin = data->range_in_bins;
     range_in_bins = data->range_in_bins;
     expected_rotation_rate = data->expected_rotation_rate;
     config_message.azimuth_samples = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->azimuth_samples));
