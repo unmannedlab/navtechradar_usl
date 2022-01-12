@@ -239,6 +239,7 @@ void Point_cloud_publisher::configuration_data_handler(const Navtech::Configurat
 
     azimuth_samples = data->azimuth_samples;
     bin_size = data->bin_size;
+    end_bin = data->range_in_bins;
     range_in_bins = data->range_in_bins;
     expected_rotation_rate = data->expected_rotation_rate;
     config_message.azimuth_samples = Navtech::Utility::to_vector(Navtech::Utility::to_uint16_network(data->azimuth_samples));
