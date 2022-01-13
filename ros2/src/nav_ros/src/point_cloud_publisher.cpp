@@ -135,7 +135,7 @@ void Point_cloud_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& d
     }
 
     if ((azimuth_index >= start_azimuth) && (azimuth_index < end_azimuth)) {
-        for (unsigned bin_index = 0; bin_index < data->data.size(); bin_index++) {
+        for (unsigned bin_index = start_bin; bin_index < data->data.size(); bin_index++) {
             if ((bin_index >= start_bin) && (bin_index < end_bin)) {
                 if (data->data[bin_index] > power_threshold) {
                     azimuth_values.push_back(adjusted_azimuth_index);
