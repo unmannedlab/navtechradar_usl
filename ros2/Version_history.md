@@ -30,6 +30,7 @@ Please see lower level README.md files, for further information regarding usage 
 | 1.1.0                    | 27/10/2021            | Added ability to run *navigation mode point cloud publisher* with onboard or local processing|
 | 1.1.1                    | 11/01/2022            | Fixed issue where laser_scan_publisher and point_cloud_publisher would only use a maximumum end bin of 400|
 | 1.1.2                    | 12/01/2022            | Set default for end_bin to max bins from radar, improved laser_scan_publisher efficiency|
+| 1.1.3                    | 13/01/2022            | Changed laser_scan_publisher and point_cloud_publisher to ignore bins before start_bin when thresholding|
 
 ## rviz_views
 

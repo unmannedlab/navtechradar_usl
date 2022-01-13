@@ -75,7 +75,7 @@ void Laser_scan_publisher::publish_laser_scan(const Navtech::Fft_data::Pointer& 
 void Laser_scan_publisher::fft_data_handler(const Navtech::Fft_data::Pointer& data)
 {
     unsigned first_peak_bin_index;
-    for (first_peak_bin_index = 0; first_peak_bin_index < std::min((unsigned int)data->data.size(), (unsigned int)end_bin); first_peak_bin_index++) {
+    for (first_peak_bin_index = start_bin; first_peak_bin_index < std::min((unsigned int)data->data.size(), (unsigned int)end_bin); first_peak_bin_index++) {
                 if (data->data[first_peak_bin_index] > power_threshold) {
                     break;
                 }
