@@ -202,9 +202,12 @@ print("Stopping FFT data")
 stop_fft_data()
 
 # Plot the single azimuth of FFT data
+if len(power) <= 0:
+    print("No data points to plot")
+    exit()
 plt.figure("One Azimuth of {}Bit FFT Radar Data".format(bit_depth))
 plt.title('{}Bit FFT Radar Data from {}° at '.format(bit_depth,  round(bearing,2)) + timestamp_with_nanoseconds)
-plt.plot(power,linewidth = 0.5)
+plt.plot(power, linewidth = 0.5)
 plt.ylabel('Returned power', fontsize=12)
 plt.xlabel('Reporting bin', fontsize=12)
 plt.tight_layout()

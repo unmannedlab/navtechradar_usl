@@ -23,6 +23,8 @@ awaiting_rise = False
 data = []
 ########################################################################
 
+
+
 ########################################################################
 # The below section contains function definitions
 ########################################################################
@@ -52,23 +54,21 @@ def find_peak_bin (data, start_bin, end_bin, bins_to_operate_upon, threshold):
 
 # Resolve the peak 
 def peak_resolve(data, peak_bin, bins_to_operate_upon):
-    x=[0]*bins_to_operate_on
-    x2=[0]*bins_to_operate_on
-    x3=[0]*bins_to_operate_on
-    x4=[0]*bins_to_operate_on
-    y=[0]*bins_to_operate_on
-    xy=[0]*bins_to_operate_on
-    x2y=[0]*bins_to_operate_on
+    x=[0] * bins_to_operate_on
+    x_2=[0] * bins_to_operate_on
+    x_3=[0] *bins_to_operate_on
+    x_4=[0] * bins_to_operate_on
+    y=[0] * bins_to_operate_on
+    x_y=[0] * bins_to_operate_on
+    x_2_y=[0] * bins_to_operate_on
     bins_to_offset = int((bins_to_operate_upon - 1) / 2 )   
     index = 0    
     start_value = peak_bin - bins_to_offset    
     for index in range (0, bins_to_operate_upon):
         x[index] = start_value + index
-    #print (x)
     start_bin = peak_bin - bins_to_offset 
     for index in range (0, bins_to_operate_upon):
         y[index] = data[start_bin + index]    
-    #print (y)
     s_x =  0.0
     s_x_2 = 0.0
     s_x_3 = 0.0
@@ -111,47 +111,56 @@ def peak_resolve(data, peak_bin, bins_to_operate_upon):
 # The below section contains the main program code
 ########################################################################   
 
-with open(filename, 'r') as read_obj:
-    FFTDataFromFile = reader(read_obj)
-    data = list(map(int,(list(FFTDataFromFile))[0]))
+# Open the file containing the FFT data
+try:
+    with open(filename, 'r') as read_obj:
+        fft_data_from_file = reader(read_obj)
+        data = list(map(int,(list(fft_data_from_file))[0]))
+except:
+    print("Cannot open data file {}".format(filename))
+    exit()
+
 print ("\n######### SETTINGS #########")
-#print ("FFT values:      {}".format(data))
 print ("Bins to operate: {}".format(bins_to_operate_on))
 print ("Threshold:       {}".format(threshold))
 print ("Range resolut'n: {}".format(range_resolution_metres))
 print ("Range gain:      {}".format(range_gain))
 print ("Range offset:    {}".format(range_offset))
 print ("Max peaks:       {}".format(max_peaks_per_azimuth))
-end_bin=len(data)
+
+end_bin = len(data)
 max_bins_to_operate_on = end_bin
 minimum_range = bins_to_operate_on * range_resolution_metres
-maximum_range = end_bin* range_resolution_metres
-peaks_found=0
-peak_bin=0
-min_bin_to_operate_on=0
+maximum_range = end_bin * range_resolution_metres
+peaks_found = 0
+peak_bin = 0
+min_bin_to_operate_on = 0
 min_bin_to_operate_upon = start_bin
+
+# Plot the data
+if len(data) <= 0:
+    print("No data points to plot")
+    exit()
 plt.figure("One Azimuth Analysis - Navigation Mode peak detection")
 plt.title("Analysis of one Azimuth of FFT Radar data - 'Navigation Mode' peak detection\nPeakBin marked in Orange, ResolvedPeak marked in green")
-plt.plot(data, ".", markersize=5,color='b')
-plt.hlines(threshold,start_bin,len(data),color='red')
+plt.plot(data, ".", markersize=5, color='b')
+plt.hlines(threshold, start_bin, len(data), color='red')
 while ((peak_bin != end_bin) and (peaks_found < max_peaks_per_azimuth)):
-    peak_bin=find_peak_bin(data,min_bin_to_operate_upon,end_bin,bins_to_operate_on,threshold)
+    peak_bin = find_peak_bin(data, min_bin_to_operate_upon, end_bin, bins_to_operate_on, threshold)
     min_bin_to_operate_upon = peak_bin + bins_to_operate_on
-    print ("\n####### PEAK FOUND #########")
-    print ("Peak bin found:  {}".format(peak_bin))
     if (peak_bin < end_bin):
-        plt.plot(peak_bin,data[peak_bin],".-.",color='orange',markersize=12)
-        resolvedBin= peak_resolve(data, peak_bin, bins_to_operate_on)
-        print ("resolved bin at: {:.3f}".format(resolvedBin))
-        resolvedRange = (resolvedBin *range_gain * range_resolution_metres) + range_offset
-        print ("Resolved range:  {:.3f}m".format(resolvedRange))
-        if ((resolvedRange < minimum_range) or (resolvedRange > maximum_range)):
-            print ("implausible resolved range")
+        print ("\n####### PEAK FOUND #########")
+        print ("Peak bin found:  {}".format(peak_bin))
+        plt.plot(peak_bin, data[peak_bin],".-.", color='orange', markersize=12)
+        resolved_bin = peak_resolve(data, peak_bin, bins_to_operate_on)
+        print ("resolved bin at: {:.3f}".format(resolved_bin))
+        resolved_range = (resolved_bin * range_gain * range_resolution_metres) + range_offset
+        print ("Resolved range:  {:.3f}m".format(resolved_range))
+        if ((resolved_range < minimum_range) or (resolved_range > maximum_range)):
+            print ("Implausible resolved range")
             continue
-        peaks_found+=1
-        plt.vlines(resolvedBin,min(data),max(data),color='green')
-    else:
-        print("Peak Bin >= end bin: ignore")
+        peaks_found += 1
+        plt.vlines(resolved_bin, min(data), max(data), color='green')
 print ("\n############################")
 plt.ylabel('Returned power', fontsize=12)
 plt.xlabel('Reporting bin', fontsize=12)

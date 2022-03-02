@@ -1,5 +1,3 @@
-from posixpath import split
-from tracemalloc import stop
 import matplotlib.cm as cm       # colourmap
 import matplotlib.pyplot as plt
 import socket
@@ -159,6 +157,8 @@ def handle_received_message():
     global first_message
     global rotation_speed
     global message_type
+    global range_resolution
+
     # read header
     try:
         data = radar_socket.recv(signature_length)
@@ -226,13 +226,14 @@ def handle_received_message():
                     peak_power = int.from_bytes(nav_data[4+byte_offset:6+byte_offset],byteorder='big')
                     peak_range_metres = peak_range/1000000
                     peak_power_db = peak_power/10
-                    if (peak_range_metres<=max_range_of_interest)and(peak_range_metres>=3):
+                    if (peak_range_metres<=max_range_of_interest)and(peak_range_metres>=min_bins*range_resolution/10000):
+    
                         range_list.append(peak_range_metres)
                         bearing_list.append((bearing/360)*2 * np.pi)
                         power_list.append(peak_power_db) 
-                if firstmessage == True:
+                if first_message == True:
                     first_timestamp_seconds_and_fractional_seconds = timestamp_seconds_and_fractional_seconds
-                    firstmessage = False
+                    first_message = False
                 nav_message_count += 1                       
             except:
                 print("Error reading nav message")
@@ -259,7 +260,7 @@ timestamp=datetime.datetime.now()
 file_path=(timestamp.strftime('radardata/%y/%m/%d/'))	# the folder path that contains the log file
 if (not os.path.exists(file_path)):	# if the folder isn't there
 	os.makedirs (file_path)			# ... then create it
-file_name=(file_path+(timestamp.strftime('navigationmodedata_%h-%m-%s.csv'))) # filename is made up of fixed string and day-number in month 
+file_name=(file_path+(timestamp.strftime('navigationmodedata_%H-%M-%S.csv'))) # filename is made up of fixed string and day-number in month 
 
 # Try (for 5 seconds) to get a configuration message from the radar
 print("Reading configuration message from radar")
@@ -292,9 +293,10 @@ while (timestamp_seconds_and_fractional_seconds - first_timestamp_seconds_and_fr
     handle_received_message()
 stop_nav_data()                   # instruct the radar to stop sending navigation mode data
 
-target = open(file_name,'w')		# ...then open it for writing ...
+# Save peaks data to file
+target = open(file_name,'w')
 target.write("date,{}\n".format(timestamp.strftime('%y/%m/%d')))
-target.write("time,{}\n".format(timestamp.strftime('%h:%m:%s')))
+target.write("time,{}\n".format(timestamp.strftime('%H:%M:%S')))
 target.write("threshold,{}\n".format(nav_threshold))
 target.write("binstooperateon,{}\n".format(bins))
 target.write("minbin,{}\n".format(min_bins))
@@ -303,9 +305,12 @@ target.write("notes\n")
 target.write("range(m),bearing(rad),power\n")
 for i in range (len(power_list)):
     target.write("{},{},{}\n".format(range_list[i],bearing_list[i],power_list[i]))
-target.close
+target.close()
 
 print ("Peaks indentified: {}".format(len(power_list)))
+if len(power_list) <= 0:
+    print("No data points to plot")
+    exit()
 fig = plt.figure("One rotation of navigation mode data")
 fig.set_size_inches(9.,10.)
 ax = fig.add_subplot(projection='polar')
@@ -315,6 +320,6 @@ ax.set_title('Navigation mode data. binstooperateon={}, minbin={}, threshold={},
 ax.set_theta_direction(-1)
 ax.set_theta_offset(np.pi / 2.0)
 plt.tight_layout()
-plt.savefig(file_path + (timestamp.strftime('navigationmodedata_%h-%m-%s.pdf')), dpi=2000)
+plt.savefig(file_path + (timestamp.strftime('navigationmodedata_%H-%M-%S.pdf')), dpi=2000)
 plt.show()
 ########################################################################
