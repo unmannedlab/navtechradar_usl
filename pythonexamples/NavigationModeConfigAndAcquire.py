@@ -16,7 +16,7 @@ import os
 ########################################################################
 # The below settings need to be changed to match your setup
 ########################################################################
-tcp_ip = '192.168.0.1'   # this is to be the source of raw radar data. it can be a real radar or the address where 
+tcp_ip = '10.77.2.211'   # this is to be the source of raw radar data. it can be a real radar or the address where 
                          # the navtech colossusnetrecordplayback tool is running in playback mode
 tcp_port = 6317          # this is the port that the radar is using, this generally will not need to be changed
 ########################################################################
@@ -55,6 +55,7 @@ message_type_length = 1
 payload_length = 4
 header_length = signature_length + version_length + message_type_length + payload_length
 check_signature = b'\x00\x01\x03\x03\x07\x07\x0f\x0f\x1f\x1f\x3f\x3f\x7f\x7f\xfe\xfe'
+check_signature = [x for x in check_signature]
 config_read = False
 version = 0
 message_type = 0
@@ -73,6 +74,7 @@ timestamp_seconds_and_fractional_seconds = 0.0
 first_timestamp_seconds_and_fractional_seconds = 0.0
 first_message = True
 rotation_speed = 4000
+starting_azimuth = 0
 ########################################################################
 
 
@@ -158,48 +160,60 @@ def handle_received_message():
     global rotation_speed
     global message_type
     global range_resolution
+    global starting_azimuth
+    global data
+    global azimuth
 
-    # read header
+    # Read the message header
+    message_type = 999
     try:
-        data = radar_socket.recv(signature_length)
+        data = []
+        while (len(data) < signature_length):
+            data += radar_socket.recv(1)
         if (data == check_signature):
-            data = radar_socket.recv(header_length-signature_length)
+            data = []
+            while (len(data) < header_length - signature_length):
+                data += radar_socket.recv(1)
             version = data[0]
             message_type = data[1]
             payload_size = int.from_bytes(data[2:6], byteorder='big')
     except:
-        print("error reading message header")
+        print("Error reading message header")
 
-     # Read the rest of the message
+    # Read the rest of the message
     if (message_type == 10): # Configuration data from radar
-        data = radar_socket.recv(payload_size)
-        if (len(data) == payload_size):
-            try:
-                azimuth_samples = int.from_bytes(data[0:2], byteorder='big')
-                range_resolution = int.from_bytes(data[2:4], byteorder='big')
-                range_bins = int.from_bytes(data[4:6], byteorder='big')
-                encoder_size = int.from_bytes(data[6:8], byteorder='big')
-                rotation_speed = int.from_bytes(data[8:10], byteorder='big')
-                packet_rate = int.from_bytes(data[10:12], byteorder='big')
-                print("----------Config Message----------\n")
-                print("Azimuth Samples:  {} samples/rotation".format(azimuth_samples))
-                print("Range Resolution: {} mm/bin".format(range_resolution/10))
-                print("Range:            {} bins".format(range_bins))
-                print("Encoder Size:     {} counts/rotation".format(encoder_size))
-                print("Rotation Speed:   {} mHz".format(rotation_speed))
-                print("Packet Rate:      {} azimuths/second".format(packet_rate))
-                config_read = True
-                print("")
-            except:
-                print("Error reading config message")
+        try:
+            data = []
+            while (len(data) < payload_size):
+                data += radar_socket.recv(1)
+            if (len(data) == payload_size):
+                    azimuth_samples = int.from_bytes(data[0:2], byteorder='big')
+                    range_resolution = int.from_bytes(data[2:4], byteorder='big')
+                    range_bins = int.from_bytes(data[4:6], byteorder='big')
+                    encoder_size = int.from_bytes(data[6:8], byteorder='big')
+                    rotation_speed = int.from_bytes(data[8:10], byteorder='big')
+                    packet_rate = int.from_bytes(data[10:12], byteorder='big')
+                    print("----------Config Message----------\n")
+                    print("Azimuth Samples:  {} samples/rotation".format(azimuth_samples))
+                    print("Range Resolution: {} mm/bin".format(range_resolution/10))
+                    print("Range:            {} bins".format(range_bins))
+                    print("Encoder Size:     {} counts/rotation".format(encoder_size))
+                    print("Rotation Speed:   {} mHz".format(rotation_speed))
+                    print("Packet Rate:      {} azimuths/second".format(packet_rate))
+                    config_read = True
+                    print("")
+        except:
+            print("Error reading config message")
 
     if (message_type == 204): # Navigation configuration data from radar
-        data = radar_socket.recv(payload_size)
-        if (len(data) == payload_size):
-            try:
+        try:
+            data = []
+            while (len(data) < payload_size):
+                data += radar_socket.recv(1)
+            if (len(data) == payload_size):
                 bins = int.from_bytes(data[0:2], byteorder='big')
                 min_bin = int.from_bytes(data[2:4], byteorder='big')
-                [threshold] = struct.unpack('>f',(data[4:8]))
+                [threshold] = struct.unpack('>f',(bytearray(data[4:8])))
                 max_peaks = int.from_bytes(data[8:12], byteorder='big')
                 print("-- Get navigation config (message204) --")
                 print("Bins      {}".format(bins))
@@ -208,12 +222,15 @@ def handle_received_message():
                 print("Maxpeaks  {}".format(max_peaks)) 
                 print("") 
                 nav_config_read = True
-            except:
-                print("Error reading navigation configuration message")
+        except:
+            print("Error reading navigation configuration message")
+
     elif (message_type == 123): # navigation data from the radar
-        data = radar_socket.recv(payload_size)  
-        if (len(data) == payload_size):
-            try:
+        try:
+            data = []
+            while (len(data) < payload_size):
+                data += radar_socket.recv(1)
+            if (len(data) == payload_size):
                 azimuth = int.from_bytes(data[0:2], byteorder='big')
                 bearing = 360*(azimuth/encoder_size)
                 seconds = int.from_bytes(data[2:6], byteorder='big')
@@ -232,11 +249,12 @@ def handle_received_message():
                         bearing_list.append((bearing/360)*2 * np.pi)
                         power_list.append(peak_power_db) 
                 if first_message == True:
+                    starting_azimuth = int(azimuth / encoder_size * azimuth_samples)
                     first_timestamp_seconds_and_fractional_seconds = timestamp_seconds_and_fractional_seconds
                     first_message = False
                 nav_message_count += 1                       
-            except:
-                print("Error reading nav message")
+        except:
+            print("Error reading nav message")
     else:
         ("Unhandled message type: {}".format(message_type))
 ######################################################################################
@@ -252,6 +270,7 @@ try:
     print("Connecting to radar at {} on port {}".format(tcp_ip, tcp_port))
     radar_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     radar_socket.connect((tcp_ip, tcp_port))
+    radar_socket.setblocking(1)
 except:
     print("Unable to connect to radar at {} on port {}".format(tcp_ip, tcp_port))
     exit()
@@ -267,7 +286,6 @@ print("Reading configuration message from radar")
 timeout = time.time() + 5
 while config_read == False:
     send_config_request()           # send a request configuration message to the radar
-    time.sleep(1)           # just to be sure!
     handle_received_message()         # read and interpret message response
     if time.time() > timeout:
         print("Unable to read configuration message from radar")
@@ -279,8 +297,7 @@ set_nav_config(bins, min_bins, nav_threshold, max_peaks)   # send the required n
 print("Reading configuration message from radar")
 timeout = time.time() + 5
 while nav_config_read == False:
-    get_nav_config()             # send a request navigationmode configuration message to the radar
-    time.sleep(1)              # just to be sure!
+    get_nav_config()             # send a request navigation mode configuration message to the radar
     handle_received_message()            # read and interpret message response
     if time.time() > timeout:
         print("Unable to read configuration message from radar")
@@ -288,9 +305,19 @@ while nav_config_read == False:
 
 start_nav_data()                 # request navigation data messages from the radar
 
-#for raw fft data we know to expect a certain number of messages per rotation (defined by rotation-speed and packet-rate. for navigation mode, the number of messages per rotation cannot be defined (as it is dependent on whether peaks are identified or not). the loop below is set up to execute for messages covering at least the time taken for one rotation of the radar's antenna. 
-while (timestamp_seconds_and_fractional_seconds - first_timestamp_seconds_and_fractional_seconds)<(1000/rotation_speed):
-    handle_received_message()
+# Try to get an entire rotation of navigation data messages from the radar
+print("Reading one rotation of navigation data from radar")
+nav_data_captured = 0
+handle_received_message()             # Read the first nav data
+nav_data_captured += 1
+timeout = time.time() + 5
+while int(azimuth / encoder_size * azimuth_samples) != starting_azimuth or nav_data_captured < azimuth_samples:
+    handle_received_message()             # Read the rest of the nav data to make a complete rotation
+    nav_data_captured += 1
+    if time.time() > timeout:
+        print("Unable to read nav data from radar")
+        exit()
+
 stop_nav_data()                   # instruct the radar to stop sending navigation mode data
 
 # Save peaks data to file
