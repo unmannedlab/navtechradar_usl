@@ -142,7 +142,7 @@ if len(data) <= 0:
     print("No data points to plot")
     exit()
 plt.figure("One Azimuth Analysis - Navigation Mode peak detection")
-plt.title("Analysis of one Azimuth of FFT Radar data - 'Navigation Mode' peak detection\nPeakBin marked in Orange, ResolvedPeak marked in green")
+plt.title("Single Azimuth of FFT Radar Data - 'Navigation Mode' Peak Detection\nPeakBins marked in orange, ResolvedPeaks marked in green")
 plt.plot(data, ".", markersize=5, color='b')
 plt.hlines(threshold, start_bin, len(data), color='red')
 while ((peak_bin != end_bin) and (peaks_found < max_peaks_per_azimuth)):

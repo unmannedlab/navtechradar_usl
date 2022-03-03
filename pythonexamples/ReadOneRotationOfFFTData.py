@@ -8,7 +8,7 @@ import cv2
 ########################################################################
 # Below settings need to be changed to match your setup
 ########################################################################
-tcp_ip = '10.77.2.211'   # This is to be the source of raw radar data. It can be a real radar or the address where 
+tcp_ip = '192.168.0.1'   # This is to be the source of raw radar data. It can be a real radar or the address where 
                          # the Navtech ColossusNetrecordPlayback tool is running in playback mode
 tcp_port = 6317          # This is the port that the radar is using, this generally will not need to be changed
 ########################################################################
@@ -92,6 +92,7 @@ def handle_received_message():
     global starting_azimuth
     global azimuth_samples
     global range_bins
+    global range_resolution
 
     # Read the message header
     message_type = 999
@@ -213,9 +214,9 @@ print("Stopping FFT data")
 stop_fft_data()
 
 # Now show the captured rotation as a b-scan style image
-data_rray = np.interp(data_array, (data_array.min(), data_array.max()), (0, 255))
-data_rray = data_rray.astype(np.uint8)
-bScanPlot = plt.imshow(data_rray)
+data_array = np.interp(data_array, (data_array.min(), data_array.max()), (0, 255))
+data_array = data_array.astype(np.uint8)
+bScanPlot = plt.imshow(data_array)
 plt.title('B-Scan style image of complete rotation of FFT data')
 plt.ylabel('Azimuth', fontsize=12)
 plt.xlabel('Bin', fontsize=12)
@@ -224,10 +225,16 @@ print("Close b-scan plot to see polar plot")
 plt.show()
 
 # Now show the captured rotation as a polar plot style image
-data_array_scaled = cv2.resize(data_rray, ((400,400)), cv2.INTER_AREA)
+data_array_scaled = cv2.resize(data_array, ((800,800)), cv2.INTER_AREA)
 polar_data_array =  cv2.linearPolar(data_array_scaled, (int(data_array_scaled.shape[1] / 2), int(data_array_scaled.shape[0] / 2)), int(data_array_scaled.shape[0] / 2), cv2.WARP_FILL_OUTLIERS + cv2.WARP_INVERSE_MAP)
+polar_data_array = cv2.rotate(polar_data_array, cv2.ROTATE_90_COUNTERCLOCKWISE) # Rotate to make zeroth azimuth point north/up
 polarPlot = plt.imshow(polar_data_array)
 plt.title('Polar plot style image of complete rotation of FFT data')
+plt.ylabel('Range (Metres)', fontsize=12)
+range_metres = range_resolution * range_bins / 10000
+plt.xticks(np.arange(0, data_array_scaled.shape[0], 100), np.arange(-(range_metres), range_metres, range_metres / 4, dtype = int))
+plt.xlabel('Range (Metres)', fontsize=12)
+plt.yticks(np.arange(0, data_array_scaled.shape[0], 100), np.arange(range_metres, -(range_metres), -(range_metres / 4), dtype = int))
 plt.tight_layout()
 print("Close polar plot to exit")
 plt.show()

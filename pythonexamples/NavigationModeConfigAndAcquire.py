@@ -16,7 +16,7 @@ import os
 ########################################################################
 # The below settings need to be changed to match your setup
 ########################################################################
-tcp_ip = '10.77.2.211'   # this is to be the source of raw radar data. it can be a real radar or the address where 
+tcp_ip = '192.168.0.1'   # this is to be the source of raw radar data. it can be a real radar or the address where 
                          # the navtech colossusnetrecordplayback tool is running in playback mode
 tcp_port = 6317          # this is the port that the radar is using, this generally will not need to be changed
 ########################################################################
