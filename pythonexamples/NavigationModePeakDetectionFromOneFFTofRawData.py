@@ -121,9 +121,9 @@ except:
     exit()
 
 print ("\n######### SETTINGS #########")
-print ("Bins to operate: {}".format(bins_to_operate_on))
+print ("Bins to operate on: {}".format(bins_to_operate_on))
 print ("Threshold:       {}".format(threshold))
-print ("Range resolut'n: {}".format(range_resolution_metres))
+print ("Range resolution: {}".format(range_resolution_metres))
 print ("Range gain:      {}".format(range_gain))
 print ("Range offset:    {}".format(range_offset))
 print ("Max peaks:       {}".format(max_peaks_per_azimuth))
