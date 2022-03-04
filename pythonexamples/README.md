@@ -47,6 +47,7 @@ This example demonstrates the communication with a Navtech Radar to define the o
 The navigation mode output from the radar is presented as a polar plot, and the Navigation Mode data (range, bearing, power) values are saved to a CSV file.
 
 The following parameters are defined at the start of the example:
+
 * threshold - Threshold in dB
 * bins_to_operate_on - Radar bins window size to search for peaks in
 * start_bin - Start Bin
@@ -65,6 +66,7 @@ The algorithm will sub-resolve within radar bins and return a power at a distanc
 The algorithm implemented here will slide a window over the FFT data moving forwards by the size of the window, when the FFT has risen and then fallen, the peak resolving algorithm is run to sub-resolve the distance.
 
 The following parameters are defined at the start of the example:
+
 * threshold - Threshold in dB
 * bins_to_operate_on - Radar bins window size to search for peaks in
 * start_bin - Start Bin
