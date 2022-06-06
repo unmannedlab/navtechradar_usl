@@ -86,7 +86,7 @@ def handle_received_message():
     global data
 
     # Read the message header
-    message_type = 999
+    message_type = 0
     try:
         data = []
         while (len(data) < signature_length):
@@ -174,37 +174,43 @@ def handle_received_message():
 # The below section contains the main program code
 ########################################################################
 
-# Try to connect to the radar
+# Try (for 5 seconds) to connect to the radar
 try:
     print("Connecting to radar at {} on port {}".format(tcp_ip, tcp_port))
     radar_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    radar_socket.settimeout(5)
     radar_socket.connect((tcp_ip, tcp_port))
 except:
     print("Unable to connect to radar at {} on port {}".format(tcp_ip, tcp_port))
     exit()
 
 # Try (for 5 seconds) to get a configuration message from the radar
-print("Reading configuration message from radar")
 timeout = time.time() + 5
-while config_read == False:
-    send_config_request()           # send a request configuration message to the radar
-    handle_received_message()       # read and interpret message response
-    if time.time() > timeout:
-        print("Unable to read configuration message from radar")
-        exit()
+radar_socket.settimeout(5)
+try:
+    print("Reading configuration message from radar")
+    while config_read == False and time.time() < timeout:
+        send_config_request()           # send a request configuration message to the radar
+        time.sleep(0.5)
+        handle_received_message()
+except:
+    print("Unable to read configuration message from radar")
+    exit()
 
 # Send a message to the radar to instruct it to start sending FFT data
 print("Starting FFT data")
 start_fft_data()
 
 # Try (for 5 seconds) to get an FFT message from the radar
-print("Reading one azimuth of FFT data from radar")
 timeout = time.time() + 5
-while data_read == False:
-    handle_received_message()             # read and interpret message response
-    if time.time() > timeout:
-        print("Unable to read FFT data from radar")
-        exit()
+radar_socket.settimeout(5)
+try:
+    print("Reading one azimuth of FFT data from radar")
+    while data_read == False and time.time() < timeout:
+        handle_received_message()
+except:
+    print("Unable to read FFT data from radar")
+    exit()
 
 # Send a message to the radar to instruct it to stop sending FFT data
 print("Stopping FFT data")
