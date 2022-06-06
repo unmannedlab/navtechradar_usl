@@ -9,6 +9,7 @@ There are various python modules required in addition to the core modules instal
 * [matplotlib](https://matplotlib.org/)
 * [numpy](https://numpy.org/)
 * [opencv-python](https://pypi.org/project/opencv-python/)
+* [protobuf](https://pypi.org/project/protobuf/)
 
 These can be installed from the command line:
 
@@ -16,11 +17,28 @@ These can be installed from the command line:
 pip install opencv-python
 pip install matplotlib
 pip install numpy
+pip install protobuf
+```
+
+Note - Protobuf version 3.20.0 is required for compatibility reasons. To change your protobuf version to 3.20.0, issue the following command:
+
+```shell 
+pip install 'protobuf=3.20.0' --force-reinstall
 ```
 
 ## Directory Overview
- 
- 
+
+### ReadHealthData.py 
+This example communicates with a Navtech Radar and reads back the first available health status message. An example is provided of printing out the entire health message, and also of accessing a single field from the health message.
+
+The IP address from which the script expects to retrieve raw FFT radar data is configurable, and this example works equally when connected to physical Navtech Radar hardware or to the Navtech Radar command line data playback tool (Colossus).
+
+Note - this script depends on the health message definitions from the following (included) protobuf files:
+health_pb2.py
+healthinfo_pb2.py
+networkinfo_pb2.py
+
+
 ### ReadOneSingleAzimuthOfFFTData.py
 This example communicates with a Navtech Radar and reads back the first available azimuth of raw FFT radar data and presents it as a line chart.
 
@@ -78,7 +96,12 @@ The following parameters are defined at the start of the example:
 ## OneAzimuthFFT.csv
 This file is a comma separated list of integers, which is a single azimuth of raw FFT Radar Data. The example NavigationModePeakDetectionFromOneFFTofRawData.py reads in the data from this file to demonstrate the peak finding function, to remove any dependency on a network connected Radar sensor or a played-back network stream of raw FFT Radar data
  
- 
+### health_pb2.py
+### healthinfo_pb2.py
+### networkinfo_pb2.py
+These files are dependencies for ReadHealthData.py and are used to interpret a protobuf health message from the radar. They have been compiled from a .proto file and should not be edited
+
+
 ## License
 See file `LICENSE.txt` or go to <https://opensource.org/licenses/MIT> for full license details.
 
