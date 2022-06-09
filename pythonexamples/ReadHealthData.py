@@ -6,8 +6,8 @@ import health_pb2
 ########################################################################
 # Below settings need to be changed to match your setup
 ########################################################################
-tcp_ip = '192.168.0.1'   # This is to be the source of raw radar data. It can be a real radar or the address where 
-                         # the Navtech ColossusNetrecordPlayback tool is running in playback mode
+tcp_ip = '192.168.0.1'   # This is to be the source of raw radar data. This will only work with a physical radar 
+                         # as the Navtech ColossusNetrecordPlayback tool does not generate health messages
 tcp_port = 6317          # This is the port that the radar is using, this generally will not need to be changed
 ########################################################################
 

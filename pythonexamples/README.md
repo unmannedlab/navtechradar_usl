@@ -31,7 +31,9 @@ pip install 'protobuf=3.20.0' --force-reinstall
 ### ReadHealthData.py 
 This example communicates with a Navtech Radar and reads back the first available health status message. An example is provided of printing out the entire health message, and also of accessing a single field from the health message.
 
-The IP address from which the script expects to retrieve raw FFT radar data is configurable, and this example works equally when connected to physical Navtech Radar hardware or to the Navtech Radar command line data playback tool (Colossus).
+The IP address from which the script expects to retrieve health data messages is configurable.
+Note - this will not work with the Navtech Radar command line data playback tool (Colossus), as it does not
+generate health messages.
 
 Note - this script depends on the health message definitions from the following (included) protobuf files:
 health_pb2.py
