@@ -165,7 +165,7 @@ def handle_received_message():
     global azimuth
 
     # Read the message header
-    message_type = 999
+    message_type = 0
     try:
         data = []
         while (len(data) < signature_length):
@@ -265,12 +265,12 @@ def handle_received_message():
 # The below section contains the main program code
 ########################################################################
 
-# Try to connect to the radar
+# Try (for 5 seconds) to connect to the radar
 try:
     print("Connecting to radar at {} on port {}".format(tcp_ip, tcp_port))
     radar_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    radar_socket.settimeout(5)
     radar_socket.connect((tcp_ip, tcp_port))
-    radar_socket.setblocking(1)
 except:
     print("Unable to connect to radar at {} on port {}".format(tcp_ip, tcp_port))
     exit()
@@ -282,43 +282,57 @@ if (not os.path.exists(file_path)):	# if the folder isn't there
 file_name=(file_path+(timestamp.strftime('navigationmodedata_%H-%M-%S.csv'))) # filename is made up of fixed string and day-number in month 
 
 # Try (for 5 seconds) to get a configuration message from the radar
-print("Reading configuration message from radar")
 timeout = time.time() + 5
-while config_read == False:
-    send_config_request()           # send a request configuration message to the radar
-    handle_received_message()         # read and interpret message response
-    if time.time() > timeout:
-        print("Unable to read configuration message from radar")
-        exit()
+radar_socket.settimeout(5)
+try:
+    print("Reading configuration message from radar")
+    while config_read == False and time.time() < timeout:
+        send_config_request()           # send a request configuration message to the radar
+        time.sleep(0.5)
+        handle_received_message()
+except:
+    print("Unable to read configuration message from radar")
+    exit()
 
-set_nav_config(bins, min_bins, nav_threshold, max_peaks)   # send the required navigation mode configuration to the radar
+# Send the required navigation mode configuration to the radar
+print("Setting navigation mode config")
+set_nav_config(bins, min_bins, nav_threshold, max_peaks)
 
 # Try (for 5 seconds) to get the current navigation mode settings from the radar
-print("Reading configuration message from radar")
 timeout = time.time() + 5
-while nav_config_read == False:
-    get_nav_config()             # send a request navigation mode configuration message to the radar
-    handle_received_message()            # read and interpret message response
-    if time.time() > timeout:
-        print("Unable to read configuration message from radar")
-        exit()
+radar_socket.settimeout(5)
+try:
+    print("Reading navigation mode configuration message from radar")
+    while config_read == False and time.time() < timeout:
+        get_nav_config()           # send a request navigation configuration message to the radar
+        handle_received_message()
+except:
+    print("Unable to read navigation mode configuration message from radar")
+    exit()
 
-start_nav_data()                 # request navigation data messages from the radar
 
-# Try to get an entire rotation of navigation data messages from the radar
-print("Reading one rotation of navigation data from radar")
-nav_data_captured = 0
-handle_received_message()             # Read the first nav data
-nav_data_captured += 1
-timeout = time.time() + 5
-while int(azimuth / encoder_size * azimuth_samples) != starting_azimuth or nav_data_captured < azimuth_samples:
-    handle_received_message()             # Read the rest of the nav data to make a complete rotation
-    nav_data_captured += 1
-    if time.time() > timeout:
-        print("Unable to read nav data from radar")
-        exit()
+ # Instruct the radar to start sending navigation mode messages
+print("Starting navigation data")
+start_nav_data()
 
-stop_nav_data()                   # instruct the radar to stop sending navigation mode data
+# Try (for 10 seconds) to get an entire rotation of navigation data messages from the radar
+timeout = time.time() + 10
+radar_socket.settimeout(10)
+try:
+    print("Reading one rotation of navigation data from radar")
+    handle_received_message()             # Read the first nav data
+    nav_data_captured = 1
+    timeout = time.time() + 5
+    while (int(azimuth / encoder_size * azimuth_samples) != starting_azimuth or nav_data_captured < azimuth_samples) and time.time() < timeout:
+        handle_received_message()             # Read the rest of the nav data to make a complete rotation
+        nav_data_captured += 1
+except:
+    print("Unable to read nav data from radar")
+    exit()
+
+ # Instruct the radar to stop sending navigation mode messages
+print("Stopping navigation data")
+stop_nav_data()
 
 # Save peaks data to file
 target = open(file_name,'w')
