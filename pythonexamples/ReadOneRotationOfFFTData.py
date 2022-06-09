@@ -98,7 +98,7 @@ def handle_received_message():
     global data
 
     # Read the message header
-    message_type = 999
+    message_type = 0
     try:
         data = []
         while (len(data) < signature_length):
@@ -178,47 +178,51 @@ def handle_received_message():
 # The below section contains the main program code
 ########################################################################
 
-# Try to connect to the radar
+# Try (for 5 seconds) to connect to the radar
 try:
     print("Connecting to radar at {} on port {}".format(tcp_ip, tcp_port))
     radar_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    radar_socket.settimeout(5)
     radar_socket.connect((tcp_ip, tcp_port))
-    radar_socket.setblocking(1)
 except:
     print("Unable to connect to radar at {} on port {}".format(tcp_ip, tcp_port))
     exit()
 
 # Try (for 5 seconds) to get a configuration message from the radar
-print("Reading configuration message from radar")
 timeout = time.time() + 5
-while config_read == False:
-    send_config_request()           # send a request configuration message to the radar
-    handle_received_message()         # read and interpret message response
-    if time.time() > timeout:
-        print("Unable to read configuration message from radar")
-        exit()
+radar_socket.settimeout(5)
+try:
+    print("Reading configuration message from radar")
+    while config_read == False and time.time() < timeout:
+        send_config_request()           # send a request configuration message to the radar
+        time.sleep(0.5)
+        handle_received_message()
+except:
+    print("Unable to read configuration message from radar")
+    exit()
 
 # Send a message to the radar to instruct it to start sending FFT data
 print("Starting FFT data")
 start_fft_data()
 
-# Try to get an entire rotation of FFT data messages from the radar
-print("Reading one rotation of FFT data from radar")
-fft_data_captured = 0
-data_array = np.zeros((azimuth_samples, range_bins, 3))
-handle_received_message()             # Read the first FFT data
-data_array[int(azimuth / encoder_size * azimuth_samples), :len(power), 1] = power
-fft_data_captured += 1
-power.clear()
-timeout = time.time() + 5
-while int(azimuth / encoder_size * azimuth_samples) != starting_azimuth or fft_data_captured < azimuth_samples:
-    handle_received_message()             # Read the rest of the FFT data to make a complete rotation
+# Try (for 10 seconds) to get an entire rotation of FFT data messages from the radar
+timeout = time.time() + 10
+radar_socket.settimeout(10)
+try:
+    print("Reading one rotation of FFT data from radar")
+    data_array = np.zeros((azimuth_samples, range_bins, 3))
+    handle_received_message()             # Read the first FFT data
     data_array[int(azimuth / encoder_size * azimuth_samples), :len(power), 1] = power
-    fft_data_captured += 1
+    fft_data_captured = 1
     power.clear()
-    if time.time() > timeout:
-        print("Unable to read FFT data from radar")
-        exit()
+    while (int(azimuth / encoder_size * azimuth_samples) != starting_azimuth or fft_data_captured < azimuth_samples) and time.time() < timeout:
+        handle_received_message()             # Read the rest of the FFT data to make a complete rotation
+        data_array[int(azimuth / encoder_size * azimuth_samples), :len(power), 1] = power
+        fft_data_captured += 1
+        power.clear()
+except:
+    print("Unable to read FFT data from radar")
+    exit()
 
 # Send a message to the radar to instruct it to stop sending FFT data
 print("Stopping FFT data")

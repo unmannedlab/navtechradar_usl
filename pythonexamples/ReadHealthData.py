@@ -1,13 +1,13 @@
 import socket
-import matplotlib.pyplot as plt
 import time
 import datetime
+import health_pb2
 
 ########################################################################
 # Below settings need to be changed to match your setup
 ########################################################################
-tcp_ip = '192.168.0.1'   # This is to be the source of raw radar data. It can be a real radar or the address where 
-                         # the Navtech ColossusNetrecordPlayback tool is running in playback mode
+tcp_ip = '192.168.0.1'   # This is to be the source of raw radar data. This will only work with a physical radar 
+                         # as the Navtech ColossusNetrecordPlayback tool does not generate health messages
 tcp_port = 6317          # This is the port that the radar is using, this generally will not need to be changed
 ########################################################################
 
@@ -26,12 +26,7 @@ check_signature = b'\x00\x01\x03\x03\x07\x07\x0f\x0f\x1f\x1f\x3f\x3f\x7f\x7f\xfe
 check_signature = [x for x in check_signature]
 config_read = False
 data_read = False
-encoder_size = 0
 version = 0
-power = []
-bearing = 0
-timestamp_with_nanoseconds = ''
-bit_depth = 0
 ########################################################################
 
 
@@ -49,22 +44,22 @@ def send_config_request():
     print("--------Sent Config Request---------")
     print("")
 
-# Send a start FFT Data Request Message - type 21
-def start_fft_data():
+# Send a start Health Data Request Message - type 23
+def start_health_data():
     global radar_socket
     global version
-    start_data_message = b'\x00\x01\x03\x03\x07\x07\x0f\x0f\x1f\x1f\x3f\x3f\x7f\x7f\xfe\xfe' + int.to_bytes(version,1, byteorder='big') + int.to_bytes(21,1, byteorder='big') + int.to_bytes(0,4, byteorder='big')
+    start_data_message = b'\x00\x01\x03\x03\x07\x07\x0f\x0f\x1f\x1f\x3f\x3f\x7f\x7f\xfe\xfe' + int.to_bytes(version,1, byteorder='big') + int.to_bytes(23,1, byteorder='big') + int.to_bytes(0,4, byteorder='big')
     radar_socket.send(start_data_message)
-    print("----------Started FFT Data----------")
+    print("----------Started Health Data----------")
     print("")
 
-# Send a stop FFT Data Request Message - type 22
-def stop_fft_data():
+# Send a stop health Request Message - type 24
+def stop_health_data():
     global radar_socket
     global version
-    stop_data_message = b'\x00\x01\x03\x03\x07\x07\x0f\x0f\x1f\x1f\x3f\x3f\x7f\x7f\xfe\xfe' + int.to_bytes(version,1, byteorder='big') + int.to_bytes(22,1, byteorder='big')  + int.to_bytes(0,4, byteorder='big')
+    stop_data_message = b'\x00\x01\x03\x03\x07\x07\x0f\x0f\x1f\x1f\x3f\x3f\x7f\x7f\xfe\xfe' + int.to_bytes(version,1, byteorder='big') + int.to_bytes(24,1, byteorder='big')  + int.to_bytes(0,4, byteorder='big')
     radar_socket.send(stop_data_message)
-    print("----------Stopped FFT Data----------")
+    print("----------Stopped Health Data----------")
     print("")
 
 # Read and process the response message
@@ -77,11 +72,6 @@ def handle_received_message():
     global data_read
     global radar_socket
     global version
-    global encoder_size
-    global power
-    global bearing
-    global timestamp_with_nanoseconds
-    global bit_depth
     global message_type
     global data
 
@@ -90,10 +80,14 @@ def handle_received_message():
     try:
         data = []
         while (len(data) < signature_length):
+            if time.time() > timeout:
+                raise ValueError('Data read timeout exceeded')
             data += radar_socket.recv(1)
         if (data == check_signature):
             data = []
             while (len(data) < header_length - signature_length):
+                if time.time() > timeout:
+                    raise ValueError('Data read timeout exceeded')
                 data += radar_socket.recv(1)
             version = data[0]
             message_type = data[1]
@@ -126,44 +120,27 @@ def handle_received_message():
         except:
             print("Error reading config message")
 
-    elif (message_type == 31 or message_type == 30): # Message type 31 is HighRes (16Bit) FFT Data 
-                                                   # and message type 30 is 8bit data from the radar
+    elif (message_type == 40): # Health data from radar
         try:
             data = []
             while (len(data) < payload_size):
                 data += radar_socket.recv(1)
             if (len(data) == payload_size):
-                counter = int.from_bytes(data[2:4], byteorder='big')
-                azimuth = int.from_bytes(data[4:6], byteorder='big')
-                bearing=360*(azimuth/encoder_size)
-                seconds = int.from_bytes(data[6:10], byteorder='little')
-                split_seconds = int.from_bytes(data[10:14], byteorder='little')
-                if (message_type == 31):  #This is the colossus message type for 16 bit FFT data
-                    print("    FFT: 16Bit (HighRes)")
-                else: # If the data isn't 16 bit, but we are here in the code, we must have 8 bit data
-                    print("    FFT: 8Bit (Standard)")            
-                print("Counter: {}".format(counter))
-                print("Azimuth: {}".format(azimuth))
-                print("Bearing: {}".format(round(bearing,2)))
-                print("Seconds: {}".format(seconds))
-                ts = datetime.datetime.fromtimestamp(seconds).strftime('%Y-%m-%d %H:%M:%S')
-                print("NanoSec: {}".format(round(split_seconds,5)))
-                timestamp_with_nanoseconds = "{}.{}".format(ts, str(int(round(split_seconds/10000,0))).rjust(5,'0'))
-                print("Day/Tim: " + timestamp_with_nanoseconds)
-                print ("\n")
-                fft_data_bytes = data[14:]
-                if (message_type == 31):
-                    for index in range (int(len(fft_data_bytes)/2)):
-                        power.append(int.from_bytes(fft_data_bytes[index:index+2],byteorder='big'))
-                    data_read = True
-                    bit_depth = 16
-                else:
-                    for index in range ((len(fft_data_bytes))):
-                        power.append((int(fft_data_bytes[index])))
-                    data_read = True
-                    bit_depth = 8
+                message=health_pb2.Health()
+                message.ParseFromString(bytearray (data))
+
+                # Print the entire health message
+                print("Entire health message:")
+                print(message)
+
+                # Print a single value from the health message
+                print("Health message die temperature:")
+                print(message.dietemperature.value)
+                print()
+
+                data_read = True
         except:
-            print("Error reading FFT message")
+            print("Error reading health message")
     else:
         print("Unhandled message type: {}".format(message_type))
 ########################################################################
@@ -197,35 +174,24 @@ except:
     print("Unable to read configuration message from radar")
     exit()
 
-# Send a message to the radar to instruct it to start sending FFT data
-print("Starting FFT data")
-start_fft_data()
+# Send a message to the radar to instruct it to start sending health data
+print("Starting health data")
+start_health_data()
 
-# Try (for 5 seconds) to get an FFT message from the radar
-timeout = time.time() + 5
-radar_socket.settimeout(5)
+# Try (for 10 seconds) to get a health message from the radar
+# Default for radar sending health messages is every 10 seconds
+timeout = time.time() + 10
+radar_socket.settimeout(10)
 try:
-    print("Reading one azimuth of FFT data from radar")
+    print("Reading health message from radar")
     while data_read == False and time.time() < timeout:
         handle_received_message()
 except:
-    print("Unable to read FFT data from radar")
+    print("Unable to read health message from radar")
     exit()
 
-# Send a message to the radar to instruct it to stop sending FFT data
-print("Stopping FFT data")
-stop_fft_data()
-
-# Plot the single azimuth of FFT data
-if len(power) <= 0:
-    print("No data points to plot")
-    exit()
-plt.figure("One Azimuth of {}Bit FFT Radar Data".format(bit_depth))
-plt.title('{}Bit FFT Radar Data from {}° at '.format(bit_depth,  round(bearing,2)) + timestamp_with_nanoseconds)
-plt.plot(power, linewidth = 0.5)
-plt.ylabel('Returned power', fontsize=12)
-plt.xlabel('Reporting bin', fontsize=12)
-plt.tight_layout()
-plt.show()
+# Send a message to the radar to instruct it to stop sending health data
+print("Stopping health data")
+stop_health_data()
 
 ########################################################################
