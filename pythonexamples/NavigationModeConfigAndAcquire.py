@@ -303,7 +303,7 @@ timeout = time.time() + 5
 radar_socket.settimeout(5)
 try:
     print("Reading navigation mode configuration message from radar")
-    while config_read == False and time.time() < timeout:
+    while nav_config_read == False and time.time() < timeout:
         get_nav_config()           # send a request navigation configuration message to the radar
         handle_received_message()
 except:
