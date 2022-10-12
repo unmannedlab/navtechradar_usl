@@ -3,3 +3,6 @@ build/
 devel/
 install/
 log/
+.vscode/
+.catkin_tools/
+logs/

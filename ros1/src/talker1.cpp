@@ -12,11 +12,13 @@ for full license details.
 #include <chrono>
 #include <vector>
 #include <math.h>
+#include <memory>
 
 #include "ros/ros.h"
 #include "radarclient.h"
 #include "std_msgs/String.h"
 #include "nav_ross/nav_msg.h"
+#include "nav_ross/FFTData.h"
 //#include "nav_ross/config_msg.h"
 #include <opencv2/opencv.hpp>
 #include <string>
@@ -33,9 +35,10 @@ for full license details.
 #endif
 using namespace Navtech;
 
-uint16_t _packetCount = 0;
+uint32_t _packetCount = 0;
 
 image_transport::Publisher  PolarPublisher;			
+ros::Publisher FFTDataPublisher;
 uint16_t _lastAzimuth_navigation = 0;
 ros::Publisher Radar_Config_Publisher;
 uint16_t _lastAzimuth = 0;
@@ -110,6 +113,32 @@ void FFTDataHandler(const FFTDataPtr_t& data)
 
 	}
 	_lastAzimuth = data->Azimuth;
+}
+
+void FFTDataHandler2(const FFTDataPtr_t& data)
+{	
+
+	ros::spinOnce();	
+	_packetCount++;
+
+	nav_ross::nav_msg msg;
+	msg.range_resolution = range_res;
+	msg.AzimuthSamples = azimuths;
+	msg.EncoderSize = encoder_size;
+	msg.BinSize = bin_size;
+	msg.RangeInBins = range_in_bins;
+	msg.ExpectedRotationRate = expected_rotation_rate;
+	Radar_Config_Publisher.publish(msg);
+	nav_ross::FFTData fftdata;
+	fftdata.header.seq = _packetCount;        // user defined counter
+	fftdata.header.stamp.sec =data->NTPSeconds;  // time
+	fftdata.header.stamp.nsec=data->NTPSplitSeconds;
+	fftdata.angle = data->Angle;
+	fftdata.azimuth = data->Azimuth;
+	fftdata.sweepCounter = data->SweepCounter;
+	fftdata.size = data->Data.size();
+	std::copy(data->Data.begin(),data->Data.end(),fftdata.data.begin());
+	FFTDataPublisher.publish(fftdata);
 }
 
 
@@ -193,17 +222,18 @@ int32_t main(int32_t argc, char** argv)
 	ros::init(argc, argv, "talker1");
 	
 	ros::NodeHandle n;
-	//Radar_Config_Publisher = n.advertise<nav_ross::nav_msg>("Navtech/Configuration_Topic", 1,true);
+	Radar_Config_Publisher = n.advertise<nav_ross::nav_msg>("Navtech/Configuration_Topic", 1,true);
 	
 	ros::NodeHandle node;
 	image_transport::ImageTransport it(node);
 	PolarPublisher = it.advertise("/Navtech/Polar", 1000);
+	FFTDataPublisher = n.advertise<nav_ross::FFTData>("/Navtech/FFTData", 1000);
 	
 	
 	Helpers::Log("Test Client Starting");
 	
 	_radarClient = std::make_shared<RadarClient>("192.168.0.1");
-	_radarClient->SetFFTDataCallback(std::bind(&FFTDataHandler, std::placeholders::_1));
+	_radarClient->SetFFTDataCallback(std::bind(&FFTDataHandler2, std::placeholders::_1));
 	_radarClient->SetConfigurationDataCallback(std::bind(&ConfigurationDataHandler, std::placeholders::_1));
 	_radarClient->Start();
 	

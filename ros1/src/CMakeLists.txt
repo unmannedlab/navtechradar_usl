@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(nav_ross)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -45,7 +45,7 @@ find_package(OpenCV 4.2.0 REQUIRED PATHS ~/opencv/build)
 ## Generate messages in the 'msg' folder
  add_message_files(
    FILES
-   
+   FFTData.msg
    nav_msg.msg
  )
 

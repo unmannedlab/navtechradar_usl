@@ -59,6 +59,8 @@ Grid lines
 #include <opencv2/highgui/highgui.hpp>
 #include <sensor_msgs/LaserScan.h>
 
+#include "nav_ross/nav_msg.h"
+#include "nav_ross/FFTData.h"
 #ifdef _WIN32
 #include <winsock2.h>
 #pragma comment(lib, "Ws2_32.lib")
@@ -107,8 +109,15 @@ float sin_values [405]={};
 float cos_values [405]={};
 float Phi = 0;
 float last_Phi=0;
+
+cv::Mat _radar_image_polar;
+long frame_number = 0;
+uint16_t _lastAzimuth = 0;
+int encoder_size;
+
 pcl::PointCloud<pcl::PointXYZI>::Ptr threeDPCL(new pcl::PointCloud<pcl::PointXYZI>);
 
+image_transport::Publisher  PolarPublisher;		
 image_transport::Publisher CartesianPublisher;
 image_transport::Publisher FilteredPublisher;
 image_transport::Publisher BoxesPublisher;
@@ -468,6 +477,34 @@ void ParamCallback(nav_ross::dynamic_paramConfig &config, uint32_t level){
 	}
 }
 
+void FFTDataCallback(const nav_ross::FFTDataConstPtr& msg)
+{	
+
+	if (msg->azimuth < _lastAzimuth) {
+		//Radar_Config_Publisher.publish(msg);
+		if (frame_number > 2) {
+			sensor_msgs::ImagePtr PolarMsg = cv_bridge::CvImage(msg->header, "mono8", _radar_image_polar).toImageMsg();
+			PolarPublisher.publish(PolarMsg);
+		}
+		// update/reset variables
+		frame_number++;	
+	}
+	// populate image
+	if (frame_number > 2) {
+
+		int bearing = ((double)msg->azimuth / (double)encoder_size) * (double)azimuths;
+		for (size_t i = 0; i < msg->data.size(); i++) {
+			_radar_image_polar.at<uchar>(i, bearing) = static_cast<int>(msg->data[i]);
+		}
+	}
+	_lastAzimuth = msg->azimuth;
+}
+
+void ConfigCallback(const nav_ross::nav_msgConstPtr msg){
+	encoder_size = msg->EncoderSize;
+	azimuths = msg->AzimuthSamples;
+}
+
 void ChatterCallback(const sensor_msgs::ImageConstPtr &radar_image_polar)
 {
 	_lastScanComplete = Helpers::Now();
@@ -562,12 +599,19 @@ int main(int argc, char **argv)
     InitialiseParameters(range_res,azimuths);
     ros::Subscriber sub2;
 	sub2 = n.subscribe("/Navtech/Polar", 10, ChatterCallback);
+
+    ros::Subscriber fftdata_sub;
+	fftdata_sub = n.subscribe("/Navtech/FFTData", 1000, FFTDataCallback);
+
+    ros::Subscriber config_sub;
+	config_sub = n.subscribe("/Navtech/Configuration_Topic", 1000, ConfigCallback);
 	ros::Subscriber arduinoSub;
 	arduinoSub = n.subscribe("arduino_phi", 1, updatePhi);
 
 	std::cout<<"here"<<std::endl;
 
 	image_transport::ImageTransport it(n1);
+	PolarPublisher = it.advertise("/Navtech/Polar", 1000);
 	CartesianPublisher = it.advertise("Navtech/Cartesian1", 10);
 	FilteredPublisher = it.advertise("Navtech/Filtered", 10);
 	LaserScanPublisher2 = n1.advertise<sensor_msgs::LaserScan>("Navtech/scan3", 1);
