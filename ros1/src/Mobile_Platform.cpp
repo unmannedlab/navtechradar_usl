@@ -114,6 +114,8 @@ cv::Mat _radar_image_polar;
 long frame_number = 0;
 uint16_t _lastAzimuth = 0;
 int encoder_size;
+bool config_flag = false;
+int range_in_bins =0;
 
 pcl::PointCloud<pcl::PointXYZI>::Ptr threeDPCL(new pcl::PointCloud<pcl::PointXYZI>);
 
@@ -150,6 +152,7 @@ void InitialiseParameters(float &range_res,uint16_t &azimuths)
 			sin_values[i]=sin(theta);
 			cos_values[i]=cos(theta);
 		}
+
 	}
 	else{
 		std::cout<<"\nConfiguration Settings not loaded from ros::param server..\nIf doing data playback, set parameters in server manually using ROS param CLI.\nParameters required are: configuration_range_res and configuration_azimuths\nExiting...";
@@ -479,30 +482,36 @@ void ParamCallback(nav_ross::dynamic_paramConfig &config, uint32_t level){
 
 void FFTDataCallback(const nav_ross::FFTDataConstPtr& msg)
 {	
-
-	if (msg->azimuth < _lastAzimuth) {
-		//Radar_Config_Publisher.publish(msg);
+	if(config_flag){
+		if (msg->azimuth < _lastAzimuth) {
+			//Radar_Config_Publisher.publish(msg);
+			if (frame_number > 2) {
+				sensor_msgs::ImagePtr PolarMsg = cv_bridge::CvImage(msg->header, "mono8", _radar_image_polar).toImageMsg();
+				PolarPublisher.publish(PolarMsg);
+			}
+			// update/reset variables
+			frame_number++;	
+		}
+		// populate image
 		if (frame_number > 2) {
-			sensor_msgs::ImagePtr PolarMsg = cv_bridge::CvImage(msg->header, "mono8", _radar_image_polar).toImageMsg();
-			PolarPublisher.publish(PolarMsg);
+			int bearing = ((double)msg->azimuth / (double)encoder_size) * (double)azimuths;
+			cout<<"bearing: "<<bearing<<" "<<(int)msg->azimuth <<"encoder_size: "<<encoder_size<<endl;
+			for (size_t i = 0; i < msg->data.size(); i++) {
+				_radar_image_polar.at<uchar>(i, bearing) = static_cast<int>(msg->data[i]);
+			}
 		}
-		// update/reset variables
-		frame_number++;	
+		_lastAzimuth = msg->azimuth;
 	}
-	// populate image
-	if (frame_number > 2) {
-
-		int bearing = ((double)msg->azimuth / (double)encoder_size) * (double)azimuths;
-		for (size_t i = 0; i < msg->data.size(); i++) {
-			_radar_image_polar.at<uchar>(i, bearing) = static_cast<int>(msg->data[i]);
-		}
-	}
-	_lastAzimuth = msg->azimuth;
 }
 
 void ConfigCallback(const nav_ross::nav_msgConstPtr msg){
-	encoder_size = msg->EncoderSize;
-	azimuths = msg->AzimuthSamples;
+	if(!config_flag){
+		encoder_size = msg->EncoderSize;
+		azimuths = msg->AzimuthSamples;
+		config_flag = true;
+		range_in_bins = msg->RangeInBins;
+		_radar_image_polar = cv::Mat::zeros(range_in_bins, azimuths, CV_8UC1);
+	}
 }
 
 void ChatterCallback(const sensor_msgs::ImageConstPtr &radar_image_polar)

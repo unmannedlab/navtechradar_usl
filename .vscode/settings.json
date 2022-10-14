@@ -76,5 +76,6 @@
         "future": "cpp",
         "shared_mutex": "cpp"
     },
-    "cmake.sourceDirectory": "${workspaceFolder}/cpp_17"
+    "cmake.sourceDirectory": "${workspaceFolder}/cpp_17",
+    "ros.distro": "noetic"
 }

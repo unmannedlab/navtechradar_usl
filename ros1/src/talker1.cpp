@@ -133,10 +133,12 @@ void FFTDataHandler2(const FFTDataPtr_t& data)
 	fftdata.header.seq = _packetCount;        // user defined counter
 	fftdata.header.stamp.sec =data->NTPSeconds;  // time
 	fftdata.header.stamp.nsec=data->NTPSplitSeconds;
+	fftdata.header.frame_id = "navtech";
 	fftdata.angle = data->Angle;
 	fftdata.azimuth = data->Azimuth;
 	fftdata.sweepCounter = data->SweepCounter;
 	fftdata.size = data->Data.size();
+	fftdata.data.assign(data->Data.size(),0);
 	std::copy(data->Data.begin(),data->Data.end(),fftdata.data.begin());
 	FFTDataPublisher.publish(fftdata);
 }
