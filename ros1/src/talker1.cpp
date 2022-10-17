@@ -19,6 +19,7 @@ for full license details.
 #include "std_msgs/String.h"
 #include "nav_ross/nav_msg.h"
 #include "nav_ross/FFTData.h"
+#include "nav_ross/HighPrecisionFFTData.h"
 //#include "nav_ross/config_msg.h"
 #include <opencv2/opencv.hpp>
 #include <string>
@@ -143,7 +144,33 @@ void FFTDataHandler2(const FFTDataPtr_t& data)
 	FFTDataPublisher.publish(fftdata);
 }
 
+void HighPrecisionFFTDataHandler(const HighPrecisionFFTDataPtr_t& data)
+{	
 
+	ros::spinOnce();	
+	_packetCount++;
+
+	nav_ross::nav_msg msg;
+	msg.range_resolution = range_res;
+	msg.AzimuthSamples = azimuths;
+	msg.EncoderSize = encoder_size;
+	msg.BinSize = bin_size;
+	msg.RangeInBins = range_in_bins;
+	msg.ExpectedRotationRate = expected_rotation_rate;
+	Radar_Config_Publisher.publish(msg);
+	nav_ross::HighPrecisionFFTData fftdata;
+	fftdata.header.seq = _packetCount;        // user defined counter
+	fftdata.header.stamp.sec =data->NTPSeconds;  // time
+	fftdata.header.stamp.nsec=data->NTPSplitSeconds;
+	fftdata.header.frame_id = "navtech";
+	fftdata.angle = data->Angle;
+	fftdata.azimuth = data->Azimuth;
+	fftdata.sweepCounter = data->SweepCounter;
+	fftdata.size = data->Data.size();
+	fftdata.data.assign(data->Data.size(),0);
+	std::copy(data->Data.begin(),data->Data.end(),fftdata.data.begin());
+	FFTDataPublisher.publish(fftdata);
+}
 
 void ConfigurationDataHandler(const ConfigurationDataPtr_t& data)
 {
@@ -230,12 +257,23 @@ int32_t main(int32_t argc, char** argv)
 	image_transport::ImageTransport it(node);
 	PolarPublisher = it.advertise("/Navtech/Polar", 1000);
 	FFTDataPublisher = n.advertise<nav_ross::FFTData>("/Navtech/FFTData", 1000);
-	
+	bool fftdata_highres=false;
 	
 	Helpers::Log("Test Client Starting");
-	
+    if((ros::param::has("fftdata_highres"))){
+		
+		ros::param::getCached("fftdata_res",fftdata_highres);
+	}
+	else{
+		fftdata_highres = false;
+	}
 	_radarClient = std::make_shared<RadarClient>("192.168.0.1");
-	_radarClient->SetFFTDataCallback(std::bind(&FFTDataHandler2, std::placeholders::_1));
+	if (fftdata_highres){
+		_radarClient->SetFFTDataCallback(std::bind(&FFTDataHandler2, std::placeholders::_1));
+	}
+	else{
+		_radarClient->SetHighPrecisionFFTDataCallback(std::bind(&HighPrecisionFFTDataHandler, std::placeholders::_1));
+	}
 	_radarClient->SetConfigurationDataCallback(std::bind(&ConfigurationDataHandler, std::placeholders::_1));
 	_radarClient->Start();
 	

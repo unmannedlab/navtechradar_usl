@@ -46,6 +46,7 @@ find_package(OpenCV 4.2.0 REQUIRED PATHS ~/opencv/build)
  add_message_files(
    FILES
    FFTData.msg
+   HighPrecisionFFTData.msg
    nav_msg.msg
  )
 

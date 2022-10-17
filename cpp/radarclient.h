@@ -30,6 +30,18 @@ namespace Navtech
 		std::vector<uint8_t> Data;
 	};
 	typedef std::shared_ptr<FFTData> FFTDataPtr_t;
+
+	class HighPrecisionFFTData
+	{
+	public:
+		float Angle = 0.0f;
+		uint16_t Azimuth = 0;
+		uint16_t SweepCounter = 0;
+		uint32_t NTPSeconds = 0;
+		uint32_t NTPSplitSeconds = 0;
+		std::vector<uint16_t> Data;
+	};
+	typedef std::shared_ptr<HighPrecisionFFTData> HighPrecisionFFTDataPtr_t;
 	
 	class NavigationData
 	{
@@ -72,6 +84,7 @@ namespace Navtech
 		void SetNavigationGainAndOffset(const float& gain, const float& offset);
 		
 		void SetFFTDataCallback(std::function<void(const FFTDataPtr_t&)> callback = nullptr);
+		void SetHighPrecisionFFTDataCallback(std::function<void(const HighPrecisionFFTDataPtr_t&)> callback = nullptr);
 		void SetNavigationDataCallback(std::function<void(const NavigationDataPtr_t&)> callback = nullptr);
 		void SetConfigurationDataCallback(std::function<void(const ConfigurationDataPtr_t&)> callback = nullptr);
 		
@@ -81,6 +94,7 @@ namespace Navtech
 		std::atomic_bool _sendRadarData;
 		std::mutex _callbackMutex;
 		std::function<void(const FFTDataPtr_t&)> _fftDataCallback = nullptr;
+		std::function<void(const HighPrecisionFFTDataPtr_t&)> _highprecisionfftDataCallback = nullptr;
 		std::function<void(const NavigationDataPtr_t&)> _navigationDataCallback = nullptr;
 		std::function<void(const ConfigurationDataPtr_t&)> _configurationDataCallback = nullptr;
 		
@@ -92,7 +106,8 @@ namespace Navtech
 		
 		void HandleData(const CNDPDataMessagePtr_t& message);
 		void HandleConfigurationMessage(const CNDPDataMessagePtr_t& configMessage);
-		void HandleFFTDataMessage(const CNDPDataMessagePtr_t& fftDataMessage);		
+		void HandleFFTDataMessage(const CNDPDataMessagePtr_t& fftDataMessage);	
+		void HandleHighPrecisionFFTDataMessage(const Navtech::CNDPDataMessagePtr_t& fftDataMessage);
 		void HandleNavigationDataMessage(const CNDPDataMessagePtr_t& navigationMessage);
 		void SendSimpleNetworkMessage(const CNDPNetworkDataMessageType& type);
 	};

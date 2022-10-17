@@ -74,7 +74,9 @@
         "codecvt": "cpp",
         "regex": "cpp",
         "future": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "strstream": "cpp",
+        "cfenv": "cpp"
     },
     "cmake.sourceDirectory": "${workspaceFolder}/cpp_17",
     "ros.distro": "noetic"

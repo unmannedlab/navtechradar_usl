@@ -1,4 +1,7 @@
 <launch>
+<param name="fftdata_highres" value="true" type="bool"/>
+<param name="configuration_range_res" value="0.44" type="double"/>
+<param name="configuration_azimuths" value="400" type="int"/>
 <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui"/>
 <node name="rviz" pkg="rviz" type="rviz"/>
 <node name="Mobile_Platform" pkg="nav_ross" type="Mobile_Platform" output="screen" required="true" />

@@ -61,6 +61,7 @@ Grid lines
 
 #include "nav_ross/nav_msg.h"
 #include "nav_ross/FFTData.h"
+#include "nav_ross/HighPrecisionFFTData.h"
 #ifdef _WIN32
 #include <winsock2.h>
 #pragma comment(lib, "Ws2_32.lib")
@@ -105,6 +106,7 @@ double grid_opacity = 0.5;
 uint16_t azimuths = 400;
 bool initialisedaverage;
 float range_res;
+bool fftdata_highres=false;
 float sin_values [405]={};
 float cos_values [405]={};
 float Phi = 0;
@@ -157,6 +159,12 @@ void InitialiseParameters(float &range_res,uint16_t &azimuths)
 	else{
 		std::cout<<"\nConfiguration Settings not loaded from ros::param server..\nIf doing data playback, set parameters in server manually using ROS param CLI.\nParameters required are: configuration_range_res and configuration_azimuths\nExiting...";
 		}
+    if((ros::param::has("fftdata_highres"))){
+		ros::param::getCached("fftdata_res",fftdata_highres);
+	}
+	else{
+		fftdata_highres = false;
+	}
 }
 
 void PublishPointcloud(cv_bridge::CvImagePtr &cv_polar_image, uint16_t &pcl_threshold_value, uint16_t &maxangle, float &range_res)
@@ -504,6 +512,30 @@ void FFTDataCallback(const nav_ross::FFTDataConstPtr& msg)
 	}
 }
 
+void HighPrecisionFFTDataCallback(const nav_ross::HighPrecisionFFTDataConstPtr& msg)
+{	
+	if(config_flag){
+		if (msg->azimuth < _lastAzimuth) {
+			//Radar_Config_Publisher.publish(msg);
+			if (frame_number > 2) {
+				sensor_msgs::ImagePtr PolarMsg = cv_bridge::CvImage(msg->header, "mono8", _radar_image_polar).toImageMsg();
+				PolarPublisher.publish(PolarMsg);
+			}
+			// update/reset variables
+			frame_number++;	
+		}
+		// populate image
+		if (frame_number > 2) {
+			int bearing = ((double)msg->azimuth / (double)encoder_size) * (double)azimuths;
+			cout<<"bearing: "<<bearing<<" "<<(int)msg->azimuth <<"encoder_size: "<<encoder_size<<endl;
+			for (size_t i = 0; i < msg->data.size(); i++) {
+				_radar_image_polar.at<uchar>(i, bearing) = static_cast<int>(msg->data[i]/65535.0*255);
+			}
+		}
+		_lastAzimuth = msg->azimuth;
+	}
+}
+
 void ConfigCallback(const nav_ross::nav_msgConstPtr msg){
 	if(!config_flag){
 		encoder_size = msg->EncoderSize;
@@ -610,7 +642,12 @@ int main(int argc, char **argv)
 	sub2 = n.subscribe("/Navtech/Polar", 10, ChatterCallback);
 
     ros::Subscriber fftdata_sub;
-	fftdata_sub = n.subscribe("/Navtech/FFTData", 1000, FFTDataCallback);
+	if(fftdata_highres){
+		fftdata_sub = n.subscribe("/Navtech/FFTData", 1000, FFTDataCallback);
+	}
+	else{
+		fftdata_sub = n.subscribe("/Navtech/FFTData", 1000, FFTDataCallback);
+	}
 
     ros::Subscriber config_sub;
 	config_sub = n.subscribe("/Navtech/Configuration_Topic", 1000, ConfigCallback);

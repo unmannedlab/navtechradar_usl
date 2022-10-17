@@ -37,6 +37,12 @@ void Navtech::RadarClient::SetFFTDataCallback(std::function<void(const FFTDataPt
 	_fftDataCallback = callback;
 }
 
+void Navtech::RadarClient::SetHighPrecisionFFTDataCallback(std::function<void(const HighPrecisionFFTDataPtr_t&)> callback)
+{
+	std::lock_guard<std::mutex> lock(_callbackMutex);
+	_highprecisionfftDataCallback = callback;
+}
+
 void Navtech::RadarClient::SetNavigationDataCallback(std::function<void(const NavigationDataPtr_t&)> callback)
 {
 	std::lock_guard<std::mutex> lock(_callbackMutex);
@@ -182,6 +188,9 @@ void Navtech::RadarClient::HandleData(const CNDPDataMessagePtr_t& message)
 	case CNDPNetworkDataMessageType::FFTData:
 		HandleFFTDataMessage(message);
 		break;
+	case CNDPNetworkDataMessageType::HighPrecisionFFTData:
+		HandleHighPrecisionFFTDataMessage(message);
+		break;
 	case CNDPNetworkDataMessageType::NavigationData:
 		HandleNavigationDataMessage(message);
 		break;
@@ -246,6 +255,35 @@ void Navtech::RadarClient::HandleFFTDataMessage(const Navtech::CNDPDataMessagePt
 	fftData->NTPSplitSeconds = fftDataHeader.splitseconds;
 	fftData->Data.resize(fftDataHeader.header.PayloadLength() - fftDataHeader.HeaderLength());
 	std::memcpy(fftData->Data.data(), &messageData[fftDataHeader.header.HeaderLength() + fftDataHeader.HeaderLength()], fftData->Data.size());		
+	
+	fftDataCallback(fftData);
+}
+
+void Navtech::RadarClient::HandleHighPrecisionFFTDataMessage(const Navtech::CNDPDataMessagePtr_t& fftDataMessage)
+{	
+	_callbackMutex.lock();
+	auto fftDataCallback = _highprecisionfftDataCallback;
+	_callbackMutex.unlock();	
+	if(fftDataCallback == nullptr) return;
+	
+	CNDPNetworkDataFftDataHeaderStruct fftDataHeader;
+	std::memset(&fftDataHeader, 0, sizeof(fftDataHeader));
+	auto messageData = fftDataMessage->MessageData();
+
+	std::memcpy(&fftDataHeader, messageData.data(), fftDataHeader.HeaderLength() + fftDataHeader.header.HeaderLength());
+
+	auto fftData = std::make_shared<HighPrecisionFFTData>();
+	fftData->Azimuth = ntohs(fftDataHeader.azimuth);
+	fftData->Angle = (fftData->Azimuth * 360.0f) / (float)_encoderSize;
+	fftData->SweepCounter = ntohs(fftDataHeader.sweepcounter);
+	fftData->NTPSeconds = fftDataHeader.seconds;
+	fftData->NTPSplitSeconds = fftDataHeader.splitseconds;
+	fftData->Data.resize((fftDataHeader.header.PayloadLength() - fftDataHeader.HeaderLength())/2);
+	std::memcpy(fftData->Data.data(), &messageData[fftDataHeader.header.HeaderLength() + fftDataHeader.HeaderLength()], fftData->Data.size());
+	for(auto i = 0; i < fftData->Data.size(); i++)
+	{
+		fftData->Data[i]=htons(fftData->Data[i]);
+	}	
 	
 	fftDataCallback(fftData);
 }
