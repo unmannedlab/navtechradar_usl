@@ -116,6 +116,62 @@ void FFTDataHandler(const FFTDataPtr_t& data)
 	_lastAzimuth = data->Azimuth;
 }
 
+void HighPrecisionFFTDataHandler(const HighPrecisionFFTDataPtr_t& data)
+{	
+
+		ros::spinOnce();	
+	_packetCount++;
+	if (data->Azimuth < _lastAzimuth) {
+
+		auto diff = Helpers::Now() - _lastRotationReset;
+		nav_ross::nav_msg msg;
+		msg.range_resolution = range_res;
+		msg.AzimuthSamples = azimuths;
+		msg.EncoderSize = encoder_size;
+		msg.BinSize = bin_size;
+		msg.RangeInBins = range_in_bins;
+		msg.ExpectedRotationRate = expected_rotation_rate;
+		//Radar_Config_Publisher.publish(msg);
+		if (frame_number > 2) {
+
+			//IF image topic is on
+			if (publish_image)															
+			{
+
+				header.seq = frame_number;        // user defined counter
+				header.stamp.sec =data->NTPSeconds;  // time
+				header.stamp.nsec=data->NTPSplitSeconds;
+
+				sensor_msgs::ImagePtr PolarMsg = cv_bridge::CvImage(header, "mono8", radar_image_polar).toImageMsg();
+				PolarPublisher.publish(PolarMsg);
+				
+			}
+
+			
+		}
+		
+		// update/reset variables
+		frame_number++;
+		azimuth_counter = 0;
+		
+		_packetCount = 0;
+	}
+	// populate image
+	if (frame_number > 2) {
+
+		int bearing = ((double)data->Azimuth / (double)encoder_size) * (double)azimuths;
+		for (size_t i = 0; i < data->Data.size(); i++) {
+			float pixel = data->Data[i];
+			pixel = pixel/65535.0*255;
+			radar_image_polar.at<uchar>(i, bearing) = static_cast<uchar>(pixel);
+			//std::cout<< data->Data[i] << " " << pixel<<" "<<static_cast<int>(radar_image_polar.at<uchar>(i, bearing))<<"||";
+
+		}
+		std::cout<<std::endl;
+
+	}
+	_lastAzimuth = data->Azimuth;
+}
 void FFTDataHandler2(const FFTDataPtr_t& data)
 {	
 
@@ -144,12 +200,11 @@ void FFTDataHandler2(const FFTDataPtr_t& data)
 	FFTDataPublisher.publish(fftdata);
 }
 
-void HighPrecisionFFTDataHandler(const HighPrecisionFFTDataPtr_t& data)
+void HighPrecisionFFTDataHandler2(const HighPrecisionFFTDataPtr_t& data)
 {	
 
 	ros::spinOnce();	
 	_packetCount++;
-
 	nav_ross::nav_msg msg;
 	msg.range_resolution = range_res;
 	msg.AzimuthSamples = azimuths;
@@ -256,23 +311,24 @@ int32_t main(int32_t argc, char** argv)
 	ros::NodeHandle node;
 	image_transport::ImageTransport it(node);
 	PolarPublisher = it.advertise("/Navtech/Polar", 1000);
-	FFTDataPublisher = n.advertise<nav_ross::FFTData>("/Navtech/FFTData", 1000);
 	bool fftdata_highres=false;
 	
 	Helpers::Log("Test Client Starting");
     if((ros::param::has("fftdata_highres"))){
-		
-		ros::param::getCached("fftdata_res",fftdata_highres);
+		//ROS_INFO("fftdata_res: %b",fftdata_res);
+		ros::param::getCached("fftdata_highres",fftdata_highres);
 	}
 	else{
 		fftdata_highres = false;
 	}
 	_radarClient = std::make_shared<RadarClient>("192.168.0.1");
 	if (fftdata_highres){
-		_radarClient->SetFFTDataCallback(std::bind(&FFTDataHandler2, std::placeholders::_1));
+		FFTDataPublisher = n.advertise<nav_ross::HighPrecisionFFTData>("/Navtech/FFTData", 1000);
+		_radarClient->SetHighPrecisionFFTDataCallback(std::bind(&HighPrecisionFFTDataHandler2, std::placeholders::_1));
 	}
 	else{
-		_radarClient->SetHighPrecisionFFTDataCallback(std::bind(&HighPrecisionFFTDataHandler, std::placeholders::_1));
+		FFTDataPublisher = n.advertise<nav_ross::FFTData>("/Navtech/FFTData", 1000);
+		_radarClient->SetFFTDataCallback(std::bind(&FFTDataHandler2, std::placeholders::_1));
 	}
 	_radarClient->SetConfigurationDataCallback(std::bind(&ConfigurationDataHandler, std::placeholders::_1));
 	_radarClient->Start();

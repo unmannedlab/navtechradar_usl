@@ -12,6 +12,7 @@ for full license details.
 
 #include <cstring>
 #include <cmath>
+#include <iostream>
 
 #ifdef __BSDSOCKETS__
 #include <netinet/in.h>
@@ -181,6 +182,7 @@ void Navtech::RadarClient::UpdateContourMap(const std::vector<uint8_t>& contourD
 
 void Navtech::RadarClient::HandleData(const CNDPDataMessagePtr_t& message)
 {
+	
 	switch (message->MessageId()) {
 	case CNDPNetworkDataMessageType::Configuration:
 		HandleConfigurationMessage(message);
@@ -265,7 +267,7 @@ void Navtech::RadarClient::HandleHighPrecisionFFTDataMessage(const Navtech::CNDP
 	auto fftDataCallback = _highprecisionfftDataCallback;
 	_callbackMutex.unlock();	
 	if(fftDataCallback == nullptr) return;
-	
+
 	CNDPNetworkDataFftDataHeaderStruct fftDataHeader;
 	std::memset(&fftDataHeader, 0, sizeof(fftDataHeader));
 	auto messageData = fftDataMessage->MessageData();
@@ -279,11 +281,7 @@ void Navtech::RadarClient::HandleHighPrecisionFFTDataMessage(const Navtech::CNDP
 	fftData->NTPSeconds = fftDataHeader.seconds;
 	fftData->NTPSplitSeconds = fftDataHeader.splitseconds;
 	fftData->Data.resize((fftDataHeader.header.PayloadLength() - fftDataHeader.HeaderLength())/2);
-	std::memcpy(fftData->Data.data(), &messageData[fftDataHeader.header.HeaderLength() + fftDataHeader.HeaderLength()], fftData->Data.size());
-	for(auto i = 0; i < fftData->Data.size(); i++)
-	{
-		fftData->Data[i]=htons(fftData->Data[i]);
-	}	
+	std::memcpy(fftData->Data.data(), &messageData[fftDataHeader.header.HeaderLength() + fftDataHeader.HeaderLength()], fftData->Data.size()*sizeof(uint16_t));
 	
 	fftDataCallback(fftData);
 }

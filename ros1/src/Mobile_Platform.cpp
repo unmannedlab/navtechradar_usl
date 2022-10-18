@@ -160,7 +160,7 @@ void InitialiseParameters(float &range_res,uint16_t &azimuths)
 		std::cout<<"\nConfiguration Settings not loaded from ros::param server..\nIf doing data playback, set parameters in server manually using ROS param CLI.\nParameters required are: configuration_range_res and configuration_azimuths\nExiting...";
 		}
     if((ros::param::has("fftdata_highres"))){
-		ros::param::getCached("fftdata_res",fftdata_highres);
+		ros::param::getCached("fftdata_highres",fftdata_highres);
 	}
 	else{
 		fftdata_highres = false;
@@ -529,7 +529,7 @@ void HighPrecisionFFTDataCallback(const nav_ross::HighPrecisionFFTDataConstPtr& 
 			int bearing = ((double)msg->azimuth / (double)encoder_size) * (double)azimuths;
 			cout<<"bearing: "<<bearing<<" "<<(int)msg->azimuth <<"encoder_size: "<<encoder_size<<endl;
 			for (size_t i = 0; i < msg->data.size(); i++) {
-				_radar_image_polar.at<uchar>(i, bearing) = static_cast<int>(msg->data[i]/65535.0*255);
+				_radar_image_polar.at<uchar>(i, bearing) = static_cast<uchar>(msg->data[i]/65535.0*255);
 			}
 		}
 		_lastAzimuth = msg->azimuth;
@@ -643,7 +643,7 @@ int main(int argc, char **argv)
 
     ros::Subscriber fftdata_sub;
 	if(fftdata_highres){
-		fftdata_sub = n.subscribe("/Navtech/FFTData", 1000, FFTDataCallback);
+		fftdata_sub = n.subscribe("/Navtech/FFTData", 1000, HighPrecisionFFTDataCallback);
 	}
 	else{
 		fftdata_sub = n.subscribe("/Navtech/FFTData", 1000, FFTDataCallback);

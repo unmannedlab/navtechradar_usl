@@ -107,7 +107,7 @@ namespace Navtech
 		void HandleData(const CNDPDataMessagePtr_t& message);
 		void HandleConfigurationMessage(const CNDPDataMessagePtr_t& configMessage);
 		void HandleFFTDataMessage(const CNDPDataMessagePtr_t& fftDataMessage);	
-		void HandleHighPrecisionFFTDataMessage(const Navtech::CNDPDataMessagePtr_t& fftDataMessage);
+		void HandleHighPrecisionFFTDataMessage(const CNDPDataMessagePtr_t& fftDataMessage);
 		void HandleNavigationDataMessage(const CNDPDataMessagePtr_t& navigationMessage);
 		void SendSimpleNetworkMessage(const CNDPNetworkDataMessageType& type);
 	};
